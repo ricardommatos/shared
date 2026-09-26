@@ -1,0 +1,353 @@
+<title>Bancada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F1F3EF; --surface:#FFFFFF; --sunk:#E7EAE4;
+  --ink:#171B19; --muted:#5F6862; --faint:#8C948E; --line:#D6DBD3;
+  --accent:#2944D1; --accent-ink:#FFFFFF; --accent-soft:#E3E8FF;
+  --gmail:#B3261E; --slack:#5B2C83; --calendar:#0B7A55; --granola:#8A6100; --manual:#2944D1;
+  --ok:#0B7A55; --warn:#A45A00;
+  --display:"Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --body:"IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#101311; --surface:#181C19; --sunk:#202521;
+    --ink:#E6EAE5; --muted:#A1AAA3; --faint:#737C75; --line:#2C322E;
+    --accent:#8EA0FF; --accent-ink:#0E1330; --accent-soft:#232B55;
+    --gmail:#F2877F; --slack:#C79BF0; --calendar:#5FD3A4; --granola:#E6BC5C; --manual:#8EA0FF;
+    --ok:#5FD3A4; --warn:#F0AE5A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#101311; --surface:#181C19; --sunk:#202521;
+  --ink:#E6EAE5; --muted:#A1AAA3; --faint:#737C75; --line:#2C322E;
+  --accent:#8EA0FF; --accent-ink:#0E1330; --accent-soft:#232B55;
+  --gmail:#F2877F; --slack:#C79BF0; --calendar:#5FD3A4; --granola:#E6BC5C; --manual:#8EA0FF;
+  --ok:#5FD3A4; --warn:#F0AE5A;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font:15px/1.5 var(--body);padding-inline:16px;padding-block:28px 64px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+
+/* header */
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 32px;border-bottom:1px solid var(--line);padding-bottom:20px}
+.brand h1{font:700 44px/1 var(--display);letter-spacing:-.02em;margin:0}
+.brand p{margin:8px 0 0;color:var(--muted);max-width:52ch;text-wrap:balance}
+.clocks{display:flex;gap:24px}
+.clock{display:flex;flex-direction:column;gap:2px}
+.clock .lbl{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.clock .t{font:500 26px/1.1 var(--mono);font-variant-numeric:tabular-nums}
+.clock .s{font-size:12px;color:var(--muted)}
+.clock .s.on{color:var(--ok)}
+
+/* brief */
+.brief{display:grid;grid-template-columns:1fr auto;gap:8px 24px;align-items:start}
+.brief .headline{font:500 22px/1.35 var(--display);margin:0;max-width:60ch;text-wrap:balance}
+.brief .meta{font:400 12px/1.4 var(--mono);color:var(--faint);text-align:right;white-space:nowrap}
+.counts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;font:500 12px/1 var(--mono);padding:6px 10px;border-radius:999px;background:var(--sunk);color:var(--muted);border:0}
+.pill b{color:var(--ink);font-weight:500}
+.pill.hot{background:var(--accent-soft);color:var(--accent)}
+.pill.hot b{color:var(--accent)}
+
+/* layout */
+.grid{display:grid;grid-template-columns:300px 1fr;gap:32px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}.brief{grid-template-columns:1fr}.brief .meta{text-align:left}}
+h2{font:600 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;gap:8px}
+h2 span{color:var(--faint)}
+
+/* agenda */
+.agenda{display:flex;flex-direction:column}
+.slot{display:grid;grid-template-columns:52px 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.slot:last-child{border-bottom:1px solid var(--line)}
+.slot .when{font:500 13px/1.4 var(--mono);font-variant-numeric:tabular-nums}
+.slot .when small{display:block;color:var(--faint);font-size:11px}
+.slot .what{font-weight:500}
+.slot .who{font-size:13px;color:var(--muted)}
+.slot .prep{font-size:13px;margin-top:6px;padding:8px 10px;background:var(--sunk);border-radius:6px}
+.slot.past{opacity:.55}
+
+/* delegate form */
+form.ask{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+form.ask label{flex-basis:100%;font:600 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+form.ask input{flex:1 1 180px;min-width:0;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:500}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.ghost{background:transparent}
+.hint{font-size:12px;color:var(--faint);margin:6px 0 0;flex-basis:100%}
+
+/* tasks */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.filters .pill{cursor:pointer}
+.filters .pill[aria-pressed="true"]{background:var(--ink);color:var(--ground)}
+.filters .pill[aria-pressed="true"] b{color:var(--ground)}
+.group{margin-bottom:28px}
+.list{display:flex;flex-direction:column;gap:8px}
+.task{background:var(--surface);border:1px solid var(--line);border-radius:10px;display:grid;grid-template-columns:4px 1fr;overflow:hidden}
+.task .stripe{background:var(--src)}
+.task .in{padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.row1{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.src{font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--src)}
+.due{font:500 11px/1 var(--mono);color:var(--muted);margin-left:auto;font-variant-numeric:tabular-nums}
+.due.late{color:var(--warn)}
+.prio{font:500 11px/1 var(--mono);color:var(--warn)}
+.task h3{font:600 16px/1.35 var(--body);margin:0;overflow-wrap:anywhere}
+.task .from{font-size:13px;color:var(--muted)}
+.task .ctx{font-size:14px;color:var(--ink);margin:0;max-width:70ch}
+details.work{border-top:1px dashed var(--line);padding-top:8px}
+details.work summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--accent);list-style:none;display:flex;gap:6px;align-items:center}
+details.work summary::-webkit-details-marker{display:none}
+details.work summary::before{content:"▸";font-size:10px;transition:transform .15s}
+details.work[open] summary::before{transform:rotate(90deg)}
+.draft{margin:10px 0 0;white-space:pre-wrap;font:14px/1.55 var(--body);background:var(--sunk);padding:12px 14px;border-radius:8px;overflow-wrap:anywhere;max-height:360px;overflow:auto}
+.where{font-size:12px;color:var(--muted);margin-top:6px}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.task.done h3{text-decoration:line-through;color:var(--muted)}
+.working{font:500 12px/1 var(--mono);color:var(--accent)}
+.empty{padding:28px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);text-align:left}
+.empty strong{color:var(--ink);display:block;margin-bottom:6px;font-family:var(--display);font-size:18px}
+.example{font:500 10px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;background:var(--sunk);color:var(--faint);padding:3px 6px;border-radius:4px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--ground);padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Bancada</h1>
+      <p>Os pedidos do Gmail, Slack, calendário e reuniões viram tarefas. O agente adianta o trabalho duas vezes por dia e tu revês antes de enviar.</p>
+    </div>
+    <div class="clocks">
+      <div class="clock"><span class="lbl">Lisboa</span><span class="t" id="tLis">--:--</span><span class="s" id="sLis"></span></div>
+      <div class="clock"><span class="lbl">Nova Iorque</span><span class="t" id="tNy">--:--</span><span class="s" id="sNy"></span></div>
+    </div>
+  </header>
+
+  <section class="brief" aria-live="polite">
+    <p class="headline" id="headline">A carregar a última passagem do agente…</p>
+    <div class="meta" id="runMeta"></div>
+    <div class="counts" id="counts"></div>
+  </section>
+
+  <div class="grid">
+    <aside>
+      <h2>Agenda de hoje <span id="agendaDate"></span></h2>
+      <div class="agenda" id="agenda"></div>
+      <form class="ask" id="askForm">
+        <label for="askInput">Delegar ao agente</label>
+        <input id="askInput" autocomplete="off" placeholder="ex.: responder à Sarah sobre os prazos do deck">
+        <button class="btn primary" type="submit">Delegar</button>
+        <p class="hint">Fica na lista e o agente trata disto na próxima passagem (08:30 ou 14:30).</p>
+      </form>
+    </aside>
+
+    <main>
+      <div class="filters" id="filters" role="group" aria-label="Filtrar por origem"></div>
+      <div id="groups"></div>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const SRC = {
+    gmail:{label:"Gmail", color:"var(--gmail)"},
+    slack:{label:"Slack", color:"var(--slack)"},
+    calendar:{label:"Calendário", color:"var(--calendar)"},
+    granola:{label:"Reunião", color:"var(--granola)"},
+    manual:{label:"Delegado", color:"var(--manual)"}
+  };
+  const GROUPS = [
+    {key:"ready", title:"Pronto para rever", note:"o agente já preparou"},
+    {key:"todo", title:"Para fazer", note:""},
+    {key:"done", title:"Feito hoje", note:""}
+  ];
+  const EXAMPLES = [
+    {id:"ex1", example:true, source:"gmail", title:"Responder sobre a data de entrega das keyframes", from:"Cliente · via email", summary:"Pede confirmação se as keyframes chegam na quinta às 10h de NY.", status:"ready", priority:1, due:today(), draft:{label:"Rascunho de resposta", where:"Guardado nos rascunhos do Gmail", text:"Olá,\n\nConfirmo: as keyframes seguem na quinta até às 10h (NY). Envio antes uma prévia na quarta ao fim do dia.\n\nObrigado,\nRicardo"}},
+    {id:"ex2", example:true, source:"granola", title:"Enviar referências de tipografia combinadas na reunião", from:"Weekly de design", summary:"Ficou combinado partilhar 3 direções tipográficas até sexta.", status:"todo", priority:2, due:null},
+    {id:"ex3", example:true, source:"slack", title:"Rever os comentários ao moodboard v2", from:"#projeto-x", summary:"Três comentários por responder no thread.", status:"todo", priority:3, due:null}
+  ];
+  let tasks = [], latest = null, filter = "all", db = null, usingExamples = false;
+
+  function today(tz){ return new Intl.DateTimeFormat("en-CA",{timeZone:tz||"Europe/Lisbon"}).format(new Date()); }
+  function fmtTime(tz){ return new Intl.DateTimeFormat("pt-PT",{timeZone:tz,hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date()); }
+  function hourIn(tz){ return +new Intl.DateTimeFormat("en-GB",{timeZone:tz,hour:"numeric",hour12:false}).format(new Date()); }
+  function weekday(tz){ return new Intl.DateTimeFormat("en-US",{timeZone:tz,weekday:"short"}).format(new Date()); }
+  function tick(){
+    $("#tLis").textContent = fmtTime("Europe/Lisbon");
+    $("#tNy").textContent = fmtTime("America/New_York");
+    const ny = hourIn("America/New_York"), wd = weekday("America/New_York");
+    const open = !["Sat","Sun"].includes(wd) && ny >= 9 && ny < 18;
+    const s = $("#sNy"); s.textContent = open ? "equipa a trabalhar" : "fora de horas"; s.className = "s" + (open ? " on" : "");
+    $("#sLis").textContent = new Intl.DateTimeFormat("pt-PT",{timeZone:"Europe/Lisbon",weekday:"long",day:"numeric",month:"long"}).format(new Date());
+  }
+  tick(); setInterval(tick, 30000);
+
+  function el(tag, cls, text){ const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; }
+  let toastT; function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 2200); }
+
+  function relTime(iso){
+    if(!iso) return "";
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat("pt-PT",{timeZone:"Europe/Lisbon",weekday:"short",hour:"2-digit",minute:"2-digit"}).format(d);
+  }
+
+  function renderBrief(){
+    const counts = $("#counts"); counts.replaceChildren();
+    const live = tasks.filter(t => t.status !== "dismissed");
+    const ready = live.filter(t => t.status === "ready").length;
+    const todo = live.filter(t => t.status === "todo").length;
+    const doneToday = live.filter(t => t.status === "done" && (t.updatedAt||"").slice(0,10) === today()).length;
+    if(latest){
+      $("#headline").textContent = latest.headline || "Passagem concluída.";
+      $("#runMeta").textContent = "última passagem " + relTime(latest.at);
+    } else if(usingExamples){
+      $("#headline").textContent = "Ainda não houve nenhuma passagem. Abaixo estão exemplos do aspeto que as tarefas vão ter.";
+      $("#runMeta").textContent = "próxima: 08:30 ou 14:30";
+    } else {
+      $("#headline").textContent = "Sem ligação à base de dados nesta vista.";
+      $("#runMeta").textContent = "";
+    }
+    const mk = (n, label, hot) => { const p = el("span","pill"+(hot?" hot":"")); const b = el("b",null,String(n)); p.append(b, " " + label); return p; };
+    counts.append(mk(ready,"para rever", ready>0), mk(todo,"por fazer"), mk(doneToday,"feitas hoje"));
+  }
+
+  function renderAgenda(){
+    const box = $("#agenda"); box.replaceChildren();
+    $("#agendaDate").textContent = new Intl.DateTimeFormat("pt-PT",{timeZone:"Europe/Lisbon",day:"numeric",month:"short"}).format(new Date());
+    const items = (latest && latest.date === today() && Array.isArray(latest.agenda)) ? latest.agenda : [];
+    if(!items.length){ box.append(el("p","hint", latest ? "Nada na agenda de hoje, ou ainda não foi lida." : "A agenda aparece depois da primeira passagem.")); return; }
+    const nowHM = fmtTime("Europe/Lisbon");
+    items.forEach(a => {
+      const s = el("div","slot" + (a.end && a.end < nowHM ? " past" : ""));
+      const w = el("div","when", a.start || ""); if(a.end){ w.append(el("small",null,a.end)); }
+      const body = el("div");
+      body.append(el("div","what",a.title || ""));
+      if(a.who) body.append(el("div","who",a.who));
+      if(a.prep) body.append(el("div","prep",a.prep));
+      s.append(w, body); box.append(s);
+    });
+  }
+
+  function renderFilters(){
+    const f = $("#filters"); f.replaceChildren();
+    const live = tasks.filter(t => t.status !== "dismissed");
+    const opts = [["all","Tudo",live.length]].concat(Object.keys(SRC).map(k => [k, SRC[k].label, live.filter(t=>t.source===k).length]).filter(o=>o[2]>0));
+    opts.forEach(([k,l,n]) => {
+      const b = el("button","pill"); b.type = "button"; b.setAttribute("aria-pressed", String(filter===k));
+      const bb = el("b",null,String(n)); b.append(l+" ", bb);
+      b.onclick = () => { filter = k; render(); };
+      f.append(b);
+    });
+  }
+
+  function taskCard(t){
+    const src = SRC[t.source] || SRC.manual;
+    const card = el("article","task" + (t.status==="done" ? " done" : ""));
+    card.style.setProperty("--src", src.color);
+    const stripe = el("div","stripe"); const inn = el("div","in");
+    const r1 = el("div","row1");
+    r1.append(el("span","src",src.label));
+    if(t.priority === 1) r1.append(el("span","prio","urgente"));
+    if(t.example) r1.append(el("span","example","exemplo"));
+    if(t.delegate && t.status==="todo") r1.append(el("span","working","na fila do agente"));
+    if(t.due){ const late = t.due < today() && t.status!=="done"; r1.append(el("span","due"+(late?" late":""), (late?"atrasado · ":"") + fmtDue(t.due))); }
+    inn.append(r1, el("h3",null,t.title||"(sem título)"));
+    if(t.from) inn.append(el("div","from",t.from));
+    if(t.summary) inn.append(el("p","ctx",t.summary));
+    if(t.draft && t.draft.text){
+      const d = el("details","work"); if(t.status==="ready") d.open = false;
+      d.append(el("summary",null, t.draft.label || "Trabalho do agente"));
+      const pre = el("div","draft",t.draft.text); d.append(pre);
+      if(t.draft.where) d.append(el("div","where",t.draft.where));
+      const a = el("div","actions"); a.style.marginTop = "8px";
+      const cp = el("button","btn","Copiar texto"); cp.type="button";
+      cp.onclick = async () => { try{ await navigator.clipboard.writeText(t.draft.text); toast("Texto copiado"); }catch(e){ const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Texto selecionado. Copia com ⌘C"); } };
+      a.append(cp); d.append(a); inn.append(d);
+    }
+    const act = el("div","actions");
+    if(t.link && /^https:\/\//.test(t.link)){ const l = el("a","btn ghost","Abrir origem"); l.href = t.link; l.target = "_blank"; l.rel = "noopener"; act.append(l); }
+    if(t.status !== "done"){
+      act.append(btn("Feito", "primary", () => setStatus(t, "done", "Marcado como feito")));
+      act.append(btn("Descartar", "ghost", () => setStatus(t, "dismissed", "Descartado")));
+    } else {
+      act.append(btn("Reabrir", "ghost", () => setStatus(t, t.draft ? "ready" : "todo", "Reaberto")));
+    }
+    inn.append(act);
+    card.append(stripe, inn);
+    return card;
+  }
+  function btn(label, kind, fn){ const b = el("button","btn "+kind,label); b.type="button"; b.onclick = fn; return b; }
+  function fmtDue(d){ const [y,m,dd] = d.split("-").map(Number); const dt = new Date(Date.UTC(y,m-1,dd,12)); if(d===today()) return "hoje"; return new Intl.DateTimeFormat("pt-PT",{day:"numeric",month:"short",timeZone:"UTC"}).format(dt); }
+
+  function render(){
+    renderBrief(); renderAgenda(); renderFilters();
+    const g = $("#groups"); g.replaceChildren();
+    const live = tasks.filter(t => t.status !== "dismissed" && (filter==="all" || t.source===filter));
+    let shown = 0;
+    GROUPS.forEach(gr => {
+      let items = live.filter(t => t.status === gr.key);
+      if(gr.key === "done") items = items.filter(t => (t.updatedAt||"").slice(0,10) === today() || t.example);
+      if(!items.length) return;
+      items.sort((a,b) => (a.priority||3)-(b.priority||3) || String(a.due||"9").localeCompare(String(b.due||"9")) || String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+      const sec = el("section","group");
+      const h = el("h2",null,gr.title); h.append(el("span",null, items.length + (gr.note ? " · " + gr.note : "")));
+      const list = el("div","list"); items.forEach(t => list.append(taskCard(t)));
+      sec.append(h, list); g.append(sec); shown += items.length;
+    });
+    if(!shown){
+      const e = el("div","empty"); e.append(el("strong",null,"Bancada limpa"), "Nada por tratar. A próxima passagem do agente é às 08:30 ou às 14:30.");
+      g.append(e);
+    }
+  }
+
+  async function setStatus(t, status, msg){
+    if(t.example){ t.status = status; t.updatedAt = new Date().toISOString(); render(); toast(msg + " (exemplo)"); return; }
+    if(!db){ toast("Sem ligação à base de dados"); return; }
+    try{ await db.doc("tasks/" + t.id).update({status, updatedAt:new Date().toISOString(), userChanged:true}); toast(msg); }
+    catch(e){ toast("Não foi possível guardar. Tenta outra vez."); }
+  }
+
+  $("#askForm").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const input = $("#askInput"); const text = input.value.trim(); if(!text) return;
+    if(!db){ toast("Sem ligação à base de dados"); return; }
+    const now = new Date().toISOString();
+    const id = "manual-" + Date.now().toString(36);
+    try{
+      await db.doc("tasks/" + id).set({title:text, source:"manual", from:"Pedido teu", status:"todo", delegate:true, priority:2, due:null, createdAt:now, updatedAt:now});
+      input.value = ""; toast("Delegado. O agente trata disto na próxima passagem.");
+    }catch(e){ toast(e && e.code === "quota_exceeded" ? "A base de dados está cheia. Descarta tarefas antigas." : "Não foi possível guardar. Tenta outra vez."); }
+  });
+
+  // start with examples so the page is never an empty shell; real data replaces them
+  tasks = EXAMPLES; usingExamples = true; render();
+
+  claude.use("db").then(d => {
+    db = d;
+    if(!db){ usingExamples = false; tasks = []; render(); return; }
+    let gotTasks = false, gotMeta = false;
+    db.doc("meta/latest").onSnapshot(s => { latest = s.exists ? s.data() : null; gotMeta = true; decide(); }, () => {});
+    db.collection("tasks").onSnapshot(s => {
+      gotTasks = true;
+      const rows = s.docs.map(x => Object.assign({id:x.id}, x.data()));
+      if(rows.length || latest){ usingExamples = false; tasks = rows; } else { usingExamples = true; tasks = EXAMPLES; }
+      render();
+    }, () => { toast("A ligação à base de dados caiu. Recarrega a página."); });
+    function decide(){ if(latest && usingExamples){ usingExamples = false; tasks = tasks.filter(t=>!t.example); } render(); }
+  });
+})();
+</script>
