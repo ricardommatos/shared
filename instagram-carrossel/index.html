@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extrator de Carrosséis</title>
+<style>
+  :root {
+    --bg: #f6f5f2; --surface: #fff; --text: #1b1b1a; --muted: #6f6d68;
+    --line: #e2e0db; --accent: #1b1b1a; --accent-text: #fff; --erro: #b3261e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413; --surface: #1e1e1c; --text: #f2f1ed; --muted: #9a9892;
+      --line: #33322f; --accent: #f2f1ed; --accent-text: #141413; --erro: #f2867f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  }
+  main { max-width: 980px; margin: 0 auto; padding: 56px 24px 80px; }
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 32px; }
+  form { display: flex; gap: 8px; flex-wrap: wrap; }
+  input, select, button {
+    font: inherit; color: var(--text); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+  }
+  input { flex: 1 1 360px; min-width: 0; }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  button { cursor: pointer; }
+  button.primario { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button:disabled { opacity: .5; cursor: wait; }
+  #estado { min-height: 24px; margin: 20px 0 8px; color: var(--muted); }
+  #estado.erro { color: var(--erro); }
+  .barra { display: none; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .barra.visivel { display: flex; }
+  .grelha { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  figure img, figure video { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: var(--line); }
+  figcaption { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; font-size: 13px; color: var(--muted); }
+  figcaption a { color: var(--text); text-decoration: none; font-weight: 500; }
+  figcaption a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Extrator de Carrosséis</h1>
+  <p class="sub">Cola o link de um post do Instagram. As imagens ficam guardadas em Transferências › Instagram.</p>
+
+  <form id="form">
+    <input id="url" type="url" placeholder="https://www.instagram.com/p/…" required autofocus>
+    <select id="browser" title="Browser onde tens sessão iniciada no Instagram">
+      <option value="chrome">Chrome</option>
+      <option value="safari">Safari</option>
+      <option value="arc">Arc</option>
+      <option value="brave">Brave</option>
+      <option value="firefox">Firefox</option>
+      <option value="edge">Edge</option>
+    </select>
+    <button class="primario" id="botao" type="submit">Extrair</button>
+  </form>
+
+  <p id="estado"></p>
+
+  <div class="barra" id="barra">
+    <button id="zip">Descarregar tudo (.zip)</button>
+    <button id="pasta">Abrir pasta no Finder</button>
+  </div>
+
+  <div class="grelha" id="grelha"></div>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  let atual = null;
+
+  try { $("browser").value = localStorage.getItem("browser") || "chrome"; } catch {}
+  $("browser").addEventListener("change", () => {
+    try { localStorage.setItem("browser", $("browser").value); } catch {}
+  });
+
+  function estado(texto, erro = false) {
+    $("estado").textContent = texto;
+    $("estado").className = erro ? "erro" : "";
+  }
+
+  $("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    $("botao").disabled = true;
+    $("barra").classList.remove("visivel");
+    $("grelha").innerHTML = "";
+    estado("A extrair… pode demorar uns segundos.");
+    try {
+      const r = await fetch("/api/extrair", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: $("url").value, browser: $("browser").value }),
+      });
+      const dados = await r.json();
+      if (!r.ok) throw new Error(dados.erro || "Erro desconhecido");
+      atual = dados.pasta;
+      mostrar(dados);
+    } catch (err) {
+      estado(err.message, true);
+    } finally {
+      $("botao").disabled = false;
+    }
+  });
+
+  function mostrar({ pasta, ficheiros }) {
+    const n = ficheiros.length;
+    estado(`${n} ${n === 1 ? "ficheiro" : "ficheiros"} guardados.`);
+    $("barra").classList.add("visivel");
+    for (const nome of ficheiros) {
+      const src = `/media/${encodeURIComponent(pasta)}/${encodeURIComponent(nome)}`;
+      const video = /\.(mp4|mov)$/i.test(nome);
+      const fig = document.createElement("figure");
+      const media = document.createElement(video ? "video" : "img");
+      media.src = src;
+      if (video) { media.controls = true; media.muted = true; } else { media.loading = "lazy"; media.alt = nome; }
+      const cap = document.createElement("figcaption");
+      const label = document.createElement("span");
+      label.textContent = nome;
+      const link = document.createElement("a");
+      link.href = src; link.download = `${pasta}_${nome}`; link.textContent = "Guardar";
+      cap.append(label, link);
+      fig.append(media, cap);
+      $("grelha").append(fig);
+    }
+  }
+
+  $("zip").addEventListener("click", () => { if (atual) location.href = `/zip/${encodeURIComponent(atual)}`; });
+  $("pasta").addEventListener("click", () => {
+    if (atual) fetch("/api/abrir-pasta", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pasta: atual }),
+    });
+  });
+</script>
+</body>
+</html>
