@@ -21,7 +21,7 @@ from urllib.parse import unquote, urlparse
 PORTA = 8765
 AQUI = Path(__file__).resolve().parent
 PASTA_DESTINO = Path.home() / "Downloads" / "Instagram"
-BROWSERS = {"chrome", "safari", "firefox", "brave", "edge", "arc"}
+BROWSERS = {"chrome", "safari", "dia", "arc", "firefox", "brave", "edge"}
 EXTENSOES = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".mp4", ".mov"}
 
 PADRAO_URL = re.compile(
@@ -38,7 +38,7 @@ def extrair(url, browser):
     destino.mkdir(parents=True, exist_ok=True)
 
     cmd = [
-        sys.executable, "-m", "gallery_dl",
+        sys.executable, str(AQUI / "gdl.py"),
         "--cookies-from-browser", browser,
         "-D", str(destino),
         "-f", "{num:>02}.{extension}",
@@ -48,7 +48,7 @@ def extrair(url, browser):
     ficheiros = listar(codigo)
 
     if not ficheiros:
-        raise RuntimeError(traduzir_erro(proc.stderr or proc.stdout))
+        raise RuntimeError(traduzir_erro(proc.stderr + proc.stdout, browser))
     return {"pasta": codigo, "ficheiros": ficheiros}
 
 
@@ -64,18 +64,21 @@ def listar(codigo):
     )
 
 
-def traduzir_erro(texto):
+def traduzir_erro(texto, browser):
     t = texto.lower()
+    nome = browser.capitalize()
+    lidos = re.search(r"extracted (\d+) cookies", t)
+    if not lidos or lidos.group(1) == "0":
+        if browser == "safari":
+            return ("Sem permissão para ler os cookies do Safari. Dá 'Acesso "
+                    "total ao disco' ao Terminal em Definições do Sistema › "
+                    "Privacidade e Segurança, ou escolhe outro browser.")
+        return (f"Não consegui ler os cookies do {nome}. Confirma que o {nome} "
+                "está instalado e, se o Mac pedir a palavra-passe para o "
+                "Porta-chaves, escolhe 'Permitir sempre'.")
     if "login" in t or "401" in t or "redirect" in t:
-        return ("O Instagram pediu login. Confirma que tens sessão iniciada "
-                "no browser escolhido e tenta de novo.")
-    if "cookie" in t and ("permission" in t or "operation not permitted" in t):
-        return ("Sem permissão para ler os cookies do browser. No Safari, "
-                "dá 'Acesso total ao disco' ao Terminal em Definições do "
-                "Sistema › Privacidade e Segurança.")
-    if "cookie" in t:
-        return ("Não consegui ler os cookies desse browser. Experimenta "
-                "outro browser na lista.")
+        return (f"O Instagram pediu login. Abre instagram.com no {nome}, "
+                "confirma que tens sessão iniciada e tenta de novo.")
     if "404" in t or "not found" in t:
         return "Post não encontrado. Pode ter sido apagado ou ser privado."
     if "429" in t or "rate" in t:

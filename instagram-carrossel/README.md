@@ -25,6 +25,10 @@ Para fechar a app, fecha a janela do Terminal.
 - **Tens de ter sessão iniciada no Instagram** no browser que escolhes.
   A app usa essa sessão para pedir as imagens, tal como se estivesses a
   vê-las. Também funciona com contas privadas que segues.
+- **Browsers aceites:** Chrome, Safari, Dia, Arc, Brave, Firefox e Edge.
+- **Porta-chaves (Chrome, Dia, Arc, Brave, Edge):** na primeira extração o
+  Mac pede a tua palavra-passe para a app poder ler a chave do browser.
+  Escreve a palavra-passe do Mac e escolhe **Permitir sempre**.
 - **Safari:** o macOS protege os cookies do Safari. Se der erro, vai a
   Definições do Sistema › Privacidade e Segurança › Acesso total ao disco
   e ativa o **Terminal**. Com o Chrome isto não é preciso.
