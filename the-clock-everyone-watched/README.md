@@ -8,7 +8,7 @@ O poster do relógio de parede IBM transformado num relógio a sério. Um fichei
 - O ponteiro dos minutos salta no impulso do minuto, com o ressalto dos relógios escravos IBM das escolas. O dos segundos varre.
 - Os 60 traços do mostrador acendem um por segundo: o mostrador é a barra de progresso do minuto.
 - A cada impulso o poster corta para a variante seguinte, azul → preto → ciano, sem transição.
-- Os ponteiros têm sombra real (filtro SVG) e a luz segue o rato.
+- O relógio é uma camada própria e inclina-se ligeiramente em 3D debaixo do rato. O desenho mantém-se flat.
 - Podes arrastar o ponteiro dos minutos. Ele volta sempre, com peso de mecanismo. Ninguém consegue fazer o relógio andar mais depressa.
 
 ## Controlo
