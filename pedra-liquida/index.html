@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Pedra Líquida: escultura generativa por raymarching de SDFs. Calcário e basalto num só volume que a maré torce, dissolve, perfura e assenta.">
+<title>Pedra Líquida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+  /* Layout: one fixed WebGL frame; the page is a 5-screen scroll that drives the sculpture's morph and the camera.
+     Overlay type sits in the corners and never competes with the centre, where the stone lives. */
+  :root {
+    --bg: #0a0a0c;            /* night basalt */
+    --fg: #e8e2d6;            /* limestone */
+    --fg-dim: rgba(232, 226, 214, 0.55);
+    --fg-faint: rgba(232, 226, 214, 0.22);
+    --accent: #d7b07a;        /* late Lisbon light */
+    --line: rgba(232, 226, 214, 0.16);
+    --font-display: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+    --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    --gutter-l: max(20px, env(safe-area-inset-left, 0px));
+    --gutter-r: max(20px, env(safe-area-inset-right, 0px));
+    color-scheme: dark;
+  }
+  html, body { background: var(--bg); color: var(--fg); margin: 0; }
+  body { font-family: var(--font-mono); font-size: 13px; line-height: 1.5; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+
+  #gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+  #scroll { position: relative; z-index: 1; pointer-events: none; }
+  #scroll section { height: 100vh; }
+  #scroll section.end { height: 60vh; }
+
+  .ui { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+  .ui > * { position: absolute; }
+
+  .eyebrow {
+    top: calc(22px + env(safe-area-inset-top, 0px)); left: var(--gutter-l);
+    display: flex; gap: 18px; align-items: baseline;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .eyebrow b { color: var(--fg); font-weight: 500; }
+  .eyebrow .sep { color: var(--fg-faint); }
+
+  .title {
+    left: var(--gutter-l); top: 50%; transform: translateY(-58%);
+    font-family: var(--font-display); font-weight: 400; font-style: italic;
+    font-size: clamp(56px, 11vw, 168px); line-height: 0.92; letter-spacing: -0.015em;
+    color: var(--fg); text-wrap: balance; margin: 0;
+    font-variation-settings: "opsz" 96;
+  }
+  .title .mask { display: block; overflow: hidden; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+  .title .line { display: block; will-change: transform; }
+  .title .thin { font-style: normal; font-weight: 400; color: var(--fg); opacity: 0.82; }
+  .title, .caption, .lede, .eyebrow { text-shadow: 0 1px 14px rgba(10, 10, 12, 0.55); }
+
+  .lede {
+    left: var(--gutter-l); top: calc(50% + clamp(70px, 13vw, 190px));
+    max-width: 34ch; color: var(--fg-dim); font-size: 12.5px; line-height: 1.65;
+  }
+  .lede em { color: var(--fg); font-style: normal; }
+
+  .chapters { left: var(--gutter-l); right: var(--gutter-r); bottom: calc(26px + env(safe-area-inset-bottom, 0px));
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: end; }
+  .caption { position: relative; min-height: 5.6em; max-width: 44ch; }
+  .caption .cap { position: absolute; left: 0; bottom: 0; opacity: 0; transform: translateY(8px); }
+  .caption .num {
+    font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 44px; line-height: 1;
+    color: var(--accent); display: block; margin-bottom: 10px; font-variation-settings: "opsz" 72;
+  }
+  .caption .name { color: var(--fg); font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; font-size: 11px; display: block; margin-bottom: 6px; }
+  .caption p { margin: 0; color: var(--fg-dim); font-size: 12.5px; line-height: 1.6; }
+
+  .controls { display: flex; gap: 10px; align-items: center; pointer-events: auto; }
+  .btn {
+    appearance: none; background: transparent; border: 1px solid var(--line); color: var(--fg);
+    font: inherit; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 10px 14px;
+    cursor: pointer; border-radius: 999px; transition: border-color .25s, background .25s, color .25s;
+  }
+  .btn:hover { border-color: var(--fg-dim); background: rgba(232,226,214,0.06); }
+  .btn:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
+  .btn .key { color: var(--fg-dim); margin-left: 8px; }
+  .btn.ghost { color: var(--fg-dim); }
+
+  .rail { right: calc(8px + env(safe-area-inset-right, 0px)); top: 18vh; bottom: 18vh; width: 1px; background: var(--line); }
+  .rail i { position: absolute; left: 0; top: 0; width: 100%; height: 0%; background: var(--accent); }
+  .rail s { position: absolute; left: -3px; width: 7px; height: 1px; background: var(--fg-faint); }
+
+  .hint { right: var(--gutter-r); top: calc(22px + env(safe-area-inset-top, 0px)); text-align: right; color: var(--fg-dim); font-size: 11px; letter-spacing: 0.08em; }
+  .hint .q { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 8px; vertical-align: middle; transform: translateY(-1px); }
+
+  .nogl { position: fixed; inset: 0; display: none; place-items: center; z-index: 3; padding: 24px var(--gutter-r) 24px var(--gutter-l); text-align: center; color: var(--fg-dim); }
+  .nogl.show { display: grid; }
+
+  @media (max-width: 720px) {
+    .eyebrow { gap: 10px; font-size: 10px; }
+    .eyebrow .long { display: none; }
+    .lede { display: none; }
+    .title { top: 44%; }
+    .chapters { grid-template-columns: 1fr; gap: 16px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+    .caption { min-height: 7.2em; max-width: none; padding-right: 28px; }
+    .caption .num { font-size: 34px; }
+    .controls { justify-content: flex-start; }
+    .hint { display: none; }
+    .rail { top: 12vh; bottom: 12vh; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .caption .cap { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="gl" aria-label="Escultura generativa raymarched: uma pedra que passa por quatro estados"></canvas>
+
+<div class="nogl" id="nogl"><div>Este estudo precisa de WebGL. Abre-o num browser com aceleração gráfica.</div></div>
+
+<div id="scroll" aria-hidden="true">
+  <section data-ch="0"></section>
+  <section data-ch="1"></section>
+  <section data-ch="2"></section>
+  <section data-ch="3"></section>
+  <section class="end"></section>
+</div>
+
+<div class="ui">
+  <div class="eyebrow ui-fade">
+    <b>Pedra Líquida</b>
+    <span class="sep">/</span>
+    <span>Estudo n.º <b id="seedLabel">0000</b></span>
+    <span class="sep long">/</span>
+    <span class="long">SDF raymarch · basalto &amp; calcário</span>
+  </div>
+
+  <div class="hint ui-fade"><span class="q"></span><span id="fps">—</span> · desliza para esculpir</div>
+
+  <h1 class="title" id="title">
+    <span class="mask"><span class="line">Pedra</span></span>
+    <span class="mask"><span class="line thin">Líquida</span></span>
+  </h1>
+  <div class="lede ui-fade" id="lede">
+    Uma pedra que ainda não decidiu o que é. Calcário e basalto, as duas cores da calçada, num só volume que a maré torce, dissolve, perfura e, por fim, assenta. <em>Cada semente é uma pedra diferente.</em>
+  </div>
+
+  <div class="chapters">
+    <div class="caption" id="captions">
+      <div class="cap" data-ch="0">
+        <span class="num">I</span>
+        <span class="name">Pedra</span>
+        <p>Começa fechada. Um bloco torcido por uma maré que ainda não chegou, com uma face arrancada pela luz.</p>
+      </div>
+      <div class="cap" data-ch="1">
+        <span class="num">II</span>
+        <span class="name">Maré</span>
+        <p>Depois dissolve-se. A matéria lembra-se de ter sido água e junta-se em gotas que se procuram.</p>
+      </div>
+      <div class="cap" data-ch="2">
+        <span class="num">III</span>
+        <span class="name">Rede</span>
+        <p>Por dentro, o vazio organiza-se num gyroid: uma única superfície, infinita, a separar dois lados que nunca se tocam.</p>
+      </div>
+      <div class="cap" data-ch="3">
+        <span class="num">IV</span>
+        <span class="name">Calçada</span>
+        <p>Por fim, assenta. Pedra a pedra, na onda do Rossio, preta e branca, à espera de pés.</p>
+      </div>
+    </div>
+    <div class="controls ui-fade">
+      <button class="btn" id="reseed" type="button">Nova pedra<span class="key">espaço</span></button>
+      <button class="btn ghost" id="quality" type="button" aria-pressed="false">Auto</button>
+    </div>
+  </div>
+
+  <div class="rail ui-fade" aria-hidden="true"><i id="railFill"></i><s style="top:25%"></s><s style="top:50%"></s><s style="top:75%"></s></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script id="vs" type="x-shader/x-vertex">
+varying vec2 vUv;
+void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }
+</script>
+
+<script id="fs-march" type="x-shader/x-fragment">
+precision highp float;
+varying vec2 vUv;
+uniform vec2  uRes;
+uniform float uTime;
+uniform float uMorph;      // 0..3  Pedra -> Maré -> Rede -> Calçada
+uniform float uTrans;      // 0..1  reseed turbulence
+uniform vec4  uSeedA;
+uniform vec4  uSeedB;
+uniform vec3  uCamPos;
+uniform vec3  uCamTarget;
+uniform float uFocal;
+uniform vec3  uLightDir;
+uniform float uSteps;      // max primary steps (quality)
+uniform float uShadowSteps;
+
+#define FAR 24.0
+#define FLOOR_Y -1.55
+
+// ---------- hashing & noise ----------
+float hash13(vec3 p){ p = fract(p * 0.1031); p += dot(p, p.yzx + 33.33); return fract((p.x + p.y) * p.z); }
+float noise3(vec3 p){
+  vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(mix(hash13(i), hash13(i + vec3(1,0,0)), f.x), mix(hash13(i + vec3(0,1,0)), hash13(i + vec3(1,1,0)), f.x), f.y),
+    mix(mix(hash13(i + vec3(0,0,1)), hash13(i + vec3(1,0,1)), f.x), mix(hash13(i + vec3(0,1,1)), hash13(i + vec3(1,1,1)), f.x), f.y), f.z);
+}
+float fbm(vec3 p){ float a = 0.5, s = 0.0; for(int i = 0; i < 4; i++){ s += a * noise3(p); p = p * 2.03 + 11.7; a *= 0.5; } return s; }
+
+// ---------- sdf toolkit ----------
+mat2 rot(float a){ float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+float smin(float a, float b, float k){ float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) - k * h * (1.0 - h); }
+float smax(float a, float b, float k){ return -smin(-a, -b, k); }
+float sdSphere(vec3 p, float r){ return length(p) - r; }
+float sdRoundBox(vec3 p, vec3 b, float r){ vec3 q = abs(p) - b; return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r; }
+float gyroid(vec3 p){ return dot(sin(p), cos(p.yzx)); }
+
+// I. Pedra: a twisted, bent monolith with one face bitten off
+float shapeA(vec3 p){
+  float tw = (uSeedA.x - 0.5) * 1.7;
+  vec3 q = p;
+  q.xz *= rot(q.y * tw + uSeedA.y * 6.2831);
+  q.x += 0.14 * sin(q.y * 2.1 + uSeedA.y * 6.2831);
+  vec3 b = vec3(0.52 + 0.28 * uSeedA.z, 1.0 + 0.12 * uSeedB.w, 0.42 + 0.22 * uSeedA.w);
+  float d = sdRoundBox(q, b, 0.2);
+  vec3 bite = (uSeedB.xyz * 2.0 - 1.0) * vec3(1.05, 0.7, 1.05);
+  d = smax(d, -sdSphere(p - bite, 0.78), 0.16);
+  return d;
+}
+
+// II. Maré: drops that look for each other
+float shapeB(vec3 p){
+  float d = 1e3;
+  float t = uTime * 0.32;
+  for(int i = 0; i < 6; i++){
+    float fi = float(i);
+    vec3 c = vec3(
+      sin(t * (0.70 + 0.13 * fi) + fi * 1.7 + uSeedA.x * 6.28),
+      0.55 * sin(t * (0.65 + 0.11 * fi) + fi * 2.3 + uSeedA.y * 6.28),
+      cos(t * (0.60 + 0.09 * fi) + fi * 0.9 + uSeedA.z * 6.28)) * vec3(0.92, 0.85, 0.92);
+    float r = 0.40 + 0.24 * fract(uSeedB.x * 7.0 + fi * 0.37);
+    d = smin(d, sdSphere(p - c, r), 0.48);
+  }
+  return d;
+}
+
+// III. Rede: a gyroid shell cut to a sphere
+float shapeC(vec3 p){
+  float f = 2.3 + 1.5 * uSeedA.w;
+  vec3 q = p; q.xz *= rot(uTime * 0.05);
+  float g = abs(gyroid(q * f + uSeedB.y * 3.0)) / f - 0.075;
+  float s = sdSphere(p, 1.28);
+  return smax(g, s, 0.08);
+}
+
+// IV. Calçada: a slab of small stones, its surface rolling like the Rossio wave
+float shapeD(vec3 p){
+  vec3 q = p;
+  q.y += 0.16 * sin(q.x * 3.6 + 0.8 * sin(q.z * 2.2 + uSeedB.z * 6.28));
+  float cell = 0.27;
+  vec3 id = floor(q / cell);
+  vec3 r = mod(q, cell) - 0.5 * cell;
+  float h = hash13(id + uSeedB.w * 10.0);
+  r.xz *= rot((h - 0.5) * 0.35);
+  float stone = sdRoundBox(r, vec3(cell * 0.37, cell * 0.33, cell * 0.37) * (0.86 + 0.22 * h), 0.04);
+  float bound = sdRoundBox(q, vec3(1.42, 0.30 + 0.18 * uSeedA.x, 1.22), 0.22);
+  return max(stone, bound);
+}
+
+float sculpt(vec3 p){
+  float m = uMorph;
+  float d;
+  if(m < 1.0){ d = mix(shapeA(p), shapeB(p), smoothstep(0.0, 1.0, m)); }
+  else if(m < 2.0){ d = mix(shapeB(p), shapeC(p), smoothstep(0.0, 1.0, m - 1.0)); }
+  else { d = mix(shapeC(p), shapeD(p), smoothstep(0.0, 1.0, m - 2.0)); }
+  float f = fract(m);
+  float amp = 4.0 * f * (1.0 - f) * 0.09 + uTrans * 0.32;
+  if(amp > 0.001){ d += (fbm(p * 2.6 + vec3(0.0, uTime * 0.35, 0.0)) - 0.5) * amp; }
+  return d;
+}
+
+float map(vec3 p){ return min(sculpt(p), p.y - FLOOR_Y); }
+
+vec3 calcNormal(vec3 p){
+  const vec2 e = vec2(0.0015, -0.0015);
+  return normalize(
+    e.xyy * map(p + e.xyy) + e.yyx * map(p + e.yyx) +
+    e.yxy * map(p + e.yxy) + e.xxx * map(p + e.xxx));
+}
+
+float softShadow(vec3 ro, vec3 rd, float k){
+  float res = 1.0, t = 0.03;
+  for(int i = 0; i < 40; i++){
+    if(float(i) >= uShadowSteps) break;
+    float h = sculpt(ro + rd * t);
+    if(h < 0.0008) return 0.0;
+    res = min(res, k * h / t);
+    t += clamp(h, 0.02, 0.28);
+    if(t > 9.0) break;
+  }
+  return clamp(res, 0.0, 1.0);
+}
+
+float calcAO(vec3 p, vec3 n){
+  float occ = 0.0, sca = 1.0;
+  for(int i = 0; i < 5; i++){
+    float h = 0.02 + 0.13 * float(i);
+    float d = map(p + n * h);
+    occ += (h - d) * sca; sca *= 0.78;
+  }
+  return clamp(1.0 - 1.6 * occ, 0.0, 1.0);
+}
+
+// material: 0 basalt, 1 limestone, blended by a seeded pattern; in chapter IV, by stone
+float stoneMix(vec3 p){
+  float pat = fbm(p * 1.7 + uSeedA.xyz * 5.0);
+  float organic = smoothstep(0.43, 0.57, pat);
+  // Rossio "mar largo": black and white bands that roll along the slab, one stone at a time
+  float cell = 0.27;
+  vec3 q = p; q.y += 0.16 * sin(q.x * 3.6 + 0.8 * sin(q.z * 2.2 + uSeedB.z * 6.28));
+  vec3 id = floor(q / cell);
+  vec3 c = (id + 0.5) * cell;
+  float band = sin(c.x * 3.6 + 0.8 * sin(c.z * 2.2 + uSeedB.z * 6.28));
+  float h = hash13(id + uSeedB.w * 10.0 + 3.1);
+  float tiled = step(0.0, band + (h - 0.5) * 0.5);
+  return mix(organic, tiled, smoothstep(2.2, 2.9, uMorph));
+}
+
+vec3 background(vec3 rd){
+  float y = rd.y * 0.5 + 0.5;
+  vec3 top = vec3(0.07, 0.075, 0.09);
+  vec3 bot = vec3(0.028, 0.026, 0.03);
+  vec3 col = mix(bot, top, pow(y, 0.8));
+  float sun = pow(max(dot(rd, normalize(uLightDir)), 0.0), 14.0);
+  col += vec3(0.95, 0.72, 0.42) * sun * 0.12;
+  return col;
+}
+
+vec3 shade(vec3 p, vec3 n, vec3 rd, float isFloor, float withShadow){
+  vec3 L = normalize(uLightDir);
+  vec3 V = -rd;
+  vec3 H = normalize(L + V);
+  float sm = stoneMix(p);
+  vec3 basalt = vec3(0.045, 0.045, 0.05);
+  vec3 lime = vec3(0.80, 0.74, 0.64);
+  vec3 albedo = mix(basalt, lime, sm);
+  float rough = mix(0.42, 0.70, sm);
+  // floor: polished dark stone, slightly wet
+  float wet = fbm(p * 0.9) * 0.5;
+  albedo = mix(albedo, vec3(0.035, 0.034, 0.038) + wet * 0.02, isFloor);
+  rough = mix(rough, 0.22 + wet * 0.25, isFloor);
+
+  float sha = withShadow > 0.5 ? softShadow(p + n * 0.02, L, 14.0) : 1.0;
+  float ao = withShadow > 0.5 ? calcAO(p, n) : 0.8;
+
+  float ndl = dot(n, L);
+  float dif = mix(clamp(ndl, 0.0, 1.0), clamp((ndl + 0.35) / 1.35, 0.0, 1.0), sm * (1.0 - isFloor)); // limestone wraps light
+  vec3 keyCol = vec3(1.0, 0.86, 0.68) * 2.4;
+  vec3 skyCol = vec3(0.30, 0.36, 0.48);
+  vec3 gndCol = vec3(0.10, 0.08, 0.07);
+  vec3 hemi = mix(gndCol, skyCol, n.y * 0.5 + 0.5);
+
+  // GGX
+  float a = rough * rough, a2 = a * a;
+  float ndh = max(dot(n, H), 0.0);
+  float den = ndh * ndh * (a2 - 1.0) + 1.0;
+  float D = a2 / (3.14159 * den * den);
+  float f0 = mix(0.04, 0.06, isFloor);
+  float vdh = max(dot(V, H), 0.0);
+  float F = f0 + (1.0 - f0) * pow(1.0 - vdh, 5.0);
+  float k = (rough + 1.0) * (rough + 1.0) / 8.0;
+  float ndv = max(dot(n, V), 0.001);
+  float G = (ndv / (ndv * (1.0 - k) + k)) * (max(ndl, 0.0) / (max(ndl, 0.0) * (1.0 - k) + k));
+  float spec = D * F * G / max(4.0 * ndv * max(ndl, 0.0), 0.05);
+
+  float fres = pow(1.0 - ndv, 3.5);
+  // thin-film sheen on the limestone edges, hue from the seed
+  vec3 film = 0.5 + 0.5 * cos(6.2831 * (fres * 1.6 + vec3(0.0, 0.33, 0.67) + uSeedB.x));
+  vec3 sheen = film * fres * 0.22 * sm * (1.0 - isFloor);
+
+  vec3 col = albedo * (keyCol * dif * sha + hemi * ao * 0.95);
+  col += keyCol * spec * sha * max(ndl, 0.0) * 0.6;
+  col += sheen * ao;
+  col += skyCol * fres * 0.10 * ao;
+  return col;
+}
+
+void main(){
+  vec2 ndc = (vUv * 2.0 - 1.0) * vec2(uRes.x / uRes.y, 1.0);
+  vec3 ww = normalize(uCamTarget - uCamPos);
+  vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
+  vec3 vv = cross(uu, ww);
+  vec3 ro = uCamPos;
+  vec3 rd = normalize(ndc.x * uu + ndc.y * vv + uFocal * ww);
+
+  float t = 0.0, d = 0.0;
+  float ds = 1.0, df = 1.0;
+  bool hit = false;
+  for(int i = 0; i < 140; i++){
+    if(float(i) >= uSteps) break;
+    vec3 p = ro + rd * t;
+    ds = sculpt(p); df = p.y - FLOOR_Y;
+    d = min(ds, df);
+    if(d < 0.0009 * (1.0 + t)) { hit = true; break; }
+    t += d * (uMorph > 2.05 ? 0.62 : 0.82);
+    if(t > FAR) break;
+  }
+
+  vec3 col;
+  float depth = FAR;
+  if(hit){
+    vec3 p = ro + rd * t;
+    float isFloor = df < ds ? 1.0 : 0.0;
+    vec3 n = isFloor > 0.5 ? vec3(0.0, 1.0, 0.0) : calcNormal(p);
+    col = shade(p, n, rd, isFloor, 1.0);
+
+    // floor reflection: one glossy bounce against the sculpture only
+    if(isFloor > 0.5){
+      vec3 rr = reflect(rd, n);
+      vec3 rro = p + n * 0.01;
+      float rt = 0.02; bool rhit = false;
+      for(int i = 0; i < 48; i++){
+        float rdist = sculpt(rro + rr * rt);
+        if(rdist < 0.002 * (1.0 + rt)) { rhit = true; break; }
+        rt += rdist * 0.85;
+        if(rt > 10.0) break;
+      }
+      vec3 refl = background(rr);
+      if(rhit){
+        vec3 rp = rro + rr * rt;
+        vec3 rn = calcNormal(rp);
+        refl = shade(rp, rn, rr, 0.0, 0.0);
+        refl = mix(refl, background(rr), 1.0 - exp(-0.18 * rt));
+      }
+      float ndv = max(dot(n, -rd), 0.0);
+      float fr = 0.06 + 0.94 * pow(1.0 - ndv, 5.0);
+      col = mix(col, refl, clamp(fr * 0.85, 0.0, 0.9));
+    }
+    depth = t;
+    col = mix(col, background(rd), 1.0 - exp(-0.045 * t * t * 0.08 - 0.02 * t));
+  } else {
+    col = background(rd);
+  }
+  gl_FragColor = vec4(col, depth / FAR);
+}
+</script>
+
+<script id="fs-post" type="x-shader/x-fragment">
+precision highp float;
+varying vec2 vUv;
+uniform sampler2D tScene;
+uniform vec2  uRes;
+uniform float uTime;
+uniform float uExposure;
+uniform float uFocus;     // world distance in focus
+uniform float uAperture;  // blur strength
+uniform float uGrain;
+uniform float uTrans;
+#define FAR 24.0
+
+float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+vec3 aces(vec3 x){ return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
+
+void main(){
+  vec2 uv = vUv;
+  vec2 px = 1.0 / uRes;
+  vec4 c0 = texture2D(tScene, uv);
+  // chromatic fringe toward the edges, applied to the sharp centre sample only
+  vec2 dir = (uv - 0.5);
+  float ab = (0.0013 + uTrans * 0.012) * dot(dir, dir) * 4.0;
+  c0.r = texture2D(tScene, uv + dir * ab).r;
+  c0.b = texture2D(tScene, uv - dir * ab).b;
+  float depth = c0.a * FAR;
+  float coc = clamp(abs(depth - uFocus) / max(uFocus, 0.5) * uAperture, 0.0, 1.0);
+  float radius = coc * 9.0 + uTrans * 6.0;
+
+  vec2 taps[12];
+  taps[0] = vec2(-0.326, -0.406); taps[1] = vec2(-0.840, -0.074); taps[2] = vec2(-0.696,  0.457);
+  taps[3] = vec2(-0.203,  0.621); taps[4] = vec2( 0.962, -0.195); taps[5] = vec2( 0.473, -0.480);
+  taps[6] = vec2( 0.519,  0.767); taps[7] = vec2( 0.185, -0.893); taps[8] = vec2( 0.507,  0.064);
+  taps[9] = vec2( 0.896,  0.412); taps[10] = vec2(-0.322, -0.933); taps[11] = vec2(-0.792, -0.598);
+
+  float ang = hash12(uv * uRes + uTime) * 6.2831;
+  float ca = cos(ang), sa = sin(ang);
+  vec3 col = c0.rgb; float wsum = 1.0;
+  for(int i = 0; i < 12; i++){
+    vec2 o = taps[i]; o = vec2(o.x * ca - o.y * sa, o.x * sa + o.y * ca);
+    vec4 s = texture2D(tScene, uv + o * radius * px);
+    float sd = s.a * FAR;
+    float scoc = clamp(abs(sd - uFocus) / max(uFocus, 0.5) * uAperture, 0.0, 1.0);
+    float w = 0.15 + scoc; // sharp pixels bleed less
+    col += s.rgb * w; wsum += w;
+  }
+  col /= wsum;
+
+  col *= uExposure;
+  col = aces(col);
+  float vig = smoothstep(1.35, 0.35, length(dir * vec2(1.0, 1.15)) * 1.3);
+  col *= mix(0.72, 1.0, vig);
+  float g = hash12(uv * uRes + fract(uTime * 7.3) * 100.0) - 0.5;
+  col += g * uGrain * (0.6 + 0.6 * (1.0 - vig));
+  col = pow(max(col, 0.0), vec3(1.0 / 2.2));
+  gl_FragColor = vec4(col, 1.0);
+}
+</script>
+
+<script>
+(function(){
+  'use strict';
+  var canvas = document.getElementById('gl');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var isTouch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+
+  var renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: false });
+  } catch (e) { renderer = null; }
+  if (!renderer || !renderer.getContext()) {
+    document.getElementById('nogl').classList.add('show');
+    return;
+  }
+  renderer.setPixelRatio(1);
+  renderer.autoClear = false;
+
+  // ---------- state the animation drives ----------
+  var S = {
+    morph: 0, trans: 0, exposure: 0,
+    az: 0.55, el: 0.22, dist: 4.9,
+    lightAz: 0.9, lightEl: 0.9,
+    mx: 0, my: 0,
+    focus: 4.6, aperture: 0.78, grain: 0.055
+  };
+
+  // ---------- seed ----------
+  function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  var seed = 0;
+  var seedA = new THREE.Vector4(), seedB = new THREE.Vector4();
+  function applySeed(n){
+    seed = n;
+    var r = mulberry32(n * 7919 + 17);
+    seedA.set(r(), r(), r(), r());
+    seedB.set(r(), r(), r(), r());
+    document.getElementById('seedLabel').textContent = String(n).padStart(4, '0');
+  }
+  var initial = Math.floor(Math.random() * 9000) + 1;
+  try {
+    var m = (location.hash || '').match(/^#s(\d{1,4})$/);
+    if (m) initial = parseInt(m[1], 10);
+  } catch (e) {}
+  applySeed(initial);
+
+  // ---------- materials ----------
+  var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  var scale = isTouch ? 0.55 : 0.8;   // raymarch resolution relative to the screen
+  var autoQuality = true;
+  var W = 2, H = 2;
+
+  var halfOK = renderer.capabilities.isWebGL2 || !!renderer.extensions.get('OES_texture_half_float');
+  var rt = new THREE.WebGLRenderTarget(2, 2, {
+    minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+    format: THREE.RGBAFormat, type: halfOK ? THREE.HalfFloatType : THREE.UnsignedByteType,
+    depthBuffer: false, stencilBuffer: false
+  });
+
+  var vs = document.getElementById('vs').textContent;
+  var marchMat = new THREE.ShaderMaterial({
+    vertexShader: vs,
+    fragmentShader: document.getElementById('fs-march').textContent,
+    uniforms: {
+      uRes: { value: new THREE.Vector2(2, 2) },
+      uTime: { value: 0 },
+      uMorph: { value: 0 },
+      uTrans: { value: 0 },
+      uSeedA: { value: seedA },
+      uSeedB: { value: seedB },
+      uCamPos: { value: new THREE.Vector3() },
+      uCamTarget: { value: new THREE.Vector3(0, -0.15, 0) },
+      uFocal: { value: 2.4 },
+      uLightDir: { value: new THREE.Vector3(0.6, 0.8, 0.3) },
+      uSteps: { value: isTouch ? 84 : 120 },
+      uShadowSteps: { value: isTouch ? 20 : 32 }
+    },
+    depthTest: false, depthWrite: false
+  });
+  var postMat = new THREE.ShaderMaterial({
+    vertexShader: vs,
+    fragmentShader: document.getElementById('fs-post').textContent,
+    uniforms: {
+      tScene: { value: rt.texture },
+      uRes: { value: new THREE.Vector2(2, 2) },
+      uTime: { value: 0 },
+      uExposure: { value: 0 },
+      uFocus: { value: 4.6 },
+      uAperture: { value: 0.95 },
+      uGrain: { value: 0.05 },
+      uTrans: { value: 0 }
+    },
+    depthTest: false, depthWrite: false
+  });
+
+  var cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  var geo = new THREE.PlaneGeometry(2, 2);
+  var sceneMarch = new THREE.Scene(); sceneMarch.add(new THREE.Mesh(geo, marchMat));
+  var scenePost = new THREE.Scene(); scenePost.add(new THREE.Mesh(geo, postMat));
+
+  function resize(){
+    W = Math.max(1, Math.floor(window.innerWidth * dpr));
+    H = Math.max(1, Math.floor(window.innerHeight * dpr));
+    renderer.setSize(W, H, false);
+    canvas.style.width = '100%'; canvas.style.height = '100%';
+    var rw = Math.max(1, Math.floor(W * scale)), rh = Math.max(1, Math.floor(H * scale));
+    rt.setSize(rw, rh);
+    marchMat.uniforms.uRes.value.set(rw, rh);
+    postMat.uniforms.uRes.value.set(W, H);
+    marchMat.uniforms.uFocal.value = window.innerWidth < 720 ? 1.9 : 2.4;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ---------- adaptive quality ----------
+  var frames = 0, acc = 0, lastT = performance.now();
+  var fpsEl = document.getElementById('fps');
+  function tick(now){
+    var dt = now - lastT; lastT = now;
+    acc += dt; frames++;
+    if (frames >= 45) {
+      var avg = acc / frames;
+      fpsEl.textContent = Math.round(1000 / avg) + ' fps';
+      if (autoQuality) {
+        var prev = scale;
+        if (avg > 24 && scale > 0.42) scale = Math.max(0.42, scale - 0.08);
+        else if (avg < 13 && scale < 1.0) scale = Math.min(1.0, scale + 0.06);
+        if (scale !== prev) resize();
+      }
+      frames = 0; acc = 0;
+    }
+  }
+
+  // ---------- camera & render ----------
+  var camPos = marchMat.uniforms.uCamPos.value;
+  var lightDir = marchMat.uniforms.uLightDir.value;
+  var t0 = performance.now();
+  function render(now){
+    requestAnimationFrame(render);
+    tick(now);
+    var time = (now - t0) / 1000;
+    var idle = reduce ? 0 : time * 0.045;
+    var az = S.az + idle + S.mx * 0.18;
+    var el = S.el + S.my * 0.12;
+    camPos.set(Math.sin(az) * Math.cos(el) * S.dist, Math.sin(el) * S.dist + 0.1, Math.cos(az) * Math.cos(el) * S.dist);
+    var la = S.lightAz + az * 0.35 + S.mx * 0.5, le = S.lightEl + S.my * 0.25;
+    lightDir.set(Math.sin(la) * Math.cos(le), Math.sin(le), Math.cos(la) * Math.cos(le));
+
+    marchMat.uniforms.uTime.value = time;
+    marchMat.uniforms.uMorph.value = S.morph;
+    marchMat.uniforms.uTrans.value = S.trans;
+    postMat.uniforms.uTime.value = time;
+    postMat.uniforms.uExposure.value = S.exposure;
+    postMat.uniforms.uFocus.value = S.dist - 0.35;
+    postMat.uniforms.uAperture.value = S.aperture;
+    postMat.uniforms.uGrain.value = S.grain;
+    postMat.uniforms.uTrans.value = S.trans;
+
+    renderer.setRenderTarget(rt);
+    renderer.render(sceneMarch, cam);
+    renderer.setRenderTarget(null);
+    renderer.render(scenePost, cam);
+  }
+  requestAnimationFrame(render);
+
+  // ---------- GSAP: intro, scroll, pointer, reseed ----------
+  gsap.registerPlugin(ScrollTrigger);
+  var D = reduce ? 0.01 : 1;
+
+  var intro = gsap.timeline({ delay: 0.15 });
+  intro.to(S, { exposure: 1.0, duration: 2.6 * D, ease: 'power2.out' }, 0)
+       .from('#title .line', { yPercent: 115, duration: 1.4 * D, stagger: 0.14 * D, ease: 'expo.out' }, 0.25 * D)
+       .from('.ui-fade', { opacity: 0, duration: 1.1 * D, stagger: 0.07 * D, ease: 'power1.out' }, 0.9 * D)
+       .from(S, { dist: 6.4, el: 0.5, duration: 3.2 * D, ease: 'power3.out' }, 0);
+
+  // Scroll drives the four movements: shape, orbit and height of the camera.
+  var journey = gsap.timeline({
+    scrollTrigger: { trigger: '#scroll', start: 'top top', end: 'bottom bottom', scrub: reduce ? false : 1.1,
+      onUpdate: function(st){ document.getElementById('railFill').style.height = (st.progress * 100).toFixed(2) + '%'; } }
+  });
+  journey.to(S, { morph: 1, az: S.az + 1.3, el: 0.34, dist: 4.5, aperture: 0.9, ease: 'none', duration: 1 })
+         .to(S, { morph: 2, az: S.az + 2.6, el: 0.08, dist: 5.4, aperture: 0.65, ease: 'none', duration: 1 })
+         .to(S, { morph: 3, az: S.az + 4.1, el: 0.62, dist: 4.6, aperture: 1.0, ease: 'none', duration: 1 })
+         .to(S, { az: S.az + 4.6, el: 0.72, dist: 4.4, ease: 'none', duration: 0.6 });
+
+  gsap.to('#title', { opacity: 0, y: -40, ease: 'none', scrollTrigger: { trigger: '#scroll', start: 'top top', end: '+=55%', scrub: true } });
+  gsap.to('#lede',  { opacity: 0, y: -24, ease: 'none', scrollTrigger: { trigger: '#scroll', start: 'top top', end: '+=40%', scrub: true } });
+
+  // captions
+  var caps = Array.prototype.slice.call(document.querySelectorAll('#captions .cap'));
+  var activeCap = -1;
+  function showCap(i){
+    if (i === activeCap) return;
+    caps.forEach(function(c, j){
+      if (j === i) gsap.to(c, { opacity: 1, y: 0, duration: 0.9 * D, ease: 'power2.out', overwrite: true, delay: 0.15 * D });
+      else gsap.to(c, { opacity: 0, y: -8, duration: 0.45 * D, ease: 'power1.in', overwrite: true });
+    });
+    activeCap = i;
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('#scroll section[data-ch]'), function(sec){
+    var i = parseInt(sec.getAttribute('data-ch'), 10);
+    ScrollTrigger.create({ trigger: sec, start: 'top 45%', end: 'bottom 45%',
+      onEnter: function(){ showCap(i); }, onEnterBack: function(){ showCap(i); } });
+  });
+  showCap(0);
+
+  // pointer: tilts the camera and swings the key light
+  var toX = gsap.quickTo(S, 'mx', { duration: 1.4, ease: 'power3.out' });
+  var toY = gsap.quickTo(S, 'my', { duration: 1.4, ease: 'power3.out' });
+  window.addEventListener('pointermove', function(e){
+    if (isTouch) return;
+    toX((e.clientX / window.innerWidth - 0.5) * 2);
+    toY((e.clientY / window.innerHeight - 0.5) * -2);
+  }, { passive: true });
+
+  // reseed: the stone dissolves, becomes another one
+  var reseeding = false;
+  function reseed(){
+    if (reseeding) return;
+    reseeding = true;
+    var next = Math.floor(Math.random() * 9000) + 1;
+    gsap.timeline({ onComplete: function(){ reseeding = false; } })
+      .to(S, { trans: 1, exposure: 0.35, duration: 0.55 * D, ease: 'power2.in' })
+      .call(function(){ applySeed(next); try { history.replaceState(null, '', '#s' + next); } catch (e) {} })
+      .to(S, { trans: 0, exposure: 1, duration: 1.3 * D, ease: 'power3.out' });
+  }
+  document.getElementById('reseed').addEventListener('click', reseed);
+  window.addEventListener('keydown', function(e){
+    if (e.code === 'Space' && !e.repeat && !/input|textarea/i.test(e.target.tagName)) { e.preventDefault(); reseed(); }
+  });
+
+  var qBtn = document.getElementById('quality');
+  qBtn.addEventListener('click', function(){
+    autoQuality = !autoQuality;
+    if (!autoQuality) scale = 1.0;
+    qBtn.textContent = autoQuality ? 'Auto' : 'Máxima';
+    qBtn.setAttribute('aria-pressed', autoQuality ? 'false' : 'true');
+    resize();
+  });
+})();
+</script>
+
+</body>
+</html>
