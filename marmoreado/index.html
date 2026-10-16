@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Marmoreado: papel marmoreado generativo calculado no GPU. Gotas de tinta e passagens de pente desfeitas por ordem inversa, pixel a pixel.">
+<title>Marmoreado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: the marbled sheet fills the screen; type sits in the four corners like notes on a tray.
+     Colours of the UI come from the sheet's own paper, so the chrome never fights the inks. */
+  :root {
+    --bg: #15131a;
+    --fg: #f2ecdf;
+    --fg-dim: rgba(242, 236, 223, 0.6);
+    --fg-faint: rgba(242, 236, 223, 0.22);
+    --accent: #ff6a3d;
+    --line: rgba(242, 236, 223, 0.2);
+    --font-display: "Fraunces", "Iowan Old Style", "Palatino", Georgia, serif;
+    --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    --gutter-l: max(20px, env(safe-area-inset-left, 0px));
+    --gutter-r: max(20px, env(safe-area-inset-right, 0px));
+    --paper-rgb: 21, 19, 26;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); overflow: hidden; }
+  body { font-family: var(--font-mono); font-size: 13px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+
+  #gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; }
+  .ui { position: fixed; inset: 0; pointer-events: none; }
+  .ui > * { position: absolute; }
+  .ui, .ui * { mix-blend-mode: normal; }
+
+  .corner-tl { top: calc(16px + env(safe-area-inset-top, 0px)); left: var(--gutter-l); }
+  .corner-tr { top: calc(16px + env(safe-area-inset-top, 0px)); right: var(--gutter-r); text-align: right; }
+  .corner-bl { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); left: var(--gutter-l); }
+  .corner-br { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); right: var(--gutter-r); }
+  /* museum labels: paper-coloured, slightly translucent, so the type always sits on paper */
+  .label { background: rgba(var(--paper-rgb), 0.78); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 12px 16px; border-radius: 3px; box-shadow: 0 1px 0 rgba(0,0,0,0.08), 0 10px 30px -18px rgba(0,0,0,0.5); }
+
+  .title { font-family: var(--font-display); font-weight: 300; font-style: italic; font-size: clamp(30px, 4vw, 52px); line-height: 0.95; letter-spacing: -0.01em; margin: 0 0 8px; font-variation-settings: "opsz" 144; }
+  .meta { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-dim); display: flex; gap: 14px; font-variant-numeric: tabular-nums; }
+  .meta b { color: var(--fg); font-weight: 500; }
+  .meta .sep { color: var(--fg-faint); }
+
+  .hint { font-size: 11px; letter-spacing: 0.08em; color: var(--fg-dim); line-height: 1.8; }
+  .hint b { color: var(--fg); font-weight: 500; }
+
+  .swatches { display: flex; gap: 8px; align-items: center; pointer-events: auto; }
+  .sw { width: 26px; height: 26px; border-radius: 50%; border: 0; padding: 0; cursor: pointer; position: relative; background: #888; box-shadow: 0 1px 2px rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.18); transition: transform .25s cubic-bezier(.2,.8,.2,1); }
+  .sw::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 1px solid transparent; transition: border-color .25s; }
+  .sw[aria-pressed="true"] { transform: scale(1.18); }
+  .sw[aria-pressed="true"]::after { border-color: var(--fg); }
+  .sw:focus-visible { outline: 1px solid var(--fg); outline-offset: 4px; }
+  .swatches .lbl { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-dim); margin-right: 6px; }
+
+  .controls { display: flex; gap: 8px; align-items: center; justify-content: flex-end; pointer-events: auto; flex-wrap: wrap; }
+  .btn { appearance: none; background: rgba(var(--paper-rgb), 0.72); border: 1px solid var(--line); color: var(--fg); font: inherit; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 9px 13px; cursor: pointer; border-radius: 999px; backdrop-filter: blur(6px); transition: border-color .25s, background .25s; }
+  .btn:hover { border-color: var(--fg-dim); background: rgba(var(--paper-rgb), 0.9); }
+  .btn:focus-visible { outline: 1px solid var(--fg); outline-offset: 3px; }
+  .btn .key { color: var(--fg-dim); margin-left: 7px; }
+  .btn[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+  .toast { left: 50%; top: calc(16px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg); opacity: 0; background: rgba(var(--paper-rgb), 0.85); padding: 8px 14px; border-radius: 999px; backdrop-filter: blur(6px); }
+
+  .nogl { position: fixed; inset: 0; display: none; place-items: center; padding: 24px var(--gutter-r) 24px var(--gutter-l); text-align: center; color: var(--fg-dim); }
+  .nogl.show { display: grid; }
+
+  @media (max-width: 720px) {
+    .corner-tr { display: none; }
+    .title { font-size: 30px; }
+    .meta { gap: 8px; font-size: 10px; }
+    .meta .long { display: none; }
+    .corner-bl { bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+    .label { padding: 10px 12px; }
+    .corner-br { left: var(--gutter-l); }
+    .controls { justify-content: flex-start; }
+    .sw { width: 24px; height: 24px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .sw, .btn { transition: none; } }
+</style>
+</head>
+<body>
+
+<canvas id="gl" aria-label="Folha de papel marmoreado generativo. Toca para pingar tinta, arrasta para pentear."></canvas>
+<div class="nogl" id="nogl"><div>Esta folha precisa de WebGL. Abre-a num browser com aceleração gráfica.</div></div>
+
+<div class="ui">
+  <div class="corner-tl label">
+    <h1 class="title">Marmoreado</h1>
+    <div class="meta"><span>Composição <b id="seedLabel">0000</b></span><span class="sep">/</span><span>Paleta <b id="palLabel">—</b></span><span class="sep long">/</span><span class="long" id="opsLabel">0 gestos</span></div>
+  </div>
+  <div class="corner-tr hint label">
+    <div><b>toca</b> para pingar uma gota</div>
+    <div><b>arrasta</b> para passar o pente</div>
+    <div><b>espaço</b> para outra composição</div>
+  </div>
+  <div class="corner-bl swatches label" id="swatches"><span class="lbl">Tinta</span></div>
+  <div class="corner-br controls">
+    <button class="btn" id="comb" type="button" aria-pressed="true">Pente</button>
+    <button class="btn" id="clear" type="button">Limpar</button>
+    <button class="btn" id="next" type="button">Nova composição<span class="key">espaço</span></button>
+  </div>
+  <div class="toast" id="toast">—</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script id="vs" type="x-shader/x-vertex">
+varying vec2 vUv;
+void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }
+</script>
+
+<script id="fs" type="x-shader/x-fragment">
+precision highp float;
+varying vec2 vUv;
+#define MAXOPS 64
+uniform vec2  uRes;
+uniform float uAspect;
+uniform float uTime;
+uniform int   uOpCount;
+uniform vec4  uOpA[MAXOPS];   // x: type (0 drop, 1 tine, 2 wave, 3 swirl)  then per type
+uniform vec4  uOpB[MAXOPS];
+uniform vec3  uPal[8];
+uniform vec3  uPaper;
+uniform sampler2D uBase;
+uniform float uHasBase;
+uniform float uBake;          // 1 = rendering into the bake target: pure colour only
+uniform float uBreath;
+
+float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float vnoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash12(i), hash12(i + vec2(1,0)), f.x), mix(hash12(i + vec2(0,1)), hash12(i + vec2(1,1)), f.x), f.y); }
+
+vec3 palette(float idx){
+  int i = int(idx + 0.5);
+  if(i == 0) return uPal[0]; if(i == 1) return uPal[1]; if(i == 2) return uPal[2]; if(i == 3) return uPal[3];
+  if(i == 4) return uPal[4]; if(i == 5) return uPal[5]; if(i == 6) return uPal[6]; return uPal[7];
+}
+
+// Walk the gestures backwards: each one is undone until we find the ink that was put down at this point.
+vec3 inkAt(vec2 p){
+  for(int k = 0; k < MAXOPS; k++){
+    int i = uOpCount - 1 - k;
+    if(i < 0) break;
+    vec4 a = uOpA[i];
+    vec4 b = uOpB[i];
+    float type = a.x;
+    if(type < 0.5){
+      // drop: a = (0, cx, cy, r)  b = (colour, 0, 0, 0)
+      vec2 d = p - a.yz;
+      float r = a.w;
+      float l2 = dot(d, d);
+      if(l2 < r * r) return palette(b.x);
+      p = a.yz + d * sqrt(max(1.0 - r * r / max(l2, 1e-6), 0.0));
+    } else if(type < 1.5){
+      // tine / comb: a = (1, bx, by, angle)  b = (z, lambda, spacing, 0)
+      // a comb spans the sheet: smooth arches between teeth; a stylus is one gaussian lobe
+      vec2 m = vec2(cos(a.w), sin(a.w));
+      vec2 n = vec2(-m.y, m.x);
+      float d = dot(p - a.yz, n);
+      float f;
+      if(b.z > 0.0){
+        float dm = mod(d + b.z * 0.5, b.z) - b.z * 0.5;
+        f = mix(0.12, 1.0, 0.5 + 0.5 * cos(6.2831853 * dm / b.z));
+      } else {
+        f = exp(-d * d / (b.y * b.y));
+      }
+      p -= m * b.x * f;
+    } else if(type < 2.5){
+      // wave: a = (2, bx, by, angle)  b = (amp, freq, phase, 0)
+      vec2 m = vec2(cos(a.w), sin(a.w));
+      vec2 n = vec2(-m.y, m.x);
+      float d = dot(p - a.yz, n);
+      p -= m * b.x * sin(d * b.y + b.z);
+    } else {
+      // swirl: a = (3, cx, cy, R)  b = (strength, lambda, 0, 0)
+      vec2 d = p - a.yz;
+      float l = length(d);
+      float th = -b.x * exp(-abs(l - a.w) / b.y);
+      float c = cos(th), s = sin(th);
+      p = a.yz + vec2(c * d.x - s * d.y, s * d.x + c * d.y);
+    }
+  }
+  if(uHasBase > 0.5){
+    vec2 uv = vec2(p.x / uAspect, p.y);
+    if(uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return uPaper;
+    return texture2D(uBase, uv).rgb;
+  }
+  return uPaper;
+}
+
+void main(){
+  vec2 p = vec2(vUv.x * uAspect, vUv.y);
+  // the sheet breathes: a whisper of a wave so the ink never looks printed
+  if(uBake < 0.5){
+    p += vec2(0.0, 1.0) * uBreath * sin(p.x * 7.0 + uTime * 0.35) * 0.5;
+    p += vec2(1.0, 0.0) * uBreath * sin(p.y * 9.0 - uTime * 0.27) * 0.5;
+  }
+  vec3 col = inkAt(p);
+  if(uBake > 0.5){ gl_FragColor = vec4(col, 1.0); return; }
+
+  // ink edges pool darker where two colours meet
+  float e = 1.35 / uRes.y;
+  vec3 c1 = inkAt(p + vec2(e, 0.0)), c2 = inkAt(p - vec2(e, 0.0)), c3 = inkAt(p + vec2(0.0, e)), c4 = inkAt(p - vec2(0.0, e));
+  float edge = length(col - c1) + length(col - c2) + length(col - c3) + length(col - c4);
+  edge = clamp(edge * 0.9, 0.0, 1.0);
+  col *= 1.0 - edge * 0.22;
+
+  // pigment granulation and paper fibre
+  float g = vnoise(p * 420.0) * 0.6 + vnoise(p * 1300.0) * 0.4;
+  float isPaper = step(length(col - uPaper), 0.02);
+  col *= mix(0.93 + 0.1 * g, 0.985 + 0.03 * g, isPaper);
+  float fibre = vnoise(vec2(p.x * 900.0, p.y * 40.0)) * 0.5 + vnoise(vec2(p.x * 30.0, p.y * 900.0)) * 0.5;
+  col *= 0.985 + 0.03 * fibre;
+
+  vec2 q = vUv - 0.5;
+  float vig = smoothstep(1.45, 0.4, length(q * vec2(1.0, 1.1)) * 1.35);
+  col *= mix(0.82, 1.0, vig);
+  col += (hash12(vUv * uRes + fract(uTime) * 100.0) - 0.5) * 0.02;
+  gl_FragColor = vec4(col, 1.0);
+}
+</script>
+
+<script>
+(function(){
+  'use strict';
+  var canvas = document.getElementById('gl');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var D = reduce ? 0.01 : 1;
+  var renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: true }); } catch (e) { renderer = null; }
+  if (!renderer || !renderer.getContext()) { document.getElementById('nogl').classList.add('show'); return; }
+  renderer.setPixelRatio(1);
+  renderer.autoClear = false;
+
+  var MAXOPS = 64;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var W = 2, H = 2, aspect = 1;
+
+  // ---------- palettes: paper + eight inks ----------
+  var PALETTES = [
+    { name: 'Lisboa',  paper: '#efe7d6', inks: ['#1f4e9c', '#0b2a6f', '#e2b23a', '#f4efe3', '#3f8f7a', '#b5362c', '#7fb3d9', '#17151a'] },
+    { name: 'Ebru',    paper: '#e9dfc8', inks: ['#c8372d', '#1c2b5a', '#d9a441', '#efe6d2', '#17151a', '#2f5f4a', '#8a3a6b', '#e0774b'] },
+    { name: 'Ácido',   paper: '#0f0f12', inks: ['#ff3f8e', '#c9ff3c', '#2d5cff', '#ff7a1a', '#f6f6f2', '#00e5c3', '#b24bff', '#ffd400'] },
+    { name: 'Poente',  paper: '#f6e9d6', inks: ['#d62a7a', '#ff6b4a', '#ffb347', '#4a1d4f', '#1f7a8c', '#ffd9b0', '#8c2f6b', '#2a1b3d'] },
+    { name: 'Jardim',  paper: '#f1efe4', inks: ['#a8c53a', '#1f5a3a', '#b89ce6', '#e07a9a', '#7fc4e8', '#22223b', '#f2c94c', '#3d7a5a'] },
+    { name: 'Nocturno', paper: '#141423', inks: ['#f2c94c', '#ff5e5b', '#7bdff2', '#f7f3e9', '#9b5de5', '#00bbf9', '#ff9f1c', '#2ec4b6'] }
+  ];
+  function hex(h){ var n = parseInt(h.slice(1), 16); return new THREE.Color(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255); }
+
+  // ---------- state ----------
+  var ops = [];            // {type, x, y, ang, r, col, z, lam, s, amp, freq, phase, R, k}
+  var pal = PALETTES[0];
+  var inkIndex = 0;
+  var combMode = true;
+  var seed = 0;
+  var choreo = null;       // running GSAP timeline
+
+  function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  // ---------- GPU ----------
+  var opA = [], opB = [];
+  for (var i = 0; i < MAXOPS; i++) { opA.push(new THREE.Vector4()); opB.push(new THREE.Vector4()); }
+  var palU = [];
+  for (var j = 0; j < 8; j++) palU.push(new THREE.Color());
+
+  var rtOpts = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false };
+  var rtA = new THREE.WebGLRenderTarget(2, 2, rtOpts), rtB = new THREE.WebGLRenderTarget(2, 2, rtOpts);
+  var hasBase = false;
+
+  var mat = new THREE.ShaderMaterial({
+    vertexShader: document.getElementById('vs').textContent,
+    fragmentShader: document.getElementById('fs').textContent,
+    uniforms: {
+      uRes: { value: new THREE.Vector2(2, 2) }, uAspect: { value: 1 }, uTime: { value: 0 },
+      uOpCount: { value: 0 }, uOpA: { value: opA }, uOpB: { value: opB },
+      uPal: { value: palU }, uPaper: { value: new THREE.Color() },
+      uBase: { value: rtA.texture }, uHasBase: { value: 0 }, uBake: { value: 0 }, uBreath: { value: reduce ? 0 : 0.0022 }
+    }, depthTest: false, depthWrite: false
+  });
+  var cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  var scene = new THREE.Scene(); scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat));
+
+  function resize(){
+    W = Math.max(1, Math.floor(window.innerWidth * dpr)); H = Math.max(1, Math.floor(window.innerHeight * dpr));
+    aspect = W / H;
+    renderer.setSize(W, H, false); canvas.style.width = '100%'; canvas.style.height = '100%';
+    mat.uniforms.uRes.value.set(W, H); mat.uniforms.uAspect.value = aspect;
+    rtA.setSize(W, H); rtB.setSize(W, H);
+    // a resize invalidates the baked sheet: rebuild the composition from its seed, instantly
+    if (hasBase) { hasBase = false; mat.uniforms.uHasBase.value = 0; if (seed) compose(seed, true); }
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function packOps(){
+    var n = Math.min(ops.length, MAXOPS);
+    for (var i = 0; i < n; i++) {
+      var o = ops[i], a = opA[i], b = opB[i];
+      if (o.type === 0) { a.set(0, o.x, o.y, o.r); b.set(o.col, 0, 0, 0); }
+      else if (o.type === 1) { a.set(1, o.x, o.y, o.ang); b.set(o.z, o.lam, o.s, 0); }
+      else if (o.type === 2) { a.set(2, o.x, o.y, o.ang); b.set(o.amp, o.freq, o.phase, 0); }
+      else { a.set(3, o.x, o.y, o.R, 0); b.set(o.k, o.lam, 0, 0); }
+    }
+    mat.uniforms.uOpCount.value = n;
+  }
+
+  // When the sheet fills up with gestures, bake it into a texture and keep going on top of it.
+  function bake(){
+    if (!ops.length) return;
+    packOps();
+    mat.uniforms.uBake.value = 1;
+    var target = (mat.uniforms.uBase.value === rtA.texture) ? rtB : rtA;
+    renderer.setRenderTarget(target); renderer.render(scene, cam); renderer.setRenderTarget(null);
+    mat.uniforms.uBake.value = 0;
+    mat.uniforms.uBase.value = target.texture;
+    mat.uniforms.uHasBase.value = 1; hasBase = true;
+    ops = [];
+  }
+  var gestures = 0;
+  function pushOp(o){ if (ops.length >= MAXOPS - 2) bake(); ops.push(o); gestures++; return o; }
+  function clearSheet(){ ops = []; gestures = 0; hasBase = false; mat.uniforms.uHasBase.value = 0; }
+
+  var t0 = performance.now();
+  function render(now){
+    requestAnimationFrame(render);
+    mat.uniforms.uTime.value = (now - t0) / 1000;
+    packOps();
+    renderer.setRenderTarget(null);
+    renderer.render(scene, cam);
+    opsLabel.textContent = gestures + ' gestos';
+  }
+  var opsLabel = document.getElementById('opsLabel');
+  requestAnimationFrame(render);
+
+  // ---------- palette UI ----------
+  var swEl = document.getElementById('swatches');
+  var swButtons = [];
+  function setPalette(p){
+    pal = p;
+    mat.uniforms.uPaper.value.copy(hex(p.paper));
+    for (var i = 0; i < 8; i++) palU[i].copy(hex(p.inks[i]));
+    document.getElementById('palLabel').textContent = p.name;
+    swButtons.forEach(function(btn, i){ btn.style.background = p.inks[i]; });
+    var dark = hex(p.paper).getHSL({}).l < 0.4;
+    document.documentElement.style.setProperty('--fg', dark ? '#f2ecdf' : '#1a1720');
+    document.documentElement.style.setProperty('--fg-dim', dark ? 'rgba(242,236,223,0.6)' : 'rgba(26,23,32,0.6)');
+    document.documentElement.style.setProperty('--fg-faint', dark ? 'rgba(242,236,223,0.22)' : 'rgba(26,23,32,0.22)');
+    document.documentElement.style.setProperty('--line', dark ? 'rgba(242,236,223,0.22)' : 'rgba(26,23,32,0.22)');
+    document.documentElement.style.setProperty('--bg', p.paper);
+    var pc = hex(p.paper); document.documentElement.style.setProperty('--paper-rgb', Math.round(pc.r * 255) + ', ' + Math.round(pc.g * 255) + ', ' + Math.round(pc.b * 255));
+    setInk(inkIndex);
+  }
+  function setInk(i){
+    inkIndex = i;
+    swButtons.forEach(function(btn, j){ btn.setAttribute('aria-pressed', j === i ? 'true' : 'false'); });
+  }
+  for (var s = 0; s < 8; s++) (function(i){
+    var b = document.createElement('button');
+    b.className = 'sw'; b.type = 'button'; b.id = 'ink' + i; b.setAttribute('aria-label', 'Tinta ' + (i + 1));
+    b.addEventListener('click', function(){ setInk(i); });
+    swEl.appendChild(b); swButtons.push(b);
+  })(s);
+
+  // ---------- seeded choreography ----------
+  // A composition is a script of steps. Played, each step is scheduled on a GSAP timeline;
+  // instant (after a resize), the same steps run synchronously so the sheet comes back identical.
+  function killChoreo(){ if (choreo) { choreo.kill(); choreo = null; } }
+  function compose(n, instant){
+    killChoreo();
+    seed = n;
+    document.getElementById('seedLabel').textContent = String(n).padStart(4, '0');
+    try { history.replaceState(null, '', '#s' + n); } catch (e) {}
+    var R = mulberry32(n * 7919 + 13);
+    clearSheet();
+    setPalette(PALETTES[Math.floor(R() * PALETTES.length)]);
+
+    var steps = [];
+    // 1. stone: a dense field of drops; each new one pushes the others aside until the sheet is full
+    var dominant = Math.floor(R() * 8), second = (dominant + 1 + Math.floor(R() * 7)) % 8;
+    var third = (second + 1 + Math.floor(R() * 6)) % 8, fourth = (third + 1 + Math.floor(R() * 5)) % 8;
+    var sizeMode = R();
+    var layout = R();
+    var drops = [];
+    var area = 0, target = aspect * (1.15 + R() * 0.25);   // ink area to lay down: a little more than the sheet
+    var total = 230;
+    for (var k = 0; k < total && area < target; k++) {
+      var x, y;
+      if (layout < 0.5) { x = R() * aspect; y = R(); }
+      else { var th = k * 2.399963, rr = Math.sqrt((k + 0.5) / 180) * 0.78; x = aspect * 0.5 + Math.cos(th) * rr * aspect * 0.8 + (R() - 0.5) * 0.08; y = 0.5 + Math.sin(th) * rr + (R() - 0.5) * 0.08; }
+      var cp = R(); var col = cp < 0.45 ? dominant : cp < 0.73 ? second : cp < 0.9 ? third : fourth;
+      var r = sizeMode < 0.4 ? 0.05 + R() * 0.03 : sizeMode < 0.8 ? 0.035 + R() * R() * 0.09 : (R() < 0.12 ? 0.1 + R() * 0.05 : 0.035 + R() * 0.025);
+      drops.push({ x: x, y: y, r: r, col: col });
+      area += Math.PI * r * r;
+    }
+    total = drops.length;
+    var batch = 54;
+    for (var b = 0; b < total; b += batch) { steps.push({ kind: 'drops', list: drops.slice(b, b + batch) }); steps.push({ kind: 'bake' }); }
+
+    // 2. the rakes: one of five classic patterns, chosen by the seed
+    var pattern = R();
+    function tine(x, y, ang, z, lam, s, dur){ steps.push({ kind: 'op', dur: dur, key: 'z', end: z, op: { type: 1, x: x, y: y, ang: ang, z: 0, lam: lam, s: s } }); }
+    function wave(x, y, ang, amp, freq, phase, dur){ steps.push({ kind: 'op', dur: dur, key: 'amp', end: amp, op: { type: 2, x: x, y: y, ang: ang, amp: 0, freq: freq, phase: phase } }); }
+    function swirl(x, y, Rr, kk, lam, dur){ steps.push({ kind: 'op', dur: dur, key: 'k', end: kk, op: { type: 3, x: x, y: y, R: Rr, k: 0, lam: lam } }); }
+    var j;
+    if (pattern < 0.28) {
+      // gel-git: a wide comb back and forth, then the fine comb across (nonpareil)
+      var sp = 0.08 + R() * 0.06, passes = 2 + Math.floor(R() * 3);
+      for (j = 0; j < passes; j++) tine(0, R(), (j % 2 ? Math.PI : 0) + (R() - 0.5) * 0.06, sp * (0.6 + R() * 0.5), 0.1, sp, 1.6);
+      var fs1 = 0.024 + R() * 0.012; tine(R() * aspect, 0, Math.PI / 2 + (R() - 0.5) * 0.05, fs1 * (0.5 + R() * 0.4), 0.03, fs1, 2.2);
+    } else if (pattern < 0.48) {
+      // nonpareil straight: one wide pass, one fine pass, the classic endpaper
+      var ws = 0.11 + R() * 0.05; tine(0, R(), 0, ws * (0.6 + R() * 0.5), 0.1, ws, 1.6);
+      var fs2 = 0.022 + R() * 0.01; tine(R() * aspect, 0, Math.PI / 2, fs2 * (0.5 + R() * 0.4), 0.03, fs2, 2.4);
+      if (R() < 0.5) wave(0, R(), 0, 0.018, 16 + R() * 10, R() * 6.28, 1.4);
+    } else if (pattern < 0.66) {
+      // bouquet: waves on waves, then a very fine comb to feather them
+      tine(0, R(), 0, 0.07, 0.1, 0.09, 1.3);
+      wave(0, R(), Math.PI / 2, 0.035 + R() * 0.03, 14 + R() * 14, R() * 6.28, 1.6);
+      wave(0, R(), 0, 0.025 + R() * 0.025, 20 + R() * 20, R() * 6.28, 1.6);
+      tine(R() * aspect, 0, Math.PI / 2, 0.012, 0.03, 0.022, 1.8);
+    } else if (pattern < 0.84) {
+      // spirals: two or three swirls over a fine comb
+      tine(R() * aspect, 0, Math.PI / 2, 0.016, 0.03, 0.024, 1.6);
+      var sw = 2 + Math.floor(R() * 2);
+      for (j = 0; j < sw; j++) swirl(0.15 * aspect + R() * aspect * 0.7, 0.15 + R() * 0.7, 0.04 + R() * 0.14, (R() < 0.5 ? -1 : 1) * (1.4 + R() * 2.2), 0.1 + R() * 0.14, 1.8);
+    } else {
+      // feathers: loose strokes with a single stylus, suminagashi breath
+      tine(0, R(), 0, 0.06, 0.1, 0.1, 1.2);
+      var strokes = 5 + Math.floor(R() * 5);
+      for (j = 0; j < strokes; j++) tine(R() * aspect, R(), R() * 6.28, 0.06 + R() * 0.1, 0.05 + R() * 0.09, 0, 1.0);
+    }
+    // 3. a last breath: a couple of clean drops on top
+    var last = [];
+    for (j = 0; j < 1 + Math.floor(R() * 3); j++) last.push({ x: 0.15 * aspect + R() * aspect * 0.7, y: 0.15 + R() * 0.7, r: 0.025 + R() * 0.045, col: Math.floor(R() * 8) });
+    steps.push({ kind: 'drops', list: last, slow: true });
+    setInk(Math.floor(R() * 8));
+
+    var gap = 0.036;
+    if (instant || reduce) {
+      steps.forEach(function(st){
+        if (st.kind === 'drops') st.list.forEach(function(d){ pushOp({ type: 0, x: d.x, y: d.y, r: d.r, col: d.col }); });
+        else if (st.kind === 'bake') bake();
+        else { var o = pushOp(st.op); o[st.key] = st.end; }
+      });
+      return;
+    }
+    // Everything lives on one timeline, so a jump in time still renders drops before the bake that needs them.
+    var tl = gsap.timeline();
+    choreo = tl;
+    var at = 0.2;
+    steps.forEach(function(st){
+      if (st.kind === 'drops') {
+        var g = st.slow ? 0.35 : gap, dur = st.slow ? 0.9 : 0.5;
+        var objs = st.list.map(function(d){ return { type: 0, x: d.x, y: d.y, r: 0, col: d.col }; });
+        tl.call(function(list){ list.forEach(function(o){ pushOp(o); }); }, [objs], at);
+        objs.forEach(function(o, i){ tl.to(o, { r: st.list[i].r, duration: dur, ease: 'power2.out' }, at + i * g); });
+        at += st.list.length * g + dur + 0.1;
+      } else if (st.kind === 'bake') {
+        tl.call(bake, null, at); at += 0.05;
+      } else {
+        var op = st.op;
+        tl.call(function(o){ pushOp(o); }, [op], at);
+        var cfg = { duration: st.dur, ease: 'power1.inOut' }; cfg[st.key] = st.end;
+        tl.to(op, cfg, at);
+        at += st.dur * 0.85;
+      }
+    });
+  }
+
+  // ---------- pointer: tap = drop, drag = rake ----------
+  var active = null;
+  function toSheet(e){ return { x: e.clientX / window.innerWidth * aspect, y: 1 - e.clientY / window.innerHeight }; }
+  canvas.addEventListener('pointerdown', function(e){
+    killChoreo();
+    canvas.setPointerCapture(e.pointerId);
+    var p = toSheet(e);
+    var drop = pushOp({ type: 0, x: p.x, y: p.y, r: 0, col: inkIndex });
+    var grow = gsap.to(drop, { r: 0.16, duration: 2.4, ease: 'power1.out' });
+    active = { id: e.pointerId, sx: p.x, sy: p.y, cx: e.clientX, cy: e.clientY, op: drop, grow: grow, raking: false };
+  });
+  canvas.addEventListener('pointermove', function(e){
+    if (!active || e.pointerId !== active.id) return;
+    var p = toSheet(e);
+    var dx = p.x - active.sx, dy = p.y - active.sy, len = Math.sqrt(dx * dx + dy * dy);
+    if (!active.raking) {
+      if (Math.abs(e.clientX - active.cx) + Math.abs(e.clientY - active.cy) < 10) return;
+      active.grow.kill();
+      var o = active.op;
+      o.type = 1; o.ang = 0; o.z = 0; o.lam = combMode ? 0.04 : 0.06; o.s = combMode ? 0.055 : 0;
+      active.raking = true;
+    }
+    var o2 = active.op;
+    o2.ang = Math.atan2(dy, dx);
+    o2.z = Math.min(len * 0.5, combMode ? 0.05 : 0.16);
+  });
+  function endPointer(e){
+    if (!active || e.pointerId !== active.id) return;
+    if (!active.raking) active.grow.kill();
+    active = null;
+  }
+  canvas.addEventListener('pointerup', endPointer);
+  canvas.addEventListener('pointercancel', endPointer);
+
+  // ---------- controls ----------
+  var toastEl = document.getElementById('toast');
+  function toast(msg){
+    toastEl.textContent = msg;
+    gsap.killTweensOf(toastEl);
+    gsap.fromTo(toastEl, { opacity: 0, y: -6 }, { opacity: 1, y: 0, duration: 0.3 * D }).then(function(){ gsap.to(toastEl, { opacity: 0, duration: 0.5 * D, delay: 1.4 }); });
+  }
+  var combBtn = document.getElementById('comb');
+  combBtn.addEventListener('click', function(){
+    combMode = !combMode;
+    combBtn.setAttribute('aria-pressed', combMode ? 'true' : 'false');
+    combBtn.textContent = combMode ? 'Pente' : 'Estilete';
+    toast(combMode ? 'Pente: várias pontas' : 'Estilete: uma ponta');
+  });
+  document.getElementById('clear').addEventListener('click', function(){
+    killChoreo(); clearSheet(); toast('Folha limpa');
+  });
+  function next(){ compose(Math.floor(Math.random() * 9000) + 1); }
+  document.getElementById('next').addEventListener('click', next);
+  window.addEventListener('keydown', function(e){
+    if (/input|textarea/i.test(e.target.tagName)) return;
+    if (e.code === 'Space' && !e.repeat) { e.preventDefault(); next(); }
+    else if (e.key === 'c' || e.key === 'C') combBtn.click();
+    else if (e.key >= '1' && e.key <= '8') setInk(parseInt(e.key, 10) - 1);
+    else if (e.key === 's' || e.key === 'S') {
+      // save: works when the file is opened directly in a browser
+      try { packOps(); renderer.setRenderTarget(null); renderer.render(scene, cam);
+        var a = document.createElement('a'); a.download = 'marmoreado-' + String(seed).padStart(4, '0') + '.png'; a.href = canvas.toDataURL('image/png'); a.click(); } catch (err) {}
+    }
+  });
+
+  var initial = Math.floor(Math.random() * 9000) + 1;
+  try { var m = (location.hash || '').match(/^#s(\d{1,4})$/); if (m) initial = parseInt(m[1], 10); } catch (e) {}
+  compose(initial);
+})();
+</script>
+
+</body>
+</html>
