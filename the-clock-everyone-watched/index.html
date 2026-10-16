@@ -55,7 +55,7 @@
 <body>
 
 <div class="stage"><div class="frame" id="frame">
-<svg class="poster" viewBox="0 0 906 1208" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The clock everyone watched. Poster do relógio de parede IBM, com a hora real.">
+<svg class="poster" viewBox="0 0 906 1208" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The clock everyone watched. The IBM wall clock poster, keeping real time.">
   <defs>
     <clipPath id="logoClip"><rect x="715" y="1111" width="168" height="71"/></clipPath>
   </defs>
@@ -155,13 +155,13 @@
 </svg>
 </div></div>
 
-<div class="keys" aria-label="Variante">
-  <button type="button" data-v="a" aria-pressed="true" aria-label="Variante azul">I</button>
-  <button type="button" data-v="b" aria-pressed="false" aria-label="Variante preta">II</button>
-  <button type="button" data-v="c" aria-pressed="false" aria-label="Variante ciano">III</button>
+<div class="keys" aria-label="Colourway">
+  <button type="button" data-v="a" aria-pressed="true" aria-label="Blue colourway">I</button>
+  <button type="button" data-v="b" aria-pressed="false" aria-label="Black colourway">II</button>
+  <button type="button" data-v="c" aria-pressed="false" aria-label="Cyan colourway">III</button>
 </div>
 <div class="hud"><b id="clockLabel">00:00:00</b><span class="sep long">/</span><span class="long" id="zoneLabel">—</span></div>
-<div class="hint" id="hint">arrasta o ponteiro dos minutos · ele volta sempre</div>
+<div class="hint" id="hint">drag the minute hand · it always comes back</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
@@ -179,7 +179,7 @@
   ticks.forEach(function(t){ tickBySecond[parseInt(t.getAttribute('data-s'), 10)] = t; });
   var clockLabel = document.getElementById('clockLabel');
   var zoneLabel = document.getElementById('zoneLabel');
-  try { zoneLabel.textContent = (Intl.DateTimeFormat().resolvedOptions().timeZone || '').replace('_', ' ') || 'hora local'; } catch (e) { zoneLabel.textContent = 'hora local'; }
+  try { zoneLabel.textContent = (Intl.DateTimeFormat().resolvedOptions().timeZone || '').replace('_', ' ') || 'local time'; } catch (e) { zoneLabel.textContent = 'local time'; }
 
   // ---------- state ----------
   var A = { hour: 0, minute: 0, second: 0 };   // degrees
