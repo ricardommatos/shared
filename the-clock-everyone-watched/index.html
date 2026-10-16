@@ -28,7 +28,7 @@
   body { font-family: var(--font-mono); font-size: 12px; -webkit-font-smoothing: antialiased; }
   * { box-sizing: border-box; }
 
-  .stage { position: fixed; inset: 0; display: grid; place-items: center; padding: 0 var(--gutter-r) 0 var(--gutter-l); perspective: 1400px; }
+  .stage { position: fixed; inset: 0; display: grid; place-items: center; padding: 0 var(--gutter-r) 0 var(--gutter-l); perspective: 900px; }
   .frame { position: relative; width: 906px; height: 1208px; max-width: 100%; }
   svg.poster { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   /* the clock is its own layer so it can tilt in 3D; flat drawing, slight body */
@@ -267,17 +267,17 @@
   var clockSvg = document.getElementById('clockSvg');
   var T = { rx: 0, ry: 0, z: 0 };
   function applyTilt(){ clockSvg.style.transform = 'translateZ(' + T.z.toFixed(1) + 'px) rotateX(' + T.rx.toFixed(2) + 'deg) rotateY(' + T.ry.toFixed(2) + 'deg)'; }
-  var toRx = gsap.quickTo(T, 'rx', { duration: 0.8, ease: 'power3.out', onUpdate: applyTilt });
-  var toRy = gsap.quickTo(T, 'ry', { duration: 0.8, ease: 'power3.out' });
-  var toZ  = gsap.quickTo(T, 'z',  { duration: 0.8, ease: 'power3.out' });
-  var MAX = reduce ? 0 : 9;
+  var toRx = gsap.quickTo(T, 'rx', { duration: 0.55, ease: 'power3.out', onUpdate: applyTilt });
+  var toRy = gsap.quickTo(T, 'ry', { duration: 0.55, ease: 'power3.out' });
+  var toZ  = gsap.quickTo(T, 'z',  { duration: 0.55, ease: 'power3.out' });
+  var MAX = reduce ? 0 : 22;
   clockSvg.addEventListener('pointermove', function(e){
     if (dragging) return;
     var r = clockSvg.getBoundingClientRect();
     var nx = (e.clientX - r.left) / r.width - 0.5, ny = (e.clientY - r.top) / r.height - 0.5;
-    toRy(nx * 2 * MAX); toRx(-ny * 2 * MAX); toZ(reduce ? 0 : 18);
+    toRy(nx * 2 * MAX); toRx(-ny * 2 * MAX); toZ(reduce ? 0 : 70);
   });
-  clockSvg.addEventListener('pointerleave', function(){ if (!dragging) { toRx(0); toRy(0); toZ(0); } });
+  clockSvg.addEventListener('pointerleave', function(){ if (!dragging) { gsap.to(T, { rx: 0, ry: 0, z: 0, duration: 1.1, ease: 'elastic.out(1, 0.6)', onUpdate: applyTilt, overwrite: true }); } });
 
   // ---------- drag the minute hand; it always comes back ----------
   var hit = document.getElementById('dialHit');
