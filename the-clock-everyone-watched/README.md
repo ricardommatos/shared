@@ -19,3 +19,7 @@ O poster do relógio de parede IBM transformado num relógio a sério. Um fichei
 ## Fontes
 
 Em `source/` estão os três SVGs originais (Frame 44, 45 e 46). O título, o mostrador, o ponteiro dos segundos e os logótipos foram extraídos do Frame 44 tal como desenhados; os ponteiros das horas e dos minutos foram redesenhados como formas rectas alinhadas ao eixo para poderem rodar. A nota de rodapé é texto vivo em IBM Plex Sans.
+
+## v2 · traços escondidos
+
+Em `v2/` está a segunda versão. Tudo igual, excepto o mostrador: os 60 traços estão escondidos e só aparecem quando o ponteiro dos segundos lhes passa por cima. Cada traço roda em 3D sobre o seu próprio raio, como uma lâmina que vira para a luz, com uma sombra suave, fica uns três segundos atrás do ponteiro e volta a virar e a desaparecer. No impulso do minuto uma onda percorre o mostrador inteiro. Ao arrastar o ponteiro dos minutos, os traços levantam-se até onde ele aponta.
