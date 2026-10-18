@@ -86,6 +86,9 @@ export async function loadLibrary(dir) {
   const booksDir = path.join(dir, 'books');
   const entries = await readdir(booksDir, { withFileTypes: true });
   const warnings = [];
+  if (!config.siteUrl.startsWith('https://')) {
+    warnings.push(`siteUrl não definido em config.json (${config.siteUrl}): as pré-visualizações só funcionam online com o endereço https completo`);
+  }
   const slugs = entries.filter((e) => e.isDirectory() && !e.name.startsWith('.')).map((e) => e.name);
   const books = await Promise.all(slugs.map((slug) => readBook(booksDir, slug, warnings)));
   books.sort((a, b) => a.title.localeCompare(b.title, 'pt'));

@@ -67,3 +67,11 @@ test('rejects an empty excerpt', async () => {
   await writeFile(path.join(dir, 'books/grid-systems/excerpts/01.md'), '---\npage: 1\n---\n  \n');
   await assert.rejects(loadLibrary(dir), /grid-systems: excerpt 01 is empty/);
 });
+
+test('warns when siteUrl is not set', async () => {
+  const dir = await copyFixture();
+  await writeFile(path.join(dir, 'config.json'), JSON.stringify({ siteUrl: '' }));
+  const lib = await loadLibrary(dir);
+  assert.ok(lib.warnings.some((w) => /siteUrl/.test(w)));
+  assert.ok(!(await loadLibrary(FIXTURE)).warnings.some((w) => /siteUrl/.test(w)));
+});
