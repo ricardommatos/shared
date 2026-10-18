@@ -9,7 +9,8 @@
   "scripts": {
     "build": "node scripts/build.js",
     "dev": "node scripts/dev.js",
-    "test": "node --test \"test/**/*.test.js\""
+    "test": "node --test \"test/**/*.test.js\"",
+    "capture": "node scripts/vendor-capture.js"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",
@@ -21,5 +22,9 @@
     "satori": "^0.62.0",
     "sharp": "^0.35.5",
     "tesseract.js": "^7.0.0"
+  },
+  "devDependencies": {
+    "@tesseract.js-data/eng": "^1.0.0",
+    "@tesseract.js-data/por": "^1.0.0"
   }
 }
