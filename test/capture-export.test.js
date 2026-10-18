@@ -46,3 +46,10 @@ test('capture slugify matches the generator slugify', () => {
     assert.equal(captureSlugify(s), slugify(s));
   }
 });
+
+test('excerpts with a photo but no text are kept with a placeholder', () => {
+  const entries = buildZipEntries({ ...draft, excerpts: [{ text: '', page: '7', image: jpg() }] });
+  const md = entries.find((e) => e.path.endsWith('excerpts/01.md'));
+  assert.ok(entries.some((e) => e.path.endsWith('excerpts/01.jpg')));
+  assert.equal(matter(md.data).content.trim(), '(transcrever a partir da foto)');
+});

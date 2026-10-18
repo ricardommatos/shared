@@ -57,9 +57,9 @@ export async function renderBookOg(book, config) {
   const cover = await coverImage(book, 530);
   const coverWidth = Math.min(cover.width, 520);
   return render(h('div', { ...base, background: C.surface, padding: 50, alignItems: 'center' },
-    img(cover.src, coverWidth, cover.height, { objectFit: 'cover', borderRadius: 4, boxShadow: shadow }),
+    img(cover.src, coverWidth, cover.height, { flexShrink: 0, objectFit: 'cover', borderRadius: 4, boxShadow: shadow }),
     h('div', { display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '100%', flex: 1, paddingLeft: 60, paddingBottom: 10 },
-      h('div', { fontSize: 56, fontWeight: 600, color: C.ink, lineHeight: 1.08, letterSpacing: -1.5 }, truncateWords(book.title, 90)),
+      h('div', { fontSize: 56, fontWeight: 600, color: C.ink, lineHeight: 1.08, letterSpacing: -1.5, wordBreak: 'break-word' }, truncateWords(book.title, 90)),
       h('div', { fontSize: 40, color: C.soft, lineHeight: 1.15, letterSpacing: -1, marginTop: 10 }, truncateWords(bookByline(book), 70)),
       h('div', { display: 'flex', marginTop: 40 }, brand(config, 22)))));
 }
@@ -77,11 +77,22 @@ export async function renderExcerptOg(book, excerpt, config) {
       brand(config, 22))));
 }
 
+const MOSAIC = { width: WIDTH - 128, height: 300, gap: 28, maxCover: 240 };
+
+// Scales all covers by one factor so the row fits the width without cropping any of them.
+export function mosaicLayout(covers) {
+  const natural = covers.map((c) => Math.min(c.width, MOSAIC.maxCover) / c.width);
+  const widths = covers.map((c, i) => c.width * natural[i]);
+  const room = MOSAIC.width - MOSAIC.gap * Math.max(0, covers.length - 1);
+  const fit = Math.min(1, room / widths.reduce((a, b) => a + b, 0));
+  return covers.map((c, i) => ({ ...c, width: Math.floor(widths[i] * fit), height: Math.floor(c.height * natural[i] * fit) }));
+}
+
 export async function renderMosaicOg(title, books, config) {
-  const covers = await Promise.all(books.slice(0, 6).map((b) => coverImage(b, 300)));
+  const covers = mosaicLayout(await Promise.all(books.slice(0, 6).map((b) => coverImage(b, MOSAIC.height))));
   return render(h('div', { ...base, background: C.surface, padding: '56px 64px', flexDirection: 'column', justifyContent: 'space-between' },
-    h('div', { display: 'flex', alignItems: 'flex-end', gap: 28, height: 300 },
-      covers.map((c) => img(c.src, Math.min(c.width, 240), c.height, { objectFit: 'cover', borderRadius: 3, boxShadow: shadow }))),
+    h('div', { display: 'flex', alignItems: 'flex-end', gap: MOSAIC.gap, height: MOSAIC.height },
+      covers.map((c) => img(c.src, c.width, c.height, { flexShrink: 0, borderRadius: 3, boxShadow: shadow }))),
     h('div', { display: 'flex', flexDirection: 'column' },
       h('div', { fontSize: 60, fontWeight: 600, color: C.ink, letterSpacing: -1.5 }, truncateWords(title, 40)),
       h('div', { fontSize: 40, color: C.soft, letterSpacing: -1, marginTop: 6 },

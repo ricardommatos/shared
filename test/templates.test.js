@@ -70,3 +70,11 @@ test('collection, excerpts and excerpt pages have expected paths', () => {
   assert.ok(html.includes('Ver original'));
   assert.ok(!excerptPage(lib, b, b.excerpts[1]).html.includes('Ver original'));
 });
+
+test('text years appear in the ficha and byline', () => {
+  const b = { ...book('sem-ano'), year: 'c. 1960' };
+  const { html } = bookPage(lib, b);
+  assert.ok(html.includes('<dd>c. 1960</dd>'));
+  assert.ok(html.includes('Autor Desconhecido · c. 1960'));
+  assert.ok(!html.includes('NaN'));
+});

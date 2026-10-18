@@ -17,17 +17,21 @@ function frontMatter(fields, body = '') {
   return `${head}${body ? `${body.trim()}\n` : ''}`;
 }
 
+const PLACEHOLDER = '(transcrever a partir da foto)';
+
 export const draftSlug = (draft) => slugify(`${draft.title} ${draft.author}`);
 
 export function buildZipEntries(draft) {
   const root = draftSlug(draft);
   const entries = [{ path: `${root}/book.md`, data: frontMatter({ title: draft.title, author: draft.author }) }];
   if (draft.cover) entries.push({ path: `${root}/cover.jpg`, data: draft.cover });
-  const excerpts = (draft.excerpts ?? []).filter((e) => e.text && e.text.trim());
+  // A photo without text is kept: OCR failed and Claude transcribes from the photo.
+  const excerpts = (draft.excerpts ?? []).filter((e) => e.text?.trim() || e.image);
   excerpts.forEach((excerpt, i) => {
     const id = String(i + 1).padStart(2, '0');
     const image = excerpt.image ? `${id}.jpg` : undefined;
-    entries.push({ path: `${root}/excerpts/${id}.md`, data: frontMatter({ page: excerpt.page, note: excerpt.note, image }, excerpt.text) });
+    const text = excerpt.text?.trim() || PLACEHOLDER;
+    entries.push({ path: `${root}/excerpts/${id}.md`, data: frontMatter({ page: excerpt.page, note: excerpt.note, image }, text) });
     if (excerpt.image) entries.push({ path: `${root}/excerpts/${id}.jpg`, data: excerpt.image });
   });
   return entries;

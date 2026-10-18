@@ -11,6 +11,15 @@ const BOOK_FIELDS = new Set([
   'language', 'collections', 'condition', 'unverified', 'sources',
 ]);
 
+const RESERVED = new Set(['c', 'excertos', 'assets', 'img']);
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+
+// Excerpts are transcribed text, not markdown: OCR lines like "1960. …" must not become lists.
+const paragraphs = (text) => text.split(/\n\s*\n/).map((p) => `<p>${escapeHtml(p.trim())}</p>`).join('\n');
+
 const exists = (p) => access(p).then(() => true, () => false);
 const asList = (v) => (v == null ? [] : Array.isArray(v) ? v.map(String) : [String(v)]);
 const optional = (v) => (v == null || v === '' ? undefined : String(v));
@@ -36,6 +45,7 @@ async function readExcerpts(bookDir, slug) {
   const files = (await readdir(dir)).filter((f) => f.endsWith('.md')).sort();
   return Promise.all(files.map(async (file) => {
     const id = file.replace(/\.md$/, '');
+    if (id !== slugify(id)) throw new LibraryError(`${slug}: excerpt file '${file}' must be named like 01.md`);
     const { data, content } = matter(await readFile(path.join(dir, file), 'utf8'));
     const text = content.trim();
     if (!text) throw new LibraryError(`${slug}: excerpt ${id} is empty`);
@@ -45,12 +55,14 @@ async function readExcerpts(bookDir, slug) {
       note: optional(data.note),
       imagePath: data.image ? path.join(dir, String(data.image)) : undefined,
       text,
-      html: marked.parse(text),
+      html: paragraphs(text),
     };
   }));
 }
 
 async function readBook(booksDir, slug, warnings) {
+  if (slug !== slugify(slug)) throw new LibraryError(`${slug}: folder name must be lowercase letters, digits and hyphens (e.g. ${slugify(slug) || 'titulo-autor'})`);
+  if (RESERVED.has(slug)) throw new LibraryError(`${slug}: folder name is reserved by the site`);
   const dir = path.join(booksDir, slug);
   const { data, content } = matter(await readFile(path.join(dir, 'book.md'), 'utf8'));
   if (!data.title) throw new LibraryError(`${slug}: missing title`);
@@ -65,7 +77,7 @@ async function readBook(booksDir, slug, warnings) {
     dir,
     title: String(data.title),
     authors: asList(data.author),
-    year: data.year == null ? undefined : Number(data.year),
+    year: optional(data.year),
     publisher: optional(data.publisher),
     edition: optional(data.edition),
     isbn: optional(data.isbn),
@@ -93,13 +105,19 @@ export async function loadLibrary(dir) {
   const books = await Promise.all(slugs.map((slug) => readBook(booksDir, slug, warnings)));
   books.sort((a, b) => a.title.localeCompare(b.title, 'pt'));
 
-  const byName = new Map();
+  const bySlug = new Map();
   for (const book of books) {
     for (const name of book.collections) {
-      if (!byName.has(name)) byName.set(name, { name, slug: slugify(name), books: [] });
-      byName.get(name).books.push(book);
+      const slug = slugify(name);
+      if (!slug) throw new LibraryError(`${book.slug}: collection '${name}' needs latin letters or digits`);
+      const existing = bySlug.get(slug);
+      if (existing && existing.name !== name) {
+        throw new LibraryError(`${book.slug}: collection '${name}' has the same address as '${existing.name}'; use one spelling`);
+      }
+      if (!existing) bySlug.set(slug, { name, slug, books: [] });
+      bySlug.get(slug).books.push(book);
     }
   }
-  const collections = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
+  const collections = [...bySlug.values()].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
   return { config, books, collections, warnings };
 }

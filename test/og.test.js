@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
 import { loadLibrary } from '../src/library.js';
-import { renderBookOg, renderExcerptOg, renderMosaicOg, truncateWords, bookByline } from '../src/og.js';
+import { renderBookOg, renderExcerptOg, renderMosaicOg, truncateWords, bookByline, mosaicLayout } from '../src/og.js';
 import { FIXTURE } from './helpers.js';
 
 const lib = await loadLibrary(FIXTURE);
@@ -41,4 +41,12 @@ test('excerpt share image stays 1200x630 for very long text', async () => {
 
 test('mosaic share image is a 1200x630 png', async () => {
   await assertOgPng(await renderMosaicOg('Biblioteca de design', lib.books, lib.config));
+});
+
+test('mosaic sizes up to six covers to fit without cropping', () => {
+  const covers = Array.from({ length: 6 }, () => ({ width: 214, height: 300 }));
+  const sized = mosaicLayout(covers);
+  const total = sized.reduce((n, c) => n + c.width, 0) + 28 * (sized.length - 1);
+  assert.ok(total <= 1072, `total ${total}`);
+  for (const c of sized) assert.ok(Math.abs(c.width / c.height - 214 / 300) < 0.01);
 });

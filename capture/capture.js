@@ -40,14 +40,21 @@ async function loadBitmap(blob) {
     return await createImageBitmap(blob, { imageOrientation: 'from-image' });
   } catch {
     const img = new Image();
-    img.src = URL.createObjectURL(blob);
-    await img.decode();
+    const src = URL.createObjectURL(blob);
+    img.src = src;
+    try { await img.decode(); } finally { URL.revokeObjectURL(src); }
     return img;
   }
 }
 
+// A 12MP photo decodes to ~48MB; iOS reloads the tab if these pile up.
+const release = (bmp) => bmp?.close?.();
+
 function canvasToBlob(canvas) {
-  return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.88));
+  return new Promise((resolve, reject) => canvas.toBlob(
+    (blob) => (blob ? resolve(blob) : reject(new Error('A imagem é grande demais para este telemóvel'))),
+    'image/jpeg', 0.88,
+  ));
 }
 
 async function downscale(blob, crop) {
@@ -61,7 +68,10 @@ async function downscale(blob, crop) {
   canvas.width = Math.round(sw * scale);
   canvas.height = Math.round(sh * scale);
   canvas.getContext('2d').drawImage(bmp, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
-  return canvasToBlob(canvas);
+  release(bmp);
+  const result = await canvasToBlob(canvas);
+  canvas.width = canvas.height = 0;
+  return result;
 }
 
 const objectUrls = new Map();
@@ -129,6 +139,7 @@ const crop = { bmp: null, scale: 1, rect: null, start: null };
 
 async function openCrop(file) {
   editing = { index: null, source: file, image: null };
+  release(crop.bmp);
   crop.bmp = await loadBitmap(file);
   crop.rect = null;
   const canvas = $('crop-canvas');
@@ -144,6 +155,7 @@ async function openCrop(file) {
 }
 
 function drawCrop() {
+  if (!crop.bmp) return;
   const canvas = $('crop-canvas');
   const ctx = canvas.getContext('2d');
   ctx.drawImage(crop.bmp, 0, 0, canvas.width, canvas.height);
@@ -202,7 +214,15 @@ function bindCrop() {
 }
 
 async function finishCrop(region) {
-  editing.image = await downscale(editing.source, region);
+  release(crop.bmp);
+  crop.bmp = null;
+  try {
+    editing.image = await downscale(editing.source, region);
+  } catch (error) {
+    status(error.message);
+    closeEditor();
+    return;
+  }
   $('editor-title').textContent = 'Texto';
   $('crop-step').hidden = true;
   $('text-step').hidden = false;
@@ -292,6 +312,8 @@ function saveExcerpt() {
 
 function closeEditor() {
   editing = null;
+  release(crop.bmp);
+  crop.bmp = null;
   $('crop-result').hidden = false;
   $('editor').close();
 }
@@ -341,13 +363,18 @@ async function init() {
     e.target.value = '';
     if (!file) return;
     status('A preparar a capa…');
-    draft.cover = await downscale(file);
-    save();
+    try {
+      draft.cover = await downscale(file);
+      save();
+    } catch (error) {
+      console.error(error);
+      status(`Não foi possível usar a foto: ${error.message}`);
+    }
   });
   $('excerpt-input').addEventListener('change', (e) => {
     const file = e.target.files[0];
     e.target.value = '';
-    if (file) openCrop(file);
+    if (file) openCrop(file).catch((error) => { console.error(error); status(`Não foi possível abrir a foto: ${error.message}`); });
   });
   $('save-excerpt').addEventListener('click', () => { saveExcerpt(); });
   document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', closeEditor));
@@ -360,6 +387,7 @@ async function init() {
     render();
   });
 
+  navigator.storage?.persist?.().catch(() => {});
   try {
     const saved = await get('draft');
     if (saved) draft = { ...draft, ...saved };
