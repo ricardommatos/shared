@@ -2,457 +2,514 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..700&family=JetBrains+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: manual de hardware — capa com o aparelho em isométrico, depois secções em coluna de leitura com figuras que saem para a margem. */
+/* Layout: documento suíço de agência — cabeçalho corrido com metadados, régua fina, número de secção a cinzento à esquerda, título em maiúsculas, conteúdo numa grelha de 12 colunas. */
 :root{
-  --bg:#ECEBE7;          /* chassis */
-  --surface:#F8F8F6;
-  --ink:#161616;          /* painel preto */
-  --muted:#5C5A55;
-  --line:#D2D0CA;
-  --red:#C8201E;          /* REC / Akai */
-  --orange:#D9501F;       /* FX */
-  --blue:#2470C2;         /* Pad Play */
-  --green:#1E9A57;        /* PLAY */
-  --iso-t:#FFFFFF; --iso-l:#D9D7D1; --iso-r:#BFBDB6; --iso-scr:#22252F;
-  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
-  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
-  --measure:66ch;
+  --bg:#ECEAE6;           /* papel cinza quente */
+  --tile:#DAD8D3;         /* fundo das figuras */
+  --ink:#1C1C1C;
+  --muted:#8C8A85;        /* números e subtítulos a cinzento */
+  --line:#C9C6C0;
+  --accent:#FF4B2B;       /* vermelho-laranja */
+  --on-accent:#F3EFE9;
+  --char:#232323;         /* bloco carvão */
+  --on-char:#F3F1EC;
+  --char-muted:#8B8984;
+  --char-line:#3A3A3A;
+  --iso-t:#F7F6F3; --iso-l:#CFCDC7; --iso-r:#B8B6AF; --iso-scr:#232323; --iso-w:#FFFFFF;
+  --f-sans:"Inter Tight","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --measure:62ch;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#121212;--surface:#1B1B1A;--ink:#EDECE8;--muted:#A4A29C;--line:#2F2E2B;
-  --red:#FF5446;--orange:#FF7D47;--blue:#5BA4F2;--green:#46D486;
-  --iso-t:#3A3936;--iso-l:#2A2927;--iso-r:#211F1E;--iso-scr:#0B0C10;color-scheme:dark}}
+  --bg:#171716;--tile:#242423;--ink:#EDEBE6;--muted:#7F7D78;--line:#353432;
+  --accent:#FF5636;--on-accent:#1A1110;--char:#0E0E0E;--char-line:#2E2E2E;
+  --iso-t:#3B3A37;--iso-l:#2B2A28;--iso-r:#222120;--iso-scr:#0C0C0C;--iso-w:#EDEBE6;color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#121212;--surface:#1B1B1A;--ink:#EDECE8;--muted:#A4A29C;--line:#2F2E2B;
-  --red:#FF5446;--orange:#FF7D47;--blue:#5BA4F2;--green:#46D486;
-  --iso-t:#3A3936;--iso-l:#2A2927;--iso-r:#211F1E;--iso-scr:#0B0C10;color-scheme:dark}
+  --bg:#171716;--tile:#242423;--ink:#EDEBE6;--muted:#7F7D78;--line:#353432;
+  --accent:#FF5636;--on-accent:#1A1110;--char:#0E0E0E;--char-line:#2E2E2E;
+  --iso-t:#3B3A37;--iso-l:#2B2A28;--iso-r:#222120;--iso-scr:#0C0C0C;--iso-w:#EDEBE6;color-scheme:dark}
 
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font:400 17px/1.62 var(--f-body);-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--f-sans);letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
-.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.02}
-h2{font-size:clamp(34px,5vw,58px);font-weight:800;font-stretch:112%;letter-spacing:-.02em}
-h3{font-size:22px;font-weight:700;font-stretch:100%;line-height:1.2}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3,h4{font-weight:500;margin:0;text-wrap:balance}
 p{margin:0;max-width:var(--measure)}
-a{color:inherit;text-decoration-color:var(--orange);text-underline-offset:3px}
-a:focus-visible,button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid var(--blue);outline-offset:2px}
-.mono,.key,.eyebrow{font-family:var(--f-mono)}
-.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+a{color:inherit;text-underline-offset:3px;text-decoration-thickness:1px}
+a:focus-visible,button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .dl{font-family:var(--f-mono);font-weight:600}
-.dd{font-family:var(--f-display);font-stretch:118%}
+.dd{font-family:var(--f-sans);font-weight:700}
+.lbl{font-size:10.5px;line-height:1.3;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:7px;vertical-align:.15em}
 
-/* keycaps — same vocabulary as the hardware */
-.key{display:inline-block;font-size:.72em;font-weight:600;letter-spacing:.04em;padding:.12em .5em .08em;border-radius:4px;background:#2b2b2b;color:#f2f2f2;box-shadow:inset 0 -2px 0 rgba(0,0,0,.35);white-space:nowrap;vertical-align:.1em}
-.key.fx{background:#E8592A}.key.pp{background:#2F7FD1}.key.rec{color:#ff7b6e}.key.pad{background:#A9A8A3;color:#141414;box-shadow:inset 0 0 0 1.5px #D6F26A,inset 0 -2px 0 rgba(0,0,0,.2)}
+/* keycaps: o vocabulário do próprio painel */
+.key{display:inline-block;font:600 .7em/1 var(--f-mono);letter-spacing:.03em;padding:.32em .5em .26em;border-radius:2px;background:#2b2b2b;color:#f2f2f2;white-space:nowrap;vertical-align:.12em}
+.key.fx{background:#E8592A}.key.pp{background:#2F7FD1}.key.rec{color:#ff7b6e}
+.key.pad{background:#A9A8A3;color:#141414;box-shadow:inset 0 0 0 1.5px #D6F26A}
 .key.sh{background:transparent;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
 
+/* running header, como no documento de referência */
+.runhead{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;padding-block:14px 0;font-size:10px;line-height:1.25;font-weight:500}
+.runhead > :nth-child(1){grid-column:1 / span 2}
+.runhead > :nth-child(2){grid-column:3 / span 3}
+.runhead > :nth-child(3){grid-column:12;justify-self:end;font-size:13px;line-height:1}
+
 /* nav */
-nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-nav.toc .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:10px;scrollbar-width:none}
-nav.toc a{flex:none;font:600 12px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--muted);padding:8px 11px;border-radius:999px}
-nav.toc a:hover{color:var(--ink);background:var(--surface)}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+nav.toc .wrap{display:flex;gap:22px;overflow-x:auto;padding-block:11px;scrollbar-width:none}
+nav.toc a{flex:none;font-size:11px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--muted);font-weight:500}
+nav.toc a b{color:var(--ink);font-weight:500;margin-right:6px;font-variant-numeric:tabular-nums}
+nav.toc a:hover{color:var(--ink)}
 
-/* hero */
-.hero .wrap:first-child{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:24px;align-items:center;padding-block:48px 28px}
-.hero h1{font-size:clamp(52px,8.2vw,108px);font-weight:900;font-stretch:125%;letter-spacing:-.035em;line-height:.88}
-.hero h1 span{display:block;font-stretch:62%;font-weight:500;font-size:.42em;letter-spacing:.01em;color:var(--red);margin-bottom:.25em}
-.hero .lede{font-size:20px;margin-top:22px;color:var(--ink)}
-.hero .meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:22px;font:500 13px/1.4 var(--f-mono);color:var(--muted)}
-.iso-device{width:100%;height:auto;max-width:100%}
-.spec{margin-bottom:8px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ink);border-bottom:1px solid var(--line)}
-.spec div{padding:14px 14px 16px 0}
-.spec b{display:block;font:800 30px/1 var(--f-display);font-stretch:110%;font-variant-numeric:tabular-nums}
-.spec span{font-size:13px;color:var(--muted)}
+/* section head: número cinzento | título em maiúsculas | intro */
+section{padding-block:0 96px}
+.shead{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;border-top:1px solid var(--line);margin-top:54px;padding-top:14px;margin-bottom:44px}
+.shead .no{grid-column:1 / span 1;font-size:clamp(22px,2.4vw,30px);line-height:1.05;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:400}
+.shead h2{grid-column:2 / span 6;font-size:clamp(26px,3vw,40px);line-height:1.02;letter-spacing:-.03em;text-transform:uppercase;font-weight:500}
+.shead h2 span{display:block;color:var(--muted)}
+.shead .intro{grid-column:8 / span 5;color:var(--muted);font-size:14.5px;padding-top:4px}
+.indent{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}
+.indent > *{grid-column:2 / -1;min-width:0}
 
-section{padding-block:72px 24px}
-.sec-head{display:grid;grid-template-columns:120px minmax(0,1fr);gap:24px;align-items:end;margin-bottom:34px;border-bottom:1px solid var(--line);padding-bottom:20px}
-.sec-head .no{font:800 64px/1 var(--f-display);font-stretch:62%;color:var(--orange);font-variant-numeric:tabular-nums}
-.sec-head p{margin-top:12px;color:var(--muted)}
-.body{display:grid;gap:18px;padding-left:144px}
-.body > *{min-width:0}
+/* hero: bloco laranja */
+.hero{background:var(--accent);color:var(--on-accent)}
+.hero .lbl{color:var(--on-accent);opacity:.75}
+.hero-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;border-top:1px solid color-mix(in srgb,var(--on-accent) 45%,transparent);margin-top:54px;padding-top:14px;padding-bottom:28px}
+.hero-text{grid-column:1 / span 5;display:flex;flex-direction:column;gap:22px;min-width:0}
+.hero h1{font-size:clamp(56px,9.4vw,138px);line-height:.84;letter-spacing:-.055em;text-transform:uppercase;font-weight:500}
+.hero h1 small{display:block;font-size:clamp(20px,2.3vw,30px);letter-spacing:-.02em;line-height:1.05;margin-bottom:.6em;font-weight:500}
+.hero .lede{font-size:15px;line-height:1.45;max-width:46ch}
+.hero-art{grid-column:6 / -1;min-width:0;align-self:center}
+.iso-device{width:100%;height:auto;display:block}
+.hero-index{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;padding-bottom:18px;font-size:10px;line-height:1.35;font-weight:500}
+.hero-index > :nth-child(1){grid-column:1 / span 1}
+.hero-index > :nth-child(2){grid-column:2 / span 3}
+.hero-index > :nth-child(3){grid-column:12;justify-self:end;text-align:right}
 
-/* first hour checklist */
-.check{list-style:none;margin:0;padding:0;display:grid;gap:0;max-width:820px}
-.check li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:14px;padding:16px 0;border-top:1px solid var(--line)}
-.check input{appearance:none;-webkit-appearance:none;width:22px;height:22px;margin:3px 0 0;border-radius:5px;border:1.5px solid var(--muted);background:var(--surface);cursor:pointer;display:grid;place-content:center}
-.check input:checked{background:var(--green);border-color:var(--green)}
-.check input:checked::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
-.check li:has(input:checked) b{text-decoration:line-through;text-decoration-color:var(--green)}
-.check b{font-weight:600}
-.check p{color:var(--muted);margin-top:2px}
+/* ficha técnica: bloco carvão */
+.dark{background:var(--char);color:var(--on-char)}
+.dark .shead{border-top-color:var(--char-line);margin-top:40px}
+.dark .shead .no,.dark .shead h2 span,.dark .shead .intro,.dark .lbl{color:var(--char-muted)}
+.metrics{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;padding-bottom:60px}
+.stats{grid-column:2 / span 6;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px 12px;align-content:start}
+.stat{border-top:1px solid var(--char-line);padding-top:6px;min-width:0}
+.stat b{display:block;font-size:clamp(28px,3vw,40px);font-weight:500;letter-spacing:-.035em;line-height:1;margin-top:14px;font-variant-numeric:tabular-nums}
+.stat .lbl{display:block}
+.ports{grid-column:8 / -1;border-top:1px solid var(--char-line);padding-top:6px;min-width:0}
+.ports ul{list-style:none;margin:14px 0 0;padding:0}
+.ports li{display:flex;justify-content:space-between;gap:12px;font-size:clamp(17px,1.9vw,24px);line-height:1.08;letter-spacing:-.025em;text-transform:uppercase;font-weight:500}
+.ports li span{color:var(--char-muted);text-align:right}
 
-/* anatomy */
-.anatomy{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:32px;align-items:start}
-.panel-fig{background:var(--surface);border-radius:14px;padding:16px;position:sticky;top:70px}
+/* checklist */
+.check{list-style:none;margin:0;padding:0;display:grid}
+.check li{display:grid;grid-template-columns:22px minmax(0,1fr) minmax(0,1fr);gap:12px 18px;padding:12px 0 14px;border-top:1px solid var(--line)}
+.check li:last-child{border-bottom:1px solid var(--line)}
+.check input{appearance:none;-webkit-appearance:none;width:16px;height:16px;margin:2px 0 0;border-radius:50%;border:1px solid var(--ink);background:transparent;cursor:pointer;display:grid;place-content:center}
+.check input:checked{background:var(--accent);border-color:var(--accent)}
+.check li:has(input:checked) b{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.check b{font-weight:500;font-size:15.5px}
+.check p{color:var(--muted);font-size:14px}
+
+/* anatomia */
+.anatomy{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;align-items:start}
+.panel-fig{grid-column:1 / span 7;background:var(--tile);padding:22px;position:sticky;top:60px;border-radius:2px}
+#partsWrap{grid-column:9 / -1;min-width:0}
 .flat-device{width:100%;height:auto;display:block}
-.hs circle{fill:var(--ink);stroke:var(--bg);stroke-width:1.4;cursor:pointer;transition:r .15s}
-.hs text{fill:var(--bg);font:700 6.5px var(--f-mono);pointer-events:none}
-.hs.on circle{fill:var(--red)}
-.hs:hover circle{fill:var(--orange)}
-.toggle{display:flex;gap:10px;align-items:center;margin-top:12px;font:600 13px var(--f-mono);color:var(--muted)}
-.toggle button{font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:7px 12px;border-radius:6px;cursor:pointer}
-.toggle button[aria-pressed="true"]{background:#2b2b2b;color:#fff;border-color:#2b2b2b}
+.hs circle{fill:var(--char);stroke:var(--tile);stroke-width:1.2;cursor:pointer}
+.hs text{fill:#F3F1EC;font:600 6.2px var(--f-sans);pointer-events:none}
+.hs.on circle,.hs:hover circle{fill:var(--accent)}
+.figcap{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;border-top:1px solid var(--line);padding-top:8px}
+.toggle{display:flex;gap:10px;align-items:center}
+.toggle button{font:500 11px var(--f-sans);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--ink);background:transparent;color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer}
+.toggle button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .parts{list-style:none;margin:0;padding:0;display:grid}
-.parts li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;padding:12px 8px;border-top:1px solid var(--line);cursor:pointer;border-radius:6px}
-.parts li.on{background:var(--surface)}
-.parts .n{font:700 13px/1.9 var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
-.parts li.on .n{color:var(--red)}
-.parts h4{margin:0;font:600 16px/1.4 var(--f-body)}
-.parts p{font-size:15px;color:var(--muted);margin-top:3px}
+.parts li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;padding:10px 0 12px;border-top:1px solid var(--line);cursor:pointer}
+.parts .n{font-size:13px;line-height:1.5;color:var(--muted);font-variant-numeric:tabular-nums}
+.parts li.on .n{color:var(--accent)}
+.parts li.on h4::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:8px;vertical-align:.12em}
+.parts h4{font-size:15px;line-height:1.35;font-weight:500}
+.parts p{font-size:13.5px;color:var(--muted);margin-top:2px}
 .parts .shift{display:none}
 .show-shift .parts .shift{display:inline}
 .show-shift .parts .base{display:none}
-.zone{font:600 11px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:18px 0 6px}
+.zone{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:22px 0 6px;font-weight:500}
+.zone:first-child{padding-top:0}
 
-.rear{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:28px}
-.rear div{background:var(--bg);padding:14px}
-.rear b{display:block;font:600 13px var(--f-mono)}
-.rear span{font-size:14px;color:var(--muted)}
+/* conceitos */
+.concept{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;align-items:start}
+.concept .fig{grid-column:1 / span 6;background:var(--tile);padding:24px;border-radius:2px}
+.concept .defs{grid-column:8 / -1}
+.iso-layers{width:100%;height:auto;display:block}
+.lay-l{font:500 10px var(--f-sans);fill:var(--ink);text-transform:uppercase;letter-spacing:.04em}
+.defs{display:grid}
+.defs div{border-top:1px solid var(--line);padding:10px 0 16px}
+.defs b{display:block;font-size:22px;letter-spacing:-.025em;text-transform:uppercase;font-weight:500;margin-bottom:4px}
+.defs p{color:var(--muted);font-size:14.5px}
+.note{margin-top:34px;font-size:15.5px}
 
-/* concepts */
-.concept{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
-.iso-layers{width:100%;height:auto;max-width:440px}
-.lay-l{font:600 10px var(--f-mono);fill:var(--ink)}
-.defs{display:grid;gap:14px}
-.defs div{border-left:3px solid var(--line);padding-left:14px}
-.defs b{font-family:var(--f-display);font-stretch:110%;font-size:18px}
+/* receitas: dígitos gigantes cinzentos */
+.recipe{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;padding:16px 0 34px;border-top:1px solid var(--line)}
+.recipe .big{grid-column:1 / span 2;font-size:clamp(64px,8vw,112px);line-height:.8;letter-spacing:-.06em;color:var(--muted);font-weight:400;opacity:.75;font-variant-numeric:tabular-nums}
+.recipe .head{grid-column:3 / span 4;min-width:0}
+.recipe h3{font-size:19px;line-height:1.15;letter-spacing:-.02em;font-weight:500}
+.recipe .why{color:var(--muted);margin-top:4px;font-size:14px}
+.recipe .lbl{display:block;margin-bottom:8px}
+.recipe .body{grid-column:7 / -1;min-width:0}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;padding:7px 0 8px;border-top:1px solid var(--line);font-size:14.5px}
+.steps li::before{content:counter(s,upper-alpha);font-size:11px;line-height:1.95;color:var(--muted);font-weight:500}
+.tip{border-top:1px solid var(--ink);margin-top:18px;padding-top:8px;font-size:14px}
+.tip .lbl{color:var(--accent)}
 
-/* recipes */
-.recipe{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:28px;padding:26px 0;border-top:1px solid var(--line)}
-.recipe .tag{display:flex;gap:8px;align-items:baseline;margin-bottom:8px}
-.recipe .tag .mono{font-size:12px;color:var(--orange);font-weight:600}
-.recipe .why{color:var(--muted);margin-top:10px;font-size:15.5px}
-.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:10px}
-.steps li{counter-increment:s;display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px}
-.steps li::before{content:counter(s);font:700 13px/1.9 var(--f-mono);color:var(--muted);text-align:right}
-.tip{background:var(--surface);border-radius:8px;padding:12px 14px;font-size:15px;margin-top:6px}
-.tip b{font:600 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--green);display:block;margin-bottom:3px}
+/* efeitos: 4 colunas, como “services” */
 .fxgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.fx{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--surface)}
-.fx b{display:block;font:700 15px var(--f-body)}
-.fx span{font-size:14px;color:var(--muted)}
-.fx .key{margin-bottom:8px}
+.fx{min-width:0}
+.fx .big{font-size:clamp(64px,8vw,112px);line-height:.85;letter-spacing:-.06em;color:var(--muted);opacity:.75;font-weight:400}
+.fx h3{font-size:15px;font-weight:600;margin-top:20px;letter-spacing:-.01em}
+.fx .sub{font-size:14px;color:var(--ink);margin-top:1px}
+.fx .lbl{display:block;margin-top:34px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.fx ul{list-style:none;margin:0;padding:0}
+.fx li{font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--line)}
+.fx .key{margin-top:12px}
 
-/* musician table */
-table{border-collapse:collapse;width:100%;font-size:15px}
+/* tabela */
 .tbl{overflow-x:auto}
-th,td{text-align:left;padding:10px 12px 10px 0;border-top:1px solid var(--line);vertical-align:top}
-th{font:600 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--ink)}
-td:first-child{white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:9px 14px 10px 0;border-top:1px solid var(--line);vertical-align:top;font-weight:400}
+th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;border-top:1px solid var(--ink)}
+td:first-child{font-weight:500}
+td:last-child{color:var(--muted)}
 
-/* plan */
-.weeks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:1px solid var(--ink)}
-.weeks > div{padding:16px 16px 16px 0;border-right:1px solid var(--line)}
-.weeks > div:last-child{border-right:0}
-.weeks .w{font:800 46px/1 var(--f-display);font-stretch:62%;color:var(--blue)}
-.weeks h3{margin:6px 0 8px}
-.weeks ul{margin:0;padding-left:18px;font-size:15px;color:var(--muted);display:grid;gap:6px}
+/* plano */
+.weeks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.weeks > div{min-width:0}
+.weeks .big{font-size:clamp(64px,8vw,112px);line-height:.85;letter-spacing:-.06em;color:var(--muted);opacity:.75}
+.weeks h3{font-size:15px;font-weight:600;margin-top:20px}
+.weeks .lbl{display:block;margin-top:28px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.weeks ul{list-style:none;margin:0;padding:0}
+.weeks li{font-size:13px;padding:5px 0;border-bottom:1px solid var(--line)}
 
-/* ideas */
-.ideas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-.idea{background:var(--surface);border-radius:14px;padding:18px 20px 22px;display:flex;flex-direction:column;gap:8px}
-.iso-icon{width:100%;height:120px;margin-bottom:4px}
+/* ideias: grelha estilo “team” */
+.ideas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px 12px}
+.idea{min-width:0;display:flex;flex-direction:column}
+.idea .tagrow{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:5px;margin-bottom:8px}
+.idea .tagrow span:first-child{color:var(--ink)}
+.idea .tile{background:var(--tile);aspect-ratio:4/3;display:grid;place-items:center;border-radius:2px;max-width:100%}
+.iso-icon{width:78%;height:auto}
 .iso-icon .t{fill:var(--iso-t)}.iso-icon .l{fill:var(--iso-l)}.iso-icon .r{fill:var(--iso-r)}
-.iso-icon polygon{stroke:var(--ink);stroke-width:.7;stroke-linejoin:round}
+.iso-icon polygon{stroke:var(--ink);stroke-width:.6;stroke-linejoin:round}
 .iso-icon .scr,.iso-icon .scrtop{fill:var(--iso-scr)}
-.iso-icon .blk{fill:#1c1c1c}.iso-icon .groove{fill:#2c2c2c}
-.iso-icon .a1f{fill:var(--orange)}.iso-icon .a2f{fill:var(--blue)}.iso-icon .a3f{fill:var(--green)}.iso-icon .a1d{fill:color-mix(in srgb,var(--orange) 70%,#000)}
-.iso-icon text.a1f,.iso-icon text.a2f,.iso-icon text.a3f{stroke:none}
+.iso-icon .blk{fill:#1c1c1c}.iso-icon .groove{fill:#2e2e2e}
+.iso-icon .a1f,.iso-layers .a1f{fill:var(--accent)}
+.iso-icon .a2f,.iso-layers .a2f{fill:var(--ink)}
+.iso-icon .a3f,.iso-layers .a3f{fill:var(--iso-w)}
+.iso-icon .a1d{fill:color-mix(in srgb,var(--accent) 70%,#000)}
+.iso-icon text{stroke:none}
+.iso-icon text.a3f{fill:var(--muted)}
 .ln{fill:none;stroke-width:2.2;stroke-linecap:round}
-.ln.a1{stroke:var(--orange)}.ln.a2{stroke:var(--blue)}.ln.a3{stroke:var(--green)}.ln.blkS{stroke:var(--ink);stroke-width:.8}
-.iso-layers polygon{stroke:var(--ink);stroke-width:.7;stroke-linejoin:round}
+.ln.a1{stroke:var(--accent)}.ln.a2{stroke:#9b9893}.ln.a3{stroke:#fff}.ln.blkS{stroke:var(--ink);stroke-width:.8}
+.iso-layers polygon{stroke:var(--ink);stroke-width:.6;stroke-linejoin:round}
 .iso-layers .t{fill:var(--iso-t)}.iso-layers .l{fill:var(--iso-l)}.iso-layers .r{fill:var(--iso-r)}
-.iso-layers .a1f{fill:var(--orange)}.iso-layers .a2f{fill:var(--blue)}.iso-layers .a3f{fill:var(--green)}
 .iso-layers .ln.blkS{stroke:var(--muted);stroke-width:.8}
-.idea h3{font-size:20px}
-.idea p{font-size:15px;color:var(--muted)}
-.idea .how{font:500 12.5px/1.5 var(--f-mono);color:var(--ink);border-top:1px solid var(--line);padding-top:10px;margin-top:auto}
+.idea h3{font-size:19px;letter-spacing:-.025em;text-transform:uppercase;font-weight:500;margin-top:14px;line-height:1.1}
+.idea p{font-size:14px;color:var(--muted);margin-top:6px}
+.idea .how{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);border-top:1px solid var(--line);padding-top:7px;margin-top:14px;font-weight:500}
 
-pre{margin:0;background:#141414;color:#e9e7e1;border-radius:10px;padding:16px 18px;overflow-x:auto;font:400 13.5px/1.6 var(--f-mono)}
-pre .c{color:#8d8a83}pre .k{color:#ff8a5c}pre .s{color:#7fd8a6}
+.code{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;margin-top:64px;border-top:1px solid var(--line);padding-top:14px}
+.code .head{grid-column:1 / span 4;min-width:0}
+.code .head h3{font-size:19px;letter-spacing:-.02em;text-transform:uppercase;font-weight:500}
+.code .head p{color:var(--muted);font-size:14px;margin-top:8px}
+.code pre{grid-column:6 / -1;min-width:0}
+pre{margin:0;background:var(--char);color:#e9e7e1;border-radius:2px;padding:18px 20px;overflow-x:auto;font:400 13px/1.65 var(--f-mono)}
+pre .c{color:#8d8a83}pre .k{color:#ff7a5e}pre .s{color:#e9e7e1;text-decoration:underline;text-decoration-color:#ff7a5e}
+code{font-family:var(--f-mono);font-size:.88em}
 
-/* cheat sheet */
-.cheat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 36px}
-.cheat div{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr);gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:15px;align-items:baseline}
-.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 36px}
-.gloss dt{font:700 16px var(--f-display);font-stretch:110%}
-.gloss dd{margin:2px 0 0;color:var(--muted);font-size:15px}
-.gloss div{border-top:1px solid var(--line);padding-top:10px}
+/* atalhos */
+.cheat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+.cheat div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding:8px 0 9px;border-top:1px solid var(--line);font-size:14px;align-items:baseline}
+.cheat div > span:last-child{color:var(--muted)}
+.gloss{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px 12px;margin:0}
+.gloss div{border-top:1px solid var(--line);padding-top:8px}
+.gloss dt{font-size:17px;letter-spacing:-.02em;text-transform:uppercase;font-weight:500}
+.gloss dd{margin:4px 0 0;color:var(--muted);font-size:13.5px}
 
-footer{padding-block:60px 70px;color:var(--muted);font-size:14px}
-footer .wrap{display:grid;gap:10px}
-footer ul{margin:0;padding-left:18px;display:grid;gap:4px}
+footer.dark{padding-block:0 60px}
+footer .foot{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;border-top:1px solid var(--char-line);margin-top:40px;padding-top:14px;font-size:13.5px}
+footer .foot p{grid-column:1 / span 5;color:var(--char-muted)}
+footer .foot ul{grid-column:7 / -1;list-style:none;margin:0;padding:0}
+footer .foot li{border-bottom:1px solid var(--char-line);padding:6px 0}
+footer .foot a{text-decoration:none}
+footer .foot a:hover{color:var(--accent)}
+footer .giant{font-size:clamp(64px,13vw,190px);line-height:.82;letter-spacing:-.06em;text-transform:uppercase;font-weight:500;margin-top:60px;color:var(--on-char)}
+footer .giant span{color:var(--accent)}
 
-@media (max-width:900px){
-  .hero .wrap:first-child,.anatomy,.concept,.recipe{grid-template-columns:minmax(0,1fr)}
+@media (max-width:960px){
+  .hero-text,.hero-art,.stats,.ports,.panel-fig,#partsWrap,.concept .fig,.concept .defs,.code .head,.code pre{grid-column:1 / -1}
   .panel-fig{position:static}
-  .body{padding-left:0}
-  .sec-head{grid-template-columns:minmax(0,1fr);gap:4px}
-  .sec-head .no{font-size:44px}
-  .ideas,.fxgrid,.weeks{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .weeks > div:nth-child(2){border-right:0}
-  .cheat,.gloss{grid-template-columns:minmax(0,1fr)}
-  .rear{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .shead .no{grid-column:1 / span 2}
+  .shead h2{grid-column:3 / -1}
+  .shead .intro{grid-column:3 / -1}
+  .indent > *{grid-column:1 / -1}
+  .recipe .big{grid-column:1 / span 3}
+  .recipe .head{grid-column:4 / -1}
+  .recipe .body{grid-column:4 / -1}
+  .fxgrid,.weeks{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:44px}
+  .ideas{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .gloss{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cheat{grid-template-columns:minmax(0,1fr)}
+  footer .foot p,footer .foot ul{grid-column:1 / -1}
 }
-@media (max-width:560px){
-  body{font-size:16px}
-  .spec{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .ideas,.fxgrid,.weeks,.rear{grid-template-columns:minmax(0,1fr)}
-  .weeks > div{border-right:0;border-bottom:1px solid var(--line)}
-  .cheat div{grid-template-columns:minmax(0,1fr)}
-}
-@media (prefers-reduced-motion:no-preference){
-  .iso-device{animation:float 7s ease-in-out infinite}
-  @keyframes float{50%{transform:translateY(-6px)}}
+@media (max-width:600px){
+  .runhead > :nth-child(1){grid-column:1 / span 5}
+  .runhead > :nth-child(2){grid-column:6 / span 5}
+  .hero-index > :nth-child(2){grid-column:3 / span 7}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .shead .no,.shead h2,.shead .intro{grid-column:1 / -1}
+  .recipe .big,.recipe .head,.recipe .body{grid-column:1 / -1}
+  .recipe .big{font-size:56px}
+  .check li{grid-template-columns:22px minmax(0,1fr)}
+  .check li p{grid-column:2}
+  .ideas,.gloss{grid-template-columns:minmax(0,1fr)}
+  .cheat div{grid-template-columns:minmax(0,1fr);gap:2px}
 }
 </style>
 
-<nav class="toc" aria-label="Secções">
-  <div class="wrap">
-    <a href="#comecar">Começar</a><a href="#anatomia">Anatomia</a><a href="#conceitos">Conceitos</a><a href="#receitas">Receitas</a><a href="#efeitos">Efeitos</a><a href="#musico">Para músicos</a><a href="#plano">Plano 4 semanas</a><a href="#ideias">Fora da caixa</a><a href="#atalhos">Atalhos</a>
-  </div>
-</nav>
-
 <header class="hero">
   <div class="wrap">
-    <div>
-      <p class="eyebrow">Akai Professional · Manual de principiante</p>
-      <h1><span>Manual de bolso do</span>MPC Sample</h1>
-      <p class="lede">Um sampler que cabe na mochila: grava qualquer som, corta-o em 16 pedaços, toca-o nos pads e transforma-o num beat. Este guia leva-te do “liguei-o” ao “fiz uma faixa”, e depois para fora da caixa.</p>
-      <div class="meta"><span>16 pads · 8 bancos</span><span>Bateria ~5 h</span><span>Firmware 1.3</span></div>
+    <div class="runhead">
+      <div>MPC Sample®<br>Manual de bolso<br>© 2026</div>
+      <div><span class="dot"></span>Para<br>Tempo livre, Lisboa</div>
+      <span aria-hidden="true">⊕</span>
     </div>
-    {{DEVICE_ISO}}
-  </div>
-  <div class="wrap">
-    <div class="spec">
-      <div><b>16</b><span>pads RGB com aftertouch polifónico</span></div>
-      <div><b>32</b><span>vozes estéreo em simultâneo</span></div>
-      <div><b>A–H</b><span>8 bancos × 16 = 128 pads por projeto</span></div>
-      <div><b>60</b><span>tipos de efeito em 4 motores</span></div>
+    <div class="hero-grid">
+      <div class="hero-text">
+        <h1><small>Manual de principiante</small>MPC<br>Sample</h1>
+        <p class="lede">Um sampler que cabe na mochila: grava qualquer som, corta-o em 16 pedaços, toca-o nos pads e transforma-o num beat. Este guia leva-te do “liguei-o” ao “fiz uma faixa”, e depois para fora da caixa.</p>
+      </div>
+      <div class="hero-art">{{DEVICE_ISO}}</div>
+    </div>
+    <div class="hero-index">
+      <div>1.0<br>2.0<br>4.0<br>8.0</div>
+      <div>A primeira hora<br>Anatomia do painel<br>Receitas<br>Fora da caixa</div>
+      <div>Akai Professional<br>Firmware 1.3</div>
     </div>
   </div>
 </header>
 
-<main>
-<!-- 1 -->
-<section id="comecar"><div class="wrap">
-  <div class="sec-head"><div class="no">01</div><div><h2>A primeira hora</h2><p>Faz isto por ordem, uma vez. Depois disto o aparelho deixa de ser estranho. As caixas ficam marcadas neste browser.</p></div></div>
-  <div class="body">
-    <ul class="check" id="firsthour">
-      <li><input type="checkbox" id="c1" aria-labelledby="c1t"><div><b id="c1t">Carrega a bateria por USB-C</b><p>Dá cerca de 5 horas fora da tomada. Podes tocar enquanto carrega.</p></div></li>
-      <li><input type="checkbox" id="c2" aria-labelledby="c2t"><div><b id="c2t">Atualiza o firmware</b><p>Vai a akaipro.com, página do MPC Sample, e instala a versão mais recente. Várias funções e correções chegaram depois do lançamento (este guia assume 1.3).</p></div></li>
-      <li><input type="checkbox" id="c3" aria-labelledby="c3t"><div><b id="c3t">Põe auscultadores e baixa o <span class="key">MAIN VOLUME</span></b><p>O altifalante interno serve para esboçar, mas os graves só aparecem nos auscultadores ou em colunas.</p></div></li>
-      <li><input type="checkbox" id="c4" aria-labelledby="c4t"><div><b id="c4t">Toca um kit de fábrica</b><p>O aparelho traz mais de 100 kits. Abre um, carrega em <span class="key">▶</span> e toca os pads por cima. Experimenta a força: os pads respondem à velocidade e à pressão.</p></div></li>
-      <li><input type="checkbox" id="c5" aria-labelledby="c5t"><div><b id="c5t">Percorre os bancos com <span class="key">PAD BANK</span></b><p>Cada banco (A a H) são mais 16 pads. A luz e o ecrã dizem-te em que banco estás.</p></div></li>
-      <li><input type="checkbox" id="c6" aria-labelledby="c6t"><div><b id="c6t">Silencia e volta a ligar com <span class="key pp">MUTE</span></b><p>Com a sequência a tocar, segura MUTE e toca nos pads para os calar. <span class="key sh">SHIFT</span> + MUTE devolve tudo (Unmute All).</p></div></li>
-      <li><input type="checkbox" id="c7" aria-labelledby="c7t"><div><b id="c7t">Grava o teu primeiro som</b><p>Carrega em <span class="key rec">SMP REC</span>, fala para o microfone interno, carrega em SMP REC outra vez. Já tens um sample num pad. Ver receita 02.</p></div></li>
-      <li><input type="checkbox" id="c8" aria-labelledby="c8t"><div><b id="c8t">Desfaz sem medo</b><p><span class="key">−</span> com SHIFT é Undo, <span class="key">+</span> com SHIFT é Redo. Experimenta à vontade.</p></div></li>
-    </ul>
+<nav class="toc" aria-label="Secções">
+  <div class="wrap">
+    <a href="#comecar"><b>1.0</b>Começar</a><a href="#anatomia"><b>2.0</b>Anatomia</a><a href="#conceitos"><b>3.0</b>Conceitos</a><a href="#receitas"><b>4.0</b>Receitas</a><a href="#efeitos"><b>5.0</b>Efeitos</a><a href="#musico"><b>6.0</b>Para músicos</a><a href="#plano"><b>7.0</b>Plano</a><a href="#ideias"><b>8.0</b>Fora da caixa</a><a href="#atalhos"><b>9.0</b>Atalhos</a>
+  </div>
+</nav>
+
+<section class="dark" id="ficha"><div class="wrap">
+  <div class="shead"><div class="no">0.1</div><h2>Ficha técnica<span>Em números</span></h2><p class="intro">O essencial do aparelho numa página. O resto do manual explica como tirar partido de cada número.</p></div>
+  <div class="metrics">
+    <div class="stats">
+      <div class="stat"><span class="lbl">↓ Pads RGB, aftertouch polifónico</span><b>16</b></div>
+      <div class="stat"><span class="lbl">↓ Vozes estéreo</span><b>32</b></div>
+      <div class="stat"><span class="lbl">↓ Bancos de pads</span><b>A–H</b></div>
+      <div class="stat"><span class="lbl">↓ Tipos de efeito, 4 motores</span><b>60</b></div>
+      <div class="stat"><span class="lbl">↓ Bateria fora da tomada</span><b>~5 h</b></div>
+      <div class="stat"><span class="lbl">↓ Memória interna</span><b>8 GB</b></div>
+    </div>
+    <div class="ports">
+      <span class="lbl">↓ Ligações</span>
+      <ul>
+        <li>Line In<span>6,35 TRS</span></li>
+        <li>Line Out<span>6,35 TRS</span></li>
+        <li>Auscultadores<span>3,5</span></li>
+        <li>MIDI In/Out<span>3,5 TRS*</span></li>
+        <li>Sync Out<span>Clock</span></li>
+        <li>USB-C<span>Carga</span></li>
+        <li>MicroSD<span>Expansão</span></li>
+      </ul>
+      <p class="lbl" style="margin-top:14px">* Precisa de adaptador TRS para MIDI DIN, não incluído. ~2 GB dos 8 GB vêm ocupados com sons de fábrica.</p>
+    </div>
   </div>
 </div></section>
 
-<!-- 2 -->
+<main>
+<section id="comecar"><div class="wrap">
+  <div class="shead"><div class="no">1.0</div><h2>A primeira hora<span>Oito passos</span></h2><p class="intro">Faz isto por ordem, uma vez. Depois disto o aparelho deixa de ser estranho. As caixas ficam marcadas neste browser.</p></div>
+  <div class="indent"><ul class="check" id="firsthour">
+    <li><input type="checkbox" id="c1" aria-labelledby="c1t"><b id="c1t">Carrega a bateria por USB-C</b><p>Dá cerca de 5 horas fora da tomada. Podes tocar enquanto carrega.</p></li>
+    <li><input type="checkbox" id="c2" aria-labelledby="c2t"><b id="c2t">Atualiza o firmware</b><p>Em akaipro.com, página do MPC Sample. Várias funções e correções chegaram depois do lançamento; este guia assume a versão 1.3.</p></li>
+    <li><input type="checkbox" id="c3" aria-labelledby="c3t"><b id="c3t">Auscultadores e <span class="key">MAIN VOLUME</span> baixo</b><p>O altifalante interno serve para esboçar. Os graves só aparecem nos auscultadores ou em colunas.</p></li>
+    <li><input type="checkbox" id="c4" aria-labelledby="c4t"><b id="c4t">Toca um kit de fábrica</b><p>Há mais de 100. Abre um, carrega em <span class="key">▶</span> e toca por cima. Os pads respondem à força e à pressão.</p></li>
+    <li><input type="checkbox" id="c5" aria-labelledby="c5t"><b id="c5t">Percorre os bancos com <span class="key">PAD BANK</span></b><p>Cada banco, de A a H, são mais 16 pads. O ecrã diz-te em que banco estás.</p></li>
+    <li><input type="checkbox" id="c6" aria-labelledby="c6t"><b id="c6t">Silencia com <span class="key pp">MUTE</span></b><p>Com a música a tocar, segura MUTE e toca nos pads. <span class="key sh">SHIFT</span> + MUTE devolve tudo.</p></li>
+    <li><input type="checkbox" id="c7" aria-labelledby="c7t"><b id="c7t">Grava o teu primeiro som</b><p><span class="key rec">SMP REC</span>, fala para o microfone interno, SMP REC outra vez. Já tens um sample num pad. Ver receita 4.2.</p></li>
+    <li><input type="checkbox" id="c8" aria-labelledby="c8t"><b id="c8t">Desfaz sem medo</b><p><span class="key sh">SHIFT</span> + <span class="key">−</span> é Undo, <span class="key sh">SHIFT</span> + <span class="key">+</span> é Redo.</p></li>
+  </ul></div>
+</div></section>
+
 <section id="anatomia"><div class="wrap">
-  <div class="sec-head"><div class="no">02</div><div><h2>Anatomia do painel</h2><p>Toca num número para ver o que faz. Quase todos os botões têm uma segunda função, impressa por baixo em cinzento: segura <span class="key">SHIFT</span> para a usar.</p></div></div>
+  <div class="shead"><div class="no">2.0</div><h2>Anatomia<span>do painel</span></h2><p class="intro">Toca num número para ver o que faz. Quase todos os botões têm uma segunda função, impressa a cinzento por baixo: segura <span class="key">SHIFT</span> para a usar.</p></div>
   <div class="anatomy">
     <div class="panel-fig">
       {{DEVICE_FLAT}}
-      <div class="toggle"><button type="button" id="shiftBtn" aria-pressed="false">SHIFT</button><span id="shiftHint">Mostrar as funções secundárias</span></div>
+      <div class="figcap"><span class="lbl">↓ Vista superior, 24 controlos</span><div class="toggle"><span class="lbl" id="shiftHint">Funções secundárias</span><button type="button" id="shiftBtn" aria-pressed="false">Shift</button></div></div>
     </div>
     <div id="partsWrap"><ul class="parts" id="parts"></ul></div>
   </div>
-  <div class="rear" aria-label="Ligações">
-    <div><b>Line In · 6,35 mm TRS</b><span>Entrada estéreo: gira-discos (com pré-amp), sintetizador, mesa de mistura, telemóvel.</span></div>
-    <div><b>Line Out · 6,35 mm TRS</b><span>Saída estéreo para colunas ativas ou interface de áudio.</span></div>
-    <div><b>Auscultadores · 3,5 mm</b><span>A forma certa de ouvir graves e detalhe.</span></div>
-    <div><b>MIDI In/Out · 3,5 mm</b><span>Precisa de adaptador TRS para MIDI DIN (não vem na caixa).</span></div>
-    <div><b>Sync Out</b><span>Pulso de relógio para sincronizar caixas de ritmo e modulares.</span></div>
-    <div><b>USB-C · microSD</b><span>Carregar e transferir ficheiros. O microSD aumenta os 8 GB internos (cerca de 2 GB já ocupados pela fábrica).</span></div>
-  </div>
 </div></section>
 
-<!-- 3 -->
 <section id="conceitos"><div class="wrap">
-  <div class="sec-head"><div class="no">03</div><div><h2>Como o MPC pensa</h2><p>Quatro camadas, umas dentro das outras. Quando percebes isto, os menus ficam óbvios.</p></div></div>
+  <div class="shead"><div class="no">3.0</div><h2>Como o MPC pensa<span>Quatro camadas</span></h2><p class="intro">Umas dentro das outras. Quando percebes isto, os menus ficam óbvios.</p></div>
   <div class="concept">
-    {{LAYERS}}
+    <div class="fig">{{LAYERS}}</div>
     <div class="defs">
-      <div><b>Sample</b><p>Um ficheiro de áudio. Um bombo, uma frase de piano, a tua voz, o elétrico 28.</p></div>
-      <div><b>Pad</b><p>O sítio onde o sample vive. Cada pad tem as suas regras: onde começa e acaba o som, se repete (Loop), se toca ao contrário (Reverse), volume, afinação.</p></div>
-      <div><b>Sequência</b><p>Um padrão gravado de toques nos pads, com tamanho em compassos (1, 2, 4, 8…). Pensa nela como uma secção: intro, verso, refrão.</p></div>
-      <div><b>Projeto</b><p>Tudo junto: samples, pads, sequências, tempo. É o que guardas e voltas a abrir.</p></div>
+      <div><span class="lbl">↓ 3.1</span><b>Sample</b><p>Um ficheiro de áudio. Um bombo, uma frase de piano, a tua voz, o elétrico 28.</p></div>
+      <div><span class="lbl">↓ 3.2</span><b>Pad</b><p>O sítio onde o sample vive, com as suas regras: início e fim, Loop, Reverse, volume, afinação.</p></div>
+      <div><span class="lbl">↓ 3.3</span><b>Sequência</b><p>Um padrão gravado de toques nos pads, com tamanho em compassos. Pensa nela como uma secção: intro, verso, refrão.</p></div>
+      <div><span class="lbl">↓ 3.4</span><b>Projeto</b><p>Tudo junto: samples, pads, sequências, tempo. É o que guardas e voltas a abrir.</p></div>
     </div>
   </div>
-  <div class="body" style="margin-top:28px">
-    <p>Os botões da esquerda escolhem o <b>modo</b>: <span class="key">SAMPLE</span> para gravar e editar sons, <span class="key">SEQ</span> para compor padrões, <span class="key fx">PAD FX</span> e <span class="key fx">KNOB FX</span> para efeitos. Os <b>knobs K1–K3</b> e os botões por cima do ecrã (B1–B3) mudam de função consoante o modo; lê sempre o ecrã para saber o que estão a controlar agora.</p>
-  </div>
+  <div class="indent"><p class="note">Os botões da esquerda escolhem o <b>modo</b>: <span class="key">SAMPLE</span> para gravar e editar sons, <span class="key">SEQ</span> para compor, <span class="key fx">PAD FX</span> e <span class="key fx">KNOB FX</span> para efeitos. Os knobs K1–K3 e os botões B1–B3 por cima do ecrã mudam de função consoante o modo; lê sempre o ecrã para saber o que controlam agora.</p></div>
 </div></section>
 
-<!-- 4 -->
 <section id="receitas"><div class="wrap">
-  <div class="sec-head"><div class="no">04</div><div><h2>Receitas</h2><p>Sete tarefas, pela ordem em que as vais precisar. Cada uma demora entre 10 e 30 minutos.</p></div></div>
+  <div class="shead"><div class="no">4.0</div><h2>Receitas<span>Sete tarefas</span></h2><p class="intro">Pela ordem em que as vais precisar. Cada uma demora entre 10 e 30 minutos.</p></div>
 
-  <article class="recipe">
-    <div><div class="tag"><span class="mono">01</span><h3>Grava um beat num kit de fábrica</h3></div>
-      <p class="why">O gesto mais clássico do MPC: tocar ao vivo por cima de um metrónomo e deixar o quantize arrumar.</p></div>
-    <ol class="steps">
+  <article class="recipe"><div class="big">4.1</div>
+    <div class="head"><h3>Grava um beat num kit de fábrica</h3><p class="why">O gesto clássico do MPC: tocar ao vivo sobre um metrónomo e deixar o quantize arrumar.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
       <li><span>Carrega em <span class="key">SEQ</span>. Com <b>K1</b> define o tamanho (começa com 2 compassos).</span></li>
-      <li><span>Bate o tempo em <span class="key">TAP TEMPO</span>, ou roda o valor de BPM. <span class="key sh">SHIFT</span> + TAP TEMPO liga o metrónomo.</span></li>
-      <li><span>Liga o <b>Record Quantize</b> com <b>B3</b> e escolhe a grelha com <b>K2</b> (1/16 é um bom começo).</span></li>
-      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 4</span> liga a contagem (Count-in), para teres um compasso antes de gravar.</span></li>
-      <li><span>Carrega em <span class="key rec">SEQ REC</span> e toca só o bombo. Quando a sequência dá a volta continua a gravar em <b>overdub</b>: na passagem seguinte acrescenta a tarola, depois os hi-hats.</span></li>
-      <li><span>Errou um toque? Segura <span class="key">ERASE</span> e o pad enquanto toca, e as notas desse pad desaparecem. Ou usa Undo.</span></li>
-      <li><span>Carrega em <span class="key rec">SEQ REC</span> para parar de gravar sem parar a música.</span></li>
-    </ol>
+      <li><span>Bate o tempo em <span class="key">TAP TEMPO</span>. <span class="key sh">SHIFT</span> + TAP TEMPO liga o metrónomo.</span></li>
+      <li><span>Liga o Record Quantize com <b>B3</b> e escolhe a grelha com <b>K2</b>. 1/16 é um bom começo.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 4</span> liga a contagem (Count-in).</span></li>
+      <li><span><span class="key rec">SEQ REC</span> e toca só o bombo. Quando a sequência dá a volta continua a gravar em overdub: acrescenta a tarola, depois os hi-hats.</span></li>
+      <li><span>Errou? Segura <span class="key">ERASE</span> e o pad enquanto toca, e as notas desse pad desaparecem.</span></li>
+      <li><span><span class="key rec">SEQ REC</span> outra vez para parar de gravar sem parar a música.</span></li>
+    </ol></div>
   </article>
 
-  <article class="recipe">
-    <div><div class="tag"><span class="mono">02</span><h3>Sampla qualquer coisa</h3></div>
-      <p class="why">O microfone interno faz do mundo inteiro uma biblioteca de sons. Para discos ou sintetizadores, usa a entrada de linha.</p></div>
-    <ol class="steps">
-      <li><span>Carrega em <span class="key rec">SMP REC</span>. Em <span class="key sh">SHIFT</span> + <span class="key">SAMPLE</span> (Input Config) escolhes a fonte: microfone interno ou Line In.</span></li>
-      <li><span>Ajusta o <b>threshold</b> com <b>K3</b>. A gravação só arranca quando o som passa este nível, por isso não ficas com silêncio no início. O ícone da onda no canto do ecrã acende quando o sinal passa o limite.</span></li>
-      <li><span>Escolhe o pad de destino, faz o som, e carrega de novo em SMP REC para parar.</span></li>
-      <li><span>Em <span class="key">SAMPLE</span>, usa os knobs para aparar o início e o fim. Ouve sempre em auscultadores.</span></li>
-      <li><span>Gostas? <span class="key sh">SHIFT</span> + <span class="key">SMP SELECT</span> grava-o como ficheiro (Save Sample) para usares noutros projetos.</span></li>
+  <article class="recipe"><div class="big">4.2</div>
+    <div class="head"><h3>Sampla qualquer coisa</h3><p class="why">O microfone interno faz do mundo uma biblioteca de sons. Para discos ou sintetizadores, usa a entrada de linha.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">SAMPLE</span> (Input Config) escolhe a fonte: microfone interno ou Line In.</span></li>
+      <li><span>Carrega em <span class="key rec">SMP REC</span> e ajusta o <b>threshold</b> com <b>K3</b>. A gravação só arranca quando o som passa este nível; o ícone da onda acende quando isso acontece.</span></li>
+      <li><span>Escolhe o pad de destino, faz o som, carrega de novo em SMP REC.</span></li>
+      <li><span>Em <span class="key">SAMPLE</span>, apara início e fim com os knobs.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">SMP SELECT</span> (Save Sample) guarda-o como ficheiro.</span></li>
     </ol>
-    <div></div>
-    <div class="tip"><b>Recall</b>Tocaste algo bom sem estar a gravar? <span class="key sh">SHIFT</span> + <span class="key rec">SMP REC</span> ou <span class="key rec">SEQ REC</span> (Recall) recupera o que acabou de acontecer. Habitua-te a experimentar sem medo de perder o momento.</div>
+    <div class="tip"><span class="lbl">↓ Recall</span>Tocaste algo bom sem estar a gravar? <span class="key sh">SHIFT</span> + <span class="key rec">SMP REC</span> ou <span class="key rec">SEQ REC</span> recupera o que acabou de acontecer.</div></div>
   </article>
 
-  <article class="recipe">
-    <div><div class="tag"><span class="mono">03</span><h3>Corta um loop em 16 pads</h3></div>
-      <p class="why">O “chop” é a alma do hip-hop de MPC: uma frase de disco partida em pedaços e reorganizada com os dedos.</p></div>
-    <ol class="steps">
+  <article class="recipe"><div class="big">4.3</div>
+    <div class="head"><h3>Corta um loop em 16 pads</h3><p class="why">O “chop”: uma frase de disco partida em pedaços e reorganizada com os dedos.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
       <li><span>Escolhe o pad com o sample e carrega em <span class="key pp">CHOP</span>.</span></li>
-      <li><span>Com <b>K3</b> escolhe como cortar:<br><b>Threshold</b> corta nos ataques (ótimo para baterias),<br><b>Regions 4/8/16</b> divide em partes iguais (ótimo para loops no tempo certo),<br><b>Manual</b> deixa-te marcar os cortes enquanto o som toca.</span></li>
-      <li><span>Os pads passam a tocar cada fatia. Toca-os por outra ordem e já tens uma variação nova.</span></li>
-      <li><span>Grava uma sequência com as fatias (receita 01) e experimenta tocar fora da ordem original.</span></li>
+      <li><span>Com <b>K3</b> escolhe o modo: <b>Threshold</b> corta nos ataques (baterias), <b>Regions 4/8/16</b> divide em partes iguais (loops no tempo), <b>Manual</b> deixa-te marcar os cortes a ouvir.</span></li>
+      <li><span>Os pads passam a tocar cada fatia. Toca-as por outra ordem.</span></li>
+      <li><span>Grava uma sequência com as fatias (receita 4.1).</span></li>
     </ol>
-    <div></div>
-    <div class="tip"><b>Truque</b>Para um loop de 1 compasso em 4/4, Regions 16 dá exatamente uma fatia por semicolcheia. Para frases melódicas, Manual dá-te mais controlo musical.</div>
+    <div class="tip"><span class="lbl">↓ Truque</span>Num loop de 1 compasso em 4/4, Regions 16 dá exatamente uma fatia por semicolcheia.</div></div>
   </article>
 
-  <article class="recipe">
-    <div><div class="tag"><span class="mono">04</span><h3>Note Repeat, swing e dinâmica</h3></div>
-      <p class="why">Hi-hats contínuos e rolos de tarola sem precisar de dedos de baterista.</p></div>
-    <ol class="steps">
-      <li><span>Segura <span class="key">NOTE REPEAT</span> e um pad: o som repete na divisão escolhida (B1–B3 mudam a divisão no ecrã).</span></li>
-      <li><span>Carrega mais ou menos no pad enquanto repete: o aftertouch muda a intensidade. É assim que se fazem hi-hats vivos.</span></li>
-      <li><span><span class="key sh">SHIFT</span> + NOTE REPEAT ativa tercinas (Triplet) para trap e shuffle.</span></li>
-      <li><span>Ajusta o <b>swing</b> no ecrã do sequenciador. Valores entre 54% e 58% dão o “groove” clássico de MPC.</span></li>
-      <li><span>Quando precisas de força constante: <span class="key sh">SHIFT</span> + <span class="key pad">PAD 1</span> (Full Level) faz todos os pads tocar no máximo.</span></li>
-    </ol>
+  <article class="recipe"><div class="big">4.4</div>
+    <div class="head"><h3>Note Repeat, swing e dinâmica</h3><p class="why">Hi-hats contínuos e rolos de tarola sem dedos de baterista.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Segura <span class="key">NOTE REPEAT</span> e um pad: o som repete na divisão escolhida em B1–B3.</span></li>
+      <li><span>Carrega mais ou menos no pad: o aftertouch muda a intensidade.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + NOTE REPEAT ativa tercinas (Triplet).</span></li>
+      <li><span>Ajusta o swing no ecrã do sequenciador. Entre 54% e 58% é o groove clássico.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 1</span> (Full Level) põe todos os pads no máximo.</span></li>
+    </ol></div>
   </article>
 
-  <article class="recipe">
-    <div><div class="tag"><span class="mono">05</span><h3>Arranja: dobra, corta, copia</h3></div>
-      <p class="why">Passar de um loop a uma estrutura.</p></div>
-    <ol class="steps">
-      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 3</span> (Double Seq) duplica a sequência: 2 compassos passam a 4, com o conteúdo repetido. Grava variações na segunda metade.</span></li>
-      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 2</span> (Half Seq) corta a sequência a meio.</span></li>
-      <li><span><span class="key sh">SHIFT</span> + <span class="key">ERASE</span> (Copy) copia uma sequência para criares secções novas a partir de uma base.</span></li>
-      <li><span>Muda de sequência durante a reprodução para montar a faixa ao vivo: intro, verso, refrão.</span></li>
-      <li><span><span class="key sh">SHIFT</span> + <span class="key">SEQ</span> (Step Edit) mostra as notas uma a uma, para corrigires com calma. Aqui o fader também ajusta o tempo de cada evento.</span></li>
-    </ol>
+  <article class="recipe"><div class="big">4.5</div>
+    <div class="head"><h3>Arranja: dobra, corta, copia</h3><p class="why">Passar de um loop a uma estrutura.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 3</span> (Double Seq) duplica a sequência. Grava variações na segunda metade.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 2</span> (Half Seq) corta-a a meio.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">ERASE</span> (Copy) copia uma sequência para criares secções novas.</span></li>
+      <li><span>Muda de sequência durante a reprodução para montar a faixa ao vivo.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">SEQ</span> (Step Edit) mostra as notas uma a uma; aqui o fader ajusta o tempo de cada evento.</span></li>
+    </ol></div>
   </article>
 
-  <article class="recipe">
-    <div><div class="tag"><span class="mono">06</span><h3>Toca melodias com 16 Levels</h3></div>
-      <p class="why">Um único sample espalhado pelos 16 pads, cada pad numa afinação (ou volume, ou filtro) diferente.</p></div>
-    <ol class="steps">
-      <li><span>Escolhe um sample curto e afinado: uma nota de piano, um baixo, uma voz.</span></li>
-      <li><span>Carrega em <span class="key pp">16 LEVELS</span>. <span class="key sh">SHIFT</span> + 16 LEVELS (Type) escolhe o parâmetro que varia entre pads.</span></li>
-      <li><span>Com a afinação, os pads ficam um teclado de 16 meios-tons. Grava uma linha de baixo como se fosse um teclado.</span></li>
+  <article class="recipe"><div class="big">4.6</div>
+    <div class="head"><h3>Toca melodias com 16 Levels</h3><p class="why">Um sample espalhado pelos 16 pads, cada um numa afinação diferente.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Escolhe um sample curto e afinado: uma nota de piano, baixo ou voz.</span></li>
+      <li><span>Carrega em <span class="key pp">16 LEVELS</span>. <span class="key sh">SHIFT</span> + 16 LEVELS (Type) escolhe o parâmetro que varia.</span></li>
+      <li><span>Com a afinação, os pads ficam um teclado de 16 meios-tons.</span></li>
       <li><span>Carrega de novo em 16 LEVELS para voltar aos pads normais.</span></li>
-    </ol>
+    </ol></div>
   </article>
 
-  <article class="recipe">
-    <div><div class="tag"><span class="mono">07</span><h3>Resample e guarda</h3></div>
-      <p class="why">Imprimir o resultado (com efeitos) num sample novo liberta vozes e abre mais uma camada de manipulação.</p></div>
-    <ol class="steps">
-      <li><span>Com a sequência pronta, entra em <span class="key rec">SMP REC</span> e escolhe a opção <b>Resample</b> (Pad 11 no ecrã de gravação).</span></li>
-      <li><span>O MPC grava a saída da sequência para um pad novo, já com os efeitos aplicados.</span></li>
-      <li><span>Agora podes cortar, inverter ou passar por mais efeitos esse resultado. É assim que nascem texturas.</span></li>
-      <li><span>Guarda o projeto no fim de cada sessão. Usa um cartão microSD para cópias de segurança e para trocar ficheiros com o computador.</span></li>
+  <article class="recipe"><div class="big">4.7</div>
+    <div class="head"><h3>Resample e guarda</h3><p class="why">Imprimir o resultado, com efeitos, num sample novo.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Com a sequência pronta, entra em <span class="key rec">SMP REC</span> e escolhe <b>Resample</b> (Pad 11 no ecrã de gravação).</span></li>
+      <li><span>O MPC grava a saída para um pad novo, já com os efeitos.</span></li>
+      <li><span>Corta, inverte ou passa por mais efeitos esse resultado.</span></li>
+      <li><span>Guarda o projeto no fim de cada sessão. Usa microSD para cópias de segurança.</span></li>
     </ol>
-    <div></div>
-    <div class="tip"><b>Fader</b>Por defeito o fader controla o volume do pad. <span class="key sh">SHIFT</span> + <span class="key pad">PAD 9</span> muda o parâmetro, por exemplo afinação ou filtro, para gestos ao vivo.</div>
+    <div class="tip"><span class="lbl">↓ Fader</span>Por defeito controla o volume do pad. <span class="key sh">SHIFT</span> + <span class="key pad">PAD 9</span> muda o parâmetro, por exemplo afinação ou filtro.</div></div>
   </article>
 </div></section>
 
-<!-- 5 -->
 <section id="efeitos"><div class="wrap">
-  <div class="sec-head"><div class="no">05</div><div><h2>Os quatro motores de efeitos</h2><p>Os efeitos são o que distingue o Sample de um sampler clássico. Dois são para tocar com os dedos, um para rodar, e um para colar tudo.</p></div></div>
+  <div class="shead"><div class="no">5.0</div><h2>Efeitos<span>Quatro motores</span></h2><p class="intro">Dois para tocar com os dedos, um para rodar e um para colar tudo. Grava primeiro a música limpa e os efeitos depois, num overdub ou num resample.</p></div>
   <div class="fxgrid">
-    <div class="fx"><span class="key fx">PAD FX</span><b>Efeitos nos pads</b><span>16 efeitos, um por pad, que reagem à força com que carregas: filtros, beat repeat, stutter, reverse, delays, ring mod, lo-fi, granular.</span></div>
-    <div class="fx"><span class="key fx">SHIFT · FLEX BEAT</span><b>Manipular o tempo</b><span>16 efeitos que dobram afinação, tempo e volume da sequência: scratches de DJ, cortes, gates de trance, tape stop.</span></div>
-    <div class="fx"><span class="key fx">KNOB FX</span><b>Um efeito nos knobs</b><span>K1–K3 controlam um efeito aplicado aos pads que escolheres: delays, reverbs, amp, modulação, emulações vintage. Os pads ficam livres para tocar.</span></div>
-    <div class="fx"><span class="key sh">MASTER</span><b>Color Compressor</b><span>Compressor na saída, com cor “retro”. Aperta tudo e dá a densidade típica de MPC. Há também emulações de vinil e fita.</span></div>
-  </div>
-  <div class="body" style="margin-top:24px">
-    <p><span class="key sh">SHIFT</span> + <span class="key fx">KNOB FX</span> (FX Select) escolhe que efeito os knobs controlam. Enquanto Knob FX está ligado, K1–K3 só servem o efeito; desliga-o para voltares a editar o sample.</p>
-    <p>Regra de ouro: grava primeiro a música limpa, e só depois os efeitos, numa passagem de overdub ou num resample. Assim podes sempre desfazer.</p>
+    <div class="fx"><div class="big">1</div><h3>Pad FX</h3><p class="sub">Efeitos nos pads</p><span class="key fx">PAD FX</span><span class="lbl">↓ Inclui</span><ul><li>16 efeitos, um por pad</li><li>Sensíveis à força</li><li>Filtros e beat repeat</li><li>Stutter, reverse, delay</li><li>Ring mod, lo-fi, granular</li></ul></div>
+    <div class="fx"><div class="big">2</div><h3>Flex Beat</h3><p class="sub">Manipular o tempo</p><span class="key fx">SHIFT · PAD FX</span><span class="lbl">↓ Inclui</span><ul><li>16 efeitos de tempo</li><li>Scratch de DJ</li><li>Cortes de beat</li><li>Trance gate</li><li>Afinação e volume</li></ul></div>
+    <div class="fx"><div class="big">3</div><h3>Knob FX</h3><p class="sub">Um efeito nos knobs</p><span class="key fx">KNOB FX</span><span class="lbl">↓ Inclui</span><ul><li>Delays e reverbs</li><li>Simulação de amp</li><li>Modulação</li><li>Emulações vintage</li><li>Shift + Knob FX: escolher</li></ul></div>
+    <div class="fx"><div class="big">4</div><h3>Color Compressor</h3><p class="sub">Cola na saída</p><span class="key sh">MASTER</span><span class="lbl">↓ Inclui</span><ul><li>Compressão “retro”</li><li>Densidade típica de MPC</li><li>Emulação de vinil</li><li>Emulação de fita</li><li>Aplica-se a tudo</li></ul></div>
   </div>
 </div></section>
 
-<!-- 6 -->
 <section id="musico"><div class="wrap">
-  <div class="sec-head"><div class="no">06</div><div><h2>Atalhos para quem já sabe música</h2><p>Tens ouvido e teoria. O que muda no MPC é o vocabulário e a forma de pensar em grelha.</p></div></div>
-  <div class="body">
-    <div class="tbl"><table>
-      <thead><tr><th>Sabes que…</th><th>No MPC chama-se</th><th>Dica</th></tr></thead>
-      <tbody>
-        <tr><td>Compasso e subdivisão</td><td>Bars + Q (quantize)</td><td>1/16 para hip-hop e house, 1/8 com Triplet para shuffle e 6/8.</td></tr>
-        <tr><td>Groove, “atrasar” o tempo</td><td>Swing</td><td>Aplica swing antes de gravar os hi-hats; 54–58% soa humano sem soar bêbado.</td></tr>
-        <tr><td>Dinâmica</td><td>Velocity + aftertouch</td><td>Desliga Full Level quando quiseres ghost notes na tarola.</td></tr>
-        <tr><td>Tonalidade</td><td>16 Levels (Tune)</td><td>Afina o sample à tónica antes de o espalhar pelos pads.</td></tr>
-        <tr><td>Forma (AABA, verso-refrão)</td><td>Sequências</td><td>Uma sequência por secção. Copy + alterações = variação.</td></tr>
-        <tr><td>Acordes e harmonia</td><td>Samples de acordes</td><td>Grava acordes completos do teu instrumento, um por pad, no tempo do projeto.</td></tr>
-        <tr><td>Improvisar e gravar o melhor</td><td>Recall</td><td>Toca à vontade; o Recall guarda o que acabaste de fazer.</td></tr>
-      </tbody>
-    </table></div>
-  </div>
+  <div class="shead"><div class="no">6.0</div><h2>Para músicos<span>Tradução</span></h2><p class="intro">Tens ouvido e teoria. O que muda no MPC é o vocabulário e pensar em grelha.</p></div>
+  <div class="indent"><div class="tbl"><table>
+    <thead><tr><th>Sabes que…</th><th>No MPC chama-se</th><th>Dica</th></tr></thead>
+    <tbody>
+      <tr><td>Compasso e subdivisão</td><td>Bars + Q (quantize)</td><td>1/16 para hip-hop e house, 1/8 com Triplet para shuffle e 6/8.</td></tr>
+      <tr><td>Groove</td><td>Swing</td><td>Aplica antes de gravar os hi-hats; 54–58% soa humano.</td></tr>
+      <tr><td>Dinâmica</td><td>Velocity + aftertouch</td><td>Desliga Full Level para ghost notes na tarola.</td></tr>
+      <tr><td>Tonalidade</td><td>16 Levels (Tune)</td><td>Afina o sample à tónica antes de o espalhar pelos pads.</td></tr>
+      <tr><td>Forma</td><td>Sequências</td><td>Uma sequência por secção. Copy + alterações = variação.</td></tr>
+      <tr><td>Harmonia</td><td>Samples de acordes</td><td>Grava acordes do teu instrumento, um por pad, no tempo do projeto.</td></tr>
+      <tr><td>Improvisar</td><td>Recall</td><td>Toca à vontade; o Recall guarda o que acabaste de fazer.</td></tr>
+    </tbody>
+  </table></div></div>
 </div></section>
 
-<!-- 7 -->
 <section id="plano"><div class="wrap">
-  <div class="sec-head"><div class="no">07</div><div><h2>Plano de quatro semanas</h2><p>Três sessões curtas por semana (20–40 min) valem mais do que uma maratona ao domingo. Acaba cada sessão a guardar alguma coisa, mesmo imperfeita.</p></div></div>
+  <div class="shead"><div class="no">7.0</div><h2>Plano<span>Quatro semanas</span></h2><p class="intro">Três sessões curtas por semana, de 20 a 40 minutos. Acaba cada sessão a guardar alguma coisa, mesmo imperfeita.</p></div>
   <div class="weeks">
-    <div><div class="w">S1</div><h3>Tocar</h3><ul><li>Explorar os kits de fábrica</li><li>Mute, Note Repeat, Full Level</li><li>Gravar 3 beats de 2 compassos</li><li>Aprender Undo e Erase</li></ul></div>
-    <div><div class="w">S2</div><h3>Samplar</h3><ul><li>10 sons da casa e da rua com o microfone</li><li>Um disco ou o teu instrumento por Line In</li><li>Chop com os três modos</li><li>Criar um kit teu e guardá-lo</li></ul></div>
-    <div><div class="w">S3</div><h3>Transformar</h3><ul><li>Pad FX e Flex Beat ao vivo</li><li>Knob FX numa linha de baixo</li><li>16 Levels para uma melodia</li><li>Resample de uma ideia com efeitos</li></ul></div>
-    <div><div class="w">S4</div><h3>Acabar</h3><ul><li>3 sequências: intro, A, B</li><li>Tocar o arranjo ao vivo e gravar a saída</li><li>Uma peça de 60–90 segundos</li><li>Exportar e partilhar com alguém</li></ul></div>
+    <div><div class="big">1</div><h3>Tocar</h3><span class="lbl">↓ Semana 1</span><ul><li>Explorar os kits de fábrica</li><li>Mute, Note Repeat, Full Level</li><li>Gravar 3 beats de 2 compassos</li><li>Aprender Undo e Erase</li></ul></div>
+    <div><div class="big">2</div><h3>Samplar</h3><span class="lbl">↓ Semana 2</span><ul><li>10 sons da casa e da rua</li><li>Um disco ou instrumento por Line In</li><li>Chop nos três modos</li><li>Criar e guardar um kit teu</li></ul></div>
+    <div><div class="big">3</div><h3>Transformar</h3><span class="lbl">↓ Semana 3</span><ul><li>Pad FX e Flex Beat ao vivo</li><li>Knob FX numa linha de baixo</li><li>16 Levels para uma melodia</li><li>Resample de uma ideia</li></ul></div>
+    <div><div class="big">4</div><h3>Acabar</h3><span class="lbl">↓ Semana 4</span><ul><li>3 sequências: intro, A, B</li><li>Tocar o arranjo ao vivo</li><li>Uma peça de 60–90 segundos</li><li>Partilhar com alguém</li></ul></div>
   </div>
 </div></section>
 
-<!-- 8 -->
 <section id="ideias"><div class="wrap">
-  <div class="sec-head"><div class="no">08</div><div><h2>Ideias fora da caixa</h2><p>Para um designer, o MPC é também uma ferramenta de identidade, de protótipo e de experiência. Seis pontos de partida.</p></div></div>
+  <div class="shead"><div class="no">8.0</div><h2>Fora da caixa<span>Design + código</span></h2><p class="intro">Para um designer, o MPC é também uma ferramenta de identidade, de protótipo e de experiência. Seis pontos de partida.</p></div>
   <div class="ideas">
-    <article class="idea">{{ICON_LAPTOP}}<h3>Pads que desenham</h3><p>Liga o MIDI Out ao computador e usa cada pad para disparar formas, cores ou tipos num sketch de p5.js, TouchDesigner ou Three.js. Um instrumento visual para apresentações ou instalações.</p><p class="how">MIDI Out → adaptador TRS → interface MIDI USB → Web MIDI</p></article>
-    <article class="idea">{{ICON_TYPE}}<h3>Tipografia rítmica</h3><p>Um nome de marca com até 16 letras cabe numa sequência de 16 passos. Atribui um som a cada letra e ouve o nome como ritmo. Ponto de partida para um sound logo.</p><p class="how">1 letra = 1 passo · vogais = notas, consoantes = percussão</p></article>
-    <article class="idea">{{ICON_TOOLS}}<h3>O estúdio como kit</h3><p>Sampla as ferramentas do teu ofício: o clique da caneta, o x-ato, o teclado, a risografia, o papel a rasgar. Um kit de bateria feito de design, para vídeos de making-of da agência.</p><p class="how">Microfone interno · Threshold baixo · Chop por Threshold</p></article>
-    <article class="idea">{{ICON_PHONE}}<h3>Diário sonoro de Lisboa</h3><p>Leva o MPC numa caminhada: elétrico, gaivotas, calçada, mercado, o rio. Um beat por bairro. Partilha com a equipa de Nova Iorque como postal sonoro.</p><p class="how">Bateria ~5 h · grava curto · nomeia por sítio</p></article>
-    <article class="idea">{{ICON_SPEAKER}}<h3>Sons de interface</h3><p>Desenha os micro-sons de um protótipo: tap, sucesso, erro, notificação. Uma família sonora coerente, como um sistema de design para o ouvido.</p><p class="how">Save Sample → WAV → protótipo em código (Framer, web)</p></article>
-    <article class="idea">{{ICON_VINYL}}<h3>Instalação sincronizada</h3><p>O Sync Out envia o pulso do tempo. Liga-o a um Arduino para piscar luzes, mover servos ou avançar slides ao ritmo do beat. Um objeto de montra ou de evento.</p><p class="how">Sync Out → entrada digital do Arduino → 1 pulso = 1 tempo</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.1</span><span>Código</span></div><div class="tile">{{ICON_LAPTOP}}</div><h3>Pads que desenham</h3><p>O MIDI Out dispara formas, cores ou tipos num sketch de p5.js, TouchDesigner ou Three.js. Um instrumento visual para apresentações.</p><p class="how">MIDI Out → adaptador → interface USB → Web MIDI</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.2</span><span>Identidade</span></div><div class="tile">{{ICON_TYPE}}</div><h3>Tipografia rítmica</h3><p>Um nome de marca com até 16 letras cabe numa sequência de 16 passos. Um som por letra: o nome ouvido como ritmo, ponto de partida para um sound logo.</p><p class="how">1 letra = 1 passo · vogais = notas</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.3</span><span>Estúdio</span></div><div class="tile">{{ICON_TOOLS}}</div><h3>O estúdio como kit</h3><p>Sampla as ferramentas do ofício: caneta, x-ato, teclado, risografia, papel a rasgar. Um kit de bateria feito de design.</p><p class="how">Microfone interno · Chop por Threshold</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.4</span><span>Lisboa</span></div><div class="tile">{{ICON_PHONE}}</div><h3>Diário sonoro</h3><p>Elétrico, gaivotas, calçada, mercado, o rio. Um beat por bairro, enviado à equipa de Nova Iorque como postal sonoro.</p><p class="how">Bateria ~5 h · nomeia por sítio</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.5</span><span>Produto</span></div><div class="tile">{{ICON_SPEAKER}}</div><h3>Sons de interface</h3><p>Tap, sucesso, erro, notificação. Uma família sonora coerente, como um sistema de design para o ouvido.</p><p class="how">Save Sample → WAV → protótipo em código</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.6</span><span>Espaço</span></div><div class="tile">{{ICON_VINYL}}</div><h3>Instalação sincronizada</h3><p>O Sync Out envia o pulso do tempo para um Arduino: luzes, servos ou slides ao ritmo do beat.</p><p class="how">Sync Out → Arduino → 1 pulso = 1 tempo</p></article>
   </div>
 
-  <div class="body" style="margin-top:34px">
-    <h3>Começar o sketch “pads que desenham”</h3>
-    <p>No Chrome, este código escuta qualquer controlador MIDI ligado e chama uma função de desenho a cada pad. Os números das notas dependem da configuração do MPC; o <code class="mono">console.log</code> mostra quais são.</p>
+  <div class="code">
+    <div class="head"><span class="lbl">↓ 8.1 em código</span><h3>Pads que desenham</h3><p>No Chrome, este código escuta qualquer controlador MIDI e chama uma função de desenho a cada pad. Os números das notas dependem da configuração; o <code>console.log</code> mostra-os.</p></div>
 <pre><span class="k">const</span> shapes = {};          <span class="c">// nota → forma</span>
 navigator.<span class="k">requestMIDIAccess</span>().then(midi =&gt; {
   <span class="k">for</span> (<span class="k">const</span> input <span class="k">of</span> midi.inputs.values()) {
     input.onmidimessage = ({ data: [status, note, vel] }) =&gt; {
       <span class="k">if</span> ((status &amp; 0xf0) === 0x90 &amp;&amp; vel &gt; 0) {
         console.log(<span class="s">'pad'</span>, note, vel);
-        draw(note, vel / 127);   <span class="c">// força do toque = escala, opacidade…</span>
+        draw(note, vel / 127);   <span class="c">// força = escala, opacidade…</span>
       }
     };
   }
@@ -460,54 +517,58 @@ navigator.<span class="k">requestMIDIAccess</span>().then(midi =&gt; {
   </div>
 </div></section>
 
-<!-- 9 -->
 <section id="atalhos"><div class="wrap">
-  <div class="sec-head"><div class="no">09</div><div><h2>Folha de atalhos</h2><p>As combinações com <span class="key">SHIFT</span>, como estão impressas no painel.</p></div></div>
+  <div class="shead"><div class="no">9.0</div><h2>Atalhos<span>e glossário</span></h2><p class="intro">As combinações com <span class="key">SHIFT</span>, como estão impressas no painel.</p></div>
   <div class="cheat">
-    <div><span><span class="key sh">SHIFT</span> <span class="key">SAMPLE</span></span><span>Input Config: fonte e threshold de gravação</span></div>
-    <div><span><span class="key sh">SHIFT</span> <span class="key">SEQ</span></span><span>Step Edit: editar notas uma a uma</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">SAMPLE</span></span><span>Input Config</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">SEQ</span></span><span>Step Edit</span></div>
     <div><span><span class="key sh">SHIFT</span> <span class="key fx">PAD FX</span></span><span>Flex Beat</span></div>
-    <div><span><span class="key sh">SHIFT</span> <span class="key fx">KNOB FX</span></span><span>FX Select: escolher o efeito dos knobs</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key fx">KNOB FX</span></span><span>FX Select</span></div>
     <div><span><span class="key sh">SHIFT</span> <span class="key">ERASE</span></span><span>Copy</span></div>
-    <div><span><span class="key sh">SHIFT</span> <span class="key">NOTE REPEAT</span></span><span>Triplet (ou latch, conforme o ecrã)</span></div>
-    <div><span><span class="key sh">SHIFT</span> <span class="key pp">CHOP</span></span><span>Note On: o som só toca enquanto seguras o pad</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">NOTE REPEAT</span></span><span>Triplet</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">CHOP</span></span><span>Note On: soa só enquanto seguras</span></div>
     <div><span><span class="key sh">SHIFT</span> <span class="key pp">MUTE</span></span><span>Unmute All</span></div>
     <div><span><span class="key sh">SHIFT</span> <span class="key pp">LOOP</span></span><span>Reverse</span></div>
-    <div><span><span class="key sh">SHIFT</span> <span class="key pp">16 LEVELS</span></span><span>Type: parâmetro do 16 Levels</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">16 LEVELS</span></span><span>Type</span></div>
     <div><span><span class="key sh">SHIFT</span> <span class="key">TAP TEMPO</span></span><span>Metrónomo</span></div>
     <div><span><span class="key sh">SHIFT</span> <span class="key">SMP SELECT</span></span><span>Save Sample</span></div>
     <div><span><span class="key sh">SHIFT</span> <span class="key">−</span> / <span class="key">+</span></span><span>Undo / Redo</span></div>
-    <div><span><span class="key sh">SHIFT</span> <span class="key rec">SEQ REC</span> · <span class="key rec">SMP REC</span></span><span>Recall</span></div>
-    <div><span><span class="key sh">SHIFT</span> <span class="key">▶</span></span><span>Continue: retoma de onde parou</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key rec">SEQ REC</span> <span class="key rec">SMP REC</span></span><span>Recall</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">▶</span></span><span>Continue</span></div>
     <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 1</span></span><span>Full Level</span></div>
-    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 2</span> · <span class="key pad">3</span></span><span>Half Seq · Double Seq</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 2</span> <span class="key pad">3</span></span><span>Half Seq · Double Seq</span></div>
     <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 4</span></span><span>Count-in</span></div>
-    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 9</span></span><span>Fader: escolher o parâmetro</span></div>
-    <div><span><span class="key">ERASE</span> + pad</span><span>Apagar as notas desse pad (a tocar ou em Step Edit)</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 9</span></span><span>Parâmetro do fader</span></div>
+    <div><span><span class="key">ERASE</span> + pad</span><span>Apagar as notas desse pad</span></div>
   </div>
-
-  <h3 style="margin:48px 0 14px">Glossário</h3>
+  <div class="shead" style="margin-bottom:24px"><div class="no">9.1</div><h2>Glossário</h2></div>
   <dl class="gloss">
     <div><dt>Chop</dt><dd>Cortar um sample em fatias, cada uma no seu pad.</dd></div>
     <div><dt>Overdub</dt><dd>Gravar por cima do que já existe sem apagar.</dd></div>
     <div><dt>Quantize</dt><dd>Encostar as notas à grelha mais próxima.</dd></div>
-    <div><dt>Threshold</dt><dd>Nível de som a partir do qual algo acontece (gravar, cortar).</dd></div>
-    <div><dt>Resample</dt><dd>Gravar a saída do próprio MPC como um sample novo.</dd></div>
-    <div><dt>Aftertouch</dt><dd>Pressão depois do toque; o pad continua a “ouvir” o teu dedo.</dd></div>
-    <div><dt>One-shot / Note On</dt><dd>O som toca até ao fim / só enquanto seguras o pad.</dd></div>
-    <div><dt>Timestretch</dt><dd>Mudar a duração sem mudar a afinação. No Sample é simples; usa-o com moderação.</dd></div>
+    <div><dt>Threshold</dt><dd>Nível de som a partir do qual algo acontece.</dd></div>
+    <div><dt>Resample</dt><dd>Gravar a saída do próprio MPC como sample novo.</dd></div>
+    <div><dt>Aftertouch</dt><dd>Pressão depois do toque; o pad continua a ouvir o dedo.</dd></div>
+    <div><dt>Note On</dt><dd>O som toca só enquanto seguras o pad.</dd></div>
+    <div><dt>Timestretch</dt><dd>Mudar a duração sem mudar a afinação. Usa com moderação.</dd></div>
   </dl>
 </div></section>
 </main>
 
-<footer><div class="wrap">
-  <p>Guia não oficial, escrito para o firmware 1.3. Nomes de botões tirados do painel; detalhes de menus podem mudar com atualizações. Na dúvida, o manual oficial da Akai tem a última palavra.</p>
-  <ul>
-    <li><a href="https://www.akaipro.com/mpc-sample/" target="_blank" rel="noopener">Akai Professional · MPC Sample</a></li>
-    <li><a href="https://www.akaipro.com/guides/mpc-sample/features.htm" target="_blank" rel="noopener">Guia online oficial (Akai)</a></li>
-    <li><a href="https://cdn.inmusicbrands.com/akai/sample/MPC%20Sample%20-%20User%20Guide%20-%20v1.3.0%20(RevA).pdf" target="_blank" rel="noopener">Manual oficial em PDF, v1.3.0</a></li>
-    <li><a href="https://www.gearnews.com/akai-mpc-sample-review/" target="_blank" rel="noopener">Gearnews · review</a> · <a href="https://musictech.com/reviews/hardware-instruments/akai-mpc-sample-review/" target="_blank" rel="noopener">MusicTech · review</a> · <a href="https://loopopmusic.com/akai-mpc-sample-does-it-beat-the-competition-5-power-tips-review-tutorial" target="_blank" rel="noopener">Loopop · 5 power tips</a></li>
-  </ul>
+<footer class="dark"><div class="wrap">
+  <div class="runhead" style="padding-top:18px"><div>MPC Sample®<br>Manual de bolso<br>© 2026</div><div><span class="dot"></span>Fontes<br>e notas</div><span aria-hidden="true">⊕</span></div>
+  <div class="foot">
+    <p>Guia não oficial, escrito para o firmware 1.3. Nomes de botões tirados do painel; detalhes de menus podem mudar com atualizações. Na dúvida, o manual oficial da Akai tem a última palavra.</p>
+    <ul>
+      <li><a href="https://www.akaipro.com/mpc-sample/" target="_blank" rel="noopener">Akai Professional · MPC Sample ↗</a></li>
+      <li><a href="https://www.akaipro.com/guides/mpc-sample/features.htm" target="_blank" rel="noopener">Guia online oficial ↗</a></li>
+      <li><a href="https://cdn.inmusicbrands.com/akai/sample/MPC%20Sample%20-%20User%20Guide%20-%20v1.3.0%20(RevA).pdf" target="_blank" rel="noopener">Manual oficial em PDF, v1.3.0 ↗</a></li>
+      <li><a href="https://www.gearnews.com/akai-mpc-sample-review/" target="_blank" rel="noopener">Gearnews · review ↗</a></li>
+      <li><a href="https://musictech.com/reviews/hardware-instruments/akai-mpc-sample-review/" target="_blank" rel="noopener">MusicTech · review ↗</a></li>
+      <li><a href="https://loopopmusic.com/akai-mpc-sample-does-it-beat-the-competition-5-power-tips-review-tutorial" target="_blank" rel="noopener">Loopop · 5 power tips ↗</a></li>
+    </ul>
+  </div>
+  <div class="giant">MPC<br>Sample<span>.</span></div>
 </div></footer>
 
 <script>
