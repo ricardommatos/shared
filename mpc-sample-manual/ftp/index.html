@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>MPC Sample, Manual de Bolso</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: documento suíço de agência — cabeçalho corrido com metadados, régua fina, número de secção a cinzento à esquerda, título em maiúsculas, conteúdo numa grelha de 12 colunas. */
+:root{
+  --bg:#ECEAE6;           /* papel cinza quente */
+  --tile:#DAD8D3;         /* fundo das figuras */
+  --ink:#1C1C1C;
+  --muted:#8C8A85;        /* números e subtítulos a cinzento */
+  --line:#C9C6C0;
+  --accent:#FF4B2B;       /* vermelho-laranja */
+  --on-accent:#F3EFE9;
+  --char:#232323;         /* bloco carvão */
+  --on-char:#F3F1EC;
+  --char-muted:#8B8984;
+  --char-line:#3A3A3A;
+  --iso-t:#F7F6F3; --iso-l:#CFCDC7; --iso-r:#B8B6AF; --iso-scr:#232323; --iso-w:#FFFFFF;
+  --f-sans:"Inter Tight","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --measure:62ch;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#171716;--tile:#242423;--ink:#EDEBE6;--muted:#7F7D78;--line:#353432;
+  --accent:#FF5636;--on-accent:#1A1110;--char:#0E0E0E;--char-line:#2E2E2E;
+  --iso-t:#3B3A37;--iso-l:#2B2A28;--iso-r:#222120;--iso-scr:#0C0C0C;--iso-w:#EDEBE6;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171716;--tile:#242423;--ink:#EDEBE6;--muted:#7F7D78;--line:#353432;
+  --accent:#FF5636;--on-accent:#1A1110;--char:#0E0E0E;--char-line:#2E2E2E;
+  --iso-t:#3B3A37;--iso-l:#2B2A28;--iso-r:#222120;--iso-scr:#0C0C0C;--iso-w:#EDEBE6;color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--f-sans);letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3,h4{font-weight:500;margin:0;text-wrap:balance}
+p{margin:0;max-width:var(--measure)}
+a{color:inherit;text-underline-offset:3px;text-decoration-thickness:1px}
+a:focus-visible,button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.dl{font-family:var(--f-mono);font-weight:600}
+.dd{font-family:var(--f-sans);font-weight:700}
+.lbl{font-size:10.5px;line-height:1.3;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:7px;vertical-align:.15em}
+
+/* keycaps: o vocabulário do próprio painel */
+.key{display:inline-block;font:600 .7em/1 var(--f-mono);letter-spacing:.03em;padding:.32em .5em .26em;border-radius:2px;background:#2b2b2b;color:#f2f2f2;white-space:nowrap;vertical-align:.12em}
+.key.fx{background:#E8592A}.key.pp{background:#2F7FD1}.key.rec{color:#ff7b6e}
+.key.pad{background:#A9A8A3;color:#141414;box-shadow:inset 0 0 0 1.5px #D6F26A}
+.key.sh{background:transparent;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+
+/* running header, como no documento de referência */
+.runhead{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;padding-block:14px 0;font-size:10px;line-height:1.25;font-weight:500}
+.runhead > :nth-child(1){grid-column:1 / span 2}
+.runhead > :nth-child(2){grid-column:3 / span 3}
+.runhead > :nth-child(3){grid-column:12;justify-self:end;font-size:13px;line-height:1}
+
+/* nav */
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+nav.toc .wrap{display:flex;align-items:center;gap:16px;padding-block:8px}
+.toc-links{display:flex;gap:22px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0;padding-block:3px}
+.lang{flex:none;display:flex;border:1px solid var(--ink);border-radius:999px;overflow:hidden}
+.lang button{font:500 11px var(--f-sans);letter-spacing:.06em;border:0;background:transparent;color:var(--ink);padding:5px 10px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+nav.toc a{flex:none;font-size:11px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--muted);font-weight:500}
+nav.toc a b{color:var(--ink);font-weight:500;margin-right:6px;font-variant-numeric:tabular-nums}
+nav.toc a:hover{color:var(--ink)}
+
+/* section head: número cinzento | título em maiúsculas | intro */
+section{padding-block:0 96px}
+.shead{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;border-top:1px solid var(--line);margin-top:54px;padding-top:14px;margin-bottom:44px}
+.shead .no{grid-column:1 / span 1;font-size:clamp(22px,2.4vw,30px);line-height:1.05;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:400}
+.shead h2{grid-column:2 / span 6;font-size:clamp(26px,3vw,40px);line-height:1.02;letter-spacing:-.03em;text-transform:uppercase;font-weight:500}
+.shead h2 span{display:block;color:var(--muted)}
+.shead .intro{grid-column:8 / span 5;color:var(--muted);font-size:14.5px;padding-top:4px}
+.indent{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}
+.indent > *{grid-column:2 / -1;min-width:0}
+
+/* hero: bloco laranja */
+.hero{background:var(--accent);color:var(--on-accent)}
+.hero .lbl{color:var(--on-accent);opacity:.75}
+.hero-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;border-top:1px solid color-mix(in srgb,var(--on-accent) 45%,transparent);margin-top:54px;padding-top:14px;padding-bottom:28px}
+.hero-text{grid-column:1 / span 5;display:flex;flex-direction:column;gap:22px;min-width:0}
+.hero h1{font-size:clamp(56px,9.4vw,138px);line-height:.84;letter-spacing:-.055em;text-transform:uppercase;font-weight:500}
+.hero h1 small{display:block;font-size:clamp(20px,2.3vw,30px);letter-spacing:-.02em;line-height:1.05;margin-bottom:.6em;font-weight:500}
+.hero .lede{font-size:15px;line-height:1.45;max-width:46ch}
+.hero-art{grid-column:6 / -1;min-width:0;align-self:center}
+.iso-device{width:100%;height:auto;display:block}
+.hero-index{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;padding-bottom:18px;font-size:10px;line-height:1.35;font-weight:500}
+.hero-index > :nth-child(1){grid-column:1 / span 1}
+.hero-index > :nth-child(2){grid-column:2 / span 3}
+.hero-index > :nth-child(3){grid-column:12;justify-self:end;text-align:right}
+
+/* ficha técnica: bloco carvão */
+.dark{background:var(--char);color:var(--on-char)}
+.dark .shead{border-top-color:var(--char-line);margin-top:40px}
+.dark .shead .no,.dark .shead h2 span,.dark .shead .intro,.dark .lbl{color:var(--char-muted)}
+.metrics{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;padding-bottom:60px}
+.stats{grid-column:2 / span 6;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px 12px;align-content:start}
+.stat{border-top:1px solid var(--char-line);padding-top:6px;min-width:0}
+.stat b{display:block;font-size:clamp(28px,3vw,40px);font-weight:500;letter-spacing:-.035em;line-height:1;margin-top:14px;font-variant-numeric:tabular-nums}
+.stat .lbl{display:block}
+.ports{grid-column:8 / -1;border-top:1px solid var(--char-line);padding-top:6px;min-width:0}
+.ports ul{list-style:none;margin:14px 0 0;padding:0}
+.ports li{display:flex;justify-content:space-between;gap:12px;font-size:clamp(17px,1.9vw,24px);line-height:1.08;letter-spacing:-.025em;text-transform:uppercase;font-weight:500}
+.ports li span{color:var(--char-muted);text-align:right}
+
+/* checklist */
+.check{list-style:none;margin:0;padding:0;display:grid}
+.check li{display:grid;grid-template-columns:22px minmax(0,1fr) minmax(0,1fr);gap:12px 18px;padding:12px 0 14px;border-top:1px solid var(--line)}
+.check li:last-child{border-bottom:1px solid var(--line)}
+.check input{appearance:none;-webkit-appearance:none;width:16px;height:16px;margin:2px 0 0;border-radius:50%;border:1px solid var(--ink);background:transparent;cursor:pointer;display:grid;place-content:center}
+.check input:checked{background:var(--accent);border-color:var(--accent)}
+.check li:has(input:checked) b{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.check b{font-weight:500;font-size:15.5px}
+.check p{color:var(--muted);font-size:14px}
+
+/* anatomia */
+.anatomy{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;align-items:start}
+.panel-fig{grid-column:1 / span 7;background:var(--tile);padding:22px;position:sticky;top:60px;border-radius:2px}
+.partsWrap{grid-column:9 / -1;min-width:0}
+.flat-device{width:100%;height:auto;display:block}
+.hs circle{fill:var(--char);stroke:var(--tile);stroke-width:1.2;cursor:pointer}
+.hs text{fill:#F3F1EC;font:600 6.2px var(--f-sans);pointer-events:none}
+.hs.on circle,.hs:hover circle{fill:var(--accent)}
+.figcap{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;border-top:1px solid var(--line);padding-top:8px}
+.toggle{display:flex;gap:10px;align-items:center}
+.toggle button{font:500 11px var(--f-sans);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--ink);background:transparent;color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer}
+.toggle button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.parts{list-style:none;margin:0;padding:0;display:grid}
+.parts li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;padding:10px 0 12px;border-top:1px solid var(--line);cursor:pointer}
+.parts .n{font-size:13px;line-height:1.5;color:var(--muted);font-variant-numeric:tabular-nums}
+.parts li.on .n{color:var(--accent)}
+.parts li.on h4::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:8px;vertical-align:.12em}
+.parts h4{font-size:15px;line-height:1.35;font-weight:500}
+.parts p{font-size:13.5px;color:var(--muted);margin-top:2px}
+.parts .shift{display:none}
+.show-shift .parts .shift{display:inline}
+.show-shift .parts .base{display:none}
+.zone{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:22px 0 6px;font-weight:500}
+.zone:first-child{padding-top:0}
+
+/* conceitos */
+.concept{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;align-items:start}
+.concept .fig{grid-column:1 / span 6;background:var(--tile);padding:24px;border-radius:2px}
+.concept .defs{grid-column:8 / -1}
+.iso-layers{width:100%;height:auto;display:block}
+.lay-l{font:500 11px var(--f-sans);fill:var(--ink);text-transform:uppercase;letter-spacing:.04em}
+.lay-d{fill:var(--ink)}
+.defs{display:grid}
+.defs div{border-top:1px solid var(--line);padding:10px 0 16px}
+.defs b{display:block;font-size:22px;letter-spacing:-.025em;text-transform:uppercase;font-weight:500;margin-bottom:4px}
+.defs p{color:var(--muted);font-size:14.5px}
+.note{margin-top:34px;font-size:15.5px}
+
+/* receitas: dígitos gigantes cinzentos */
+.recipe{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;padding:16px 0 34px;border-top:1px solid var(--line)}
+.recipe .big{grid-column:1 / span 2;font-size:clamp(64px,8vw,112px);line-height:.8;letter-spacing:-.06em;color:var(--muted);font-weight:400;opacity:.75;font-variant-numeric:tabular-nums}
+.recipe .head{grid-column:3 / span 4;min-width:0}
+.recipe h3{font-size:19px;line-height:1.15;letter-spacing:-.02em;font-weight:500}
+.recipe .why{color:var(--muted);margin-top:4px;font-size:14px}
+.recipe .lbl{display:block;margin-bottom:8px}
+.recipe .body{grid-column:7 / -1;min-width:0}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;padding:7px 0 8px;border-top:1px solid var(--line);font-size:14.5px}
+.steps li::before{content:counter(s,upper-alpha);font-size:11px;line-height:1.95;color:var(--muted);font-weight:500}
+.tip{border-top:1px solid var(--ink);margin-top:18px;padding-top:8px;font-size:14px}
+.tip .lbl{color:var(--accent)}
+
+/* efeitos: 4 colunas, como “services” */
+.fxgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.fx{min-width:0}
+.fx .big{font-size:clamp(64px,8vw,112px);line-height:.85;letter-spacing:-.06em;color:var(--muted);opacity:.75;font-weight:400}
+.fx h3{font-size:15px;font-weight:600;margin-top:20px;letter-spacing:-.01em}
+.fx .sub{font-size:14px;color:var(--ink);margin-top:1px}
+.fx .lbl{display:block;margin-top:34px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.fx ul{list-style:none;margin:0;padding:0}
+.fx li{font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--line)}
+.fx .key{margin-top:12px}
+
+/* tabela */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:9px 14px 10px 0;border-top:1px solid var(--line);vertical-align:top;font-weight:400}
+th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;border-top:1px solid var(--ink)}
+td:first-child{font-weight:500}
+td:last-child{color:var(--muted)}
+
+/* plano */
+.weeks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.weeks > div{min-width:0}
+.weeks .big{font-size:clamp(64px,8vw,112px);line-height:.85;letter-spacing:-.06em;color:var(--muted);opacity:.75}
+.weeks h3{font-size:15px;font-weight:600;margin-top:20px}
+.weeks .lbl{display:block;margin-top:28px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.weeks ul{list-style:none;margin:0;padding:0}
+.weeks li{font-size:13px;padding:5px 0;border-bottom:1px solid var(--line)}
+
+/* ideias: grelha estilo “team” */
+.ideas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px 12px}
+.idea{min-width:0;display:flex;flex-direction:column}
+.idea .tagrow{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:5px;margin-bottom:8px}
+.idea .tagrow span:first-child{color:var(--ink)}
+.idea .tile{background:var(--tile);aspect-ratio:4/3;display:grid;place-items:center;border-radius:2px;max-width:100%}
+.iso-icon{width:78%;height:78%}
+.iso-icon .t{fill:var(--iso-t)}.iso-icon .l{fill:var(--iso-l)}.iso-icon .r{fill:var(--iso-r)}
+.iso-icon polygon{stroke:var(--ink);stroke-width:.6;stroke-linejoin:round}
+.iso-icon .scr,.iso-icon .scrtop{fill:var(--iso-scr)}
+.iso-icon .blk{fill:#1c1c1c}.iso-icon .groove{fill:#2e2e2e}
+.iso-icon .a1f,.iso-layers .a1f{fill:var(--accent)}
+.iso-icon .a2f,.iso-layers .a2f{fill:var(--ink)}
+.iso-icon .a3f,.iso-layers .a3f{fill:var(--iso-w)}
+.iso-icon .a1d{fill:color-mix(in srgb,var(--accent) 70%,#000)}
+.iso-icon text{stroke:none}
+.iso-icon text.a3f{fill:var(--muted)}
+.ln{fill:none;stroke-width:2.2;stroke-linecap:round}
+.ln.a1{stroke:var(--accent)}.ln.a2{stroke:#9b9893}.ln.a3{stroke:#fff}.ln.blkS{stroke:var(--ink);stroke-width:.8}
+.iso-layers polygon{stroke:var(--ink);stroke-width:.6;stroke-linejoin:round}
+.iso-layers .t{fill:var(--iso-t)}.iso-layers .l{fill:var(--iso-l)}.iso-layers .r{fill:var(--iso-r)}
+.iso-layers .ln.blkS{stroke:var(--muted);stroke-width:.8}
+.idea h3{font-size:19px;letter-spacing:-.025em;text-transform:uppercase;font-weight:500;margin-top:14px;line-height:1.1}
+.idea p{font-size:14px;color:var(--muted);margin-top:6px}
+.idea .how{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);border-top:1px solid var(--line);padding-top:7px;margin-top:14px;font-weight:500}
+
+.code{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;margin-top:64px;border-top:1px solid var(--line);padding-top:14px}
+.code .head{grid-column:1 / span 4;min-width:0}
+.code .head h3{font-size:19px;letter-spacing:-.02em;text-transform:uppercase;font-weight:500}
+.code .head p{color:var(--muted);font-size:14px;margin-top:8px}
+.code pre{grid-column:6 / -1;min-width:0}
+pre{margin:0;background:var(--char);color:#e9e7e1;border-radius:2px;padding:18px 20px;overflow-x:auto;font:400 13px/1.65 var(--f-mono)}
+pre .c{color:#8d8a83}pre .k{color:#ff7a5e}pre .s{color:#e9e7e1;text-decoration:underline;text-decoration-color:#ff7a5e}
+code{font-family:var(--f-mono);font-size:.88em}
+
+/* atalhos */
+.cheat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+.cheat div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding:8px 0 9px;border-top:1px solid var(--line);font-size:14px;align-items:baseline}
+.cheat div > span:last-child{color:var(--muted)}
+.gloss{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px 12px;margin:0}
+.gloss div{border-top:1px solid var(--line);padding-top:8px}
+.gloss dt{font-size:17px;letter-spacing:-.02em;text-transform:uppercase;font-weight:500}
+.gloss dd{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+
+footer.dark{padding-block:0 60px}
+footer .foot{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;border-top:1px solid var(--char-line);margin-top:40px;padding-top:14px;font-size:13.5px}
+footer .foot p{grid-column:1 / span 5;color:var(--char-muted)}
+footer .foot ul{grid-column:7 / -1;list-style:none;margin:0;padding:0}
+footer .foot li{border-bottom:1px solid var(--char-line);padding:6px 0}
+footer .foot a{text-decoration:none}
+footer .foot a:hover{color:var(--accent)}
+footer .giant{font-size:clamp(64px,13vw,190px);line-height:.82;letter-spacing:-.06em;text-transform:uppercase;font-weight:500;margin-top:60px;color:var(--on-char)}
+footer .giant span{color:var(--accent)}
+
+@media (max-width:960px){
+  .hero-text,.hero-art,.stats,.ports,.panel-fig,.partsWrap,.concept .fig,.concept .defs,.code .head,.code pre{grid-column:1 / -1}
+  .panel-fig{position:static}
+  .shead .no{grid-column:1 / span 2}
+  .shead h2{grid-column:3 / -1}
+  .shead .intro{grid-column:3 / -1}
+  .indent > *{grid-column:1 / -1}
+  .recipe .big{grid-column:1 / span 3}
+  .recipe .head{grid-column:4 / -1}
+  .recipe .body{grid-column:4 / -1}
+  .fxgrid,.weeks{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:44px}
+  .ideas{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .gloss{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cheat{grid-template-columns:minmax(0,1fr)}
+  footer .foot p,footer .foot ul{grid-column:1 / -1}
+}
+@media (max-width:600px){
+  .runhead > :nth-child(1){grid-column:1 / span 5}
+  .runhead > :nth-child(2){grid-column:6 / span 5}
+  .hero-index > :nth-child(2){grid-column:3 / span 7}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .shead .no,.shead h2,.shead .intro{grid-column:1 / -1}
+  .recipe .big,.recipe .head,.recipe .body{grid-column:1 / -1}
+  .recipe .big{font-size:56px}
+  .check li{grid-template-columns:22px minmax(0,1fr)}
+  .check li p{grid-column:2}
+  .ideas,.gloss{grid-template-columns:minmax(0,1fr)}
+  .cheat div{grid-template-columns:minmax(0,1fr);gap:2px}
+}
+</style>
+</head>
+<body>
+
+
+<div class="lroot" data-lang="en" lang="en">
+<header class="hero">
+  <div class="wrap">
+    <div class="runhead">
+      <div>MPC Sample®<br>Pocket Manual<br>© 2026</div>
+      <div><span class="dot"></span>For<br>Free time, Lisbon</div>
+      <span aria-hidden="true">⊕</span>
+    </div>
+    <div class="hero-grid">
+      <div class="hero-text">
+        <h1><small>Beginner’s manual</small>MPC<br>Sample</h1>
+        <p class="lede">A sampler that fits in a backpack: record any sound, chop it into 16 pieces, play it on the pads and turn it into a beat. This guide takes you from “I switched it on” to “I made a track,” and then out of the box.</p>
+      </div>
+      <div class="hero-art"><svg viewBox="0 0 650 460" role="img" aria-label="Ilustração isométrica do Akai MPC Sample" class="iso-device"><defs><filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8"/></filter></defs><polygon points="332.0,78.0 654.2,264.0 311.2,462.0 -10.9,276.0" fill="#000" opacity=".10" filter="url(#soft)"/><polygon points="616.4,186.0 304.7,404.0 304.7,428.0 616.4,248.0" fill="#A9A7A1" /><polygon points="10.2,234.0 304.7,404.0 304.7,428.0 10.2,258.0" fill="#CBC9C3" /><polygon points="561.7,249.6 562.1,247.8 563.1,246.0 564.5,244.8 565.9,244.4 566.9,245.0 567.3,246.4 566.9,248.2 565.9,250.0 564.5,251.2 563.1,251.6 562.1,251.0" fill="#2a2a2a" /><polygon points="535.7,264.6 536.1,262.8 537.1,261.0 538.5,259.8 539.9,259.4 540.9,260.0 541.3,261.4 540.9,263.2 539.9,265.0 538.5,266.2 537.1,266.6 536.1,266.0" fill="#2a2a2a" /><g transform="matrix(0.866,0.5,-0.866,0.6056,322,16)"><defs><pattern id="iso-gr" width="3.6" height="3.6" patternUnits="userSpaceOnUse"><circle cx="1.8" cy="1.8" r="0.95" fill="#3a3a3a"/></pattern></defs><rect x="0" y="0" width="340" height="360" rx="5" fill="#E3E1DC"/><path d="M5 0 H335 A5 5 0 0 1 340 5 V105 H0 V5 A5 5 0 0 1 5 0Z" fill="#151515"/><text x="16" y="26" font-size="15" font-weight="900" font-style="italic" fill="#D3221C" class="dd">AKAI</text><text x="17" y="33" font-size="4.6" font-style="italic" fill="#D3221C" class="dl">professional</text><circle cx="47.6" cy="68.4" r="16.5" fill="#000" opacity=".22"/><circle cx="46" cy="66" r="16.5" fill="#2b2b2b"/><circle cx="46" cy="66" r="15" fill="#dcdbd7"/><circle cx="42.25" cy="61.5" r="8.25" fill="#f4f4f2" opacity=".8"/><line x1="46" y1="66" x2="54.25" y2="54.75" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="46" y="96" font-size="3.6" fill="#8c8a85" text-anchor="middle" class="dl">MAIN VOLUME</text><rect x="108" y="9" width="26" height="9" rx="2" fill="#2f2f2f"/><rect x="140" y="9" width="26" height="9" rx="2" fill="#2f2f2f"/><rect x="172" y="9" width="26" height="9" rx="2" fill="#2f2f2f"/><rect x="103" y="23" width="98" height="72" rx="3" fill="#2a2a2a"/><rect x="106" y="26" width="92" height="66" rx="2" fill="#0B0C16"/><rect x="109" y="29" width="22" height="6" rx="1" fill="#2C3A7A"/><text x="120" y="33.6" font-size="3.6" fill="#fff" text-anchor="middle" class="dl">BPM 92</text><text x="110" y="45" font-size="5.6" fill="#F5C33B" class="dl">Seq A01</text><text x="110" y="54" font-size="5" fill="#F5C33B" class="dl">4/4</text><text x="140" y="54" font-size="5" fill="#fff" class="dl">001.01</text><text x="110" y="70" font-size="4" fill="#9ea3c7" class="dl">4 Bars   Q1/16</text><rect x="110" y="76" width="84" height="3" rx="1.5" fill="#1f2340"/><rect x="110" y="76" width="31" height="3" rx="1.5" fill="#4BE38A"/><circle cx="190" cy="44" r="3" fill="#E5322B"/><rect x="211" y="82" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="211" y="73" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="211" y="64" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="211" y="55" width="6" height="6" rx="1" fill="#F5C33B" opacity="1"/><rect x="211" y="46" width="6" height="6" rx="1" fill="#F08A2B" opacity="0.45"/><rect x="211" y="37" width="6" height="6" rx="1" fill="#E5322B" opacity="0.45"/><rect x="221" y="82" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="221" y="73" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="221" y="64" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="221" y="55" width="6" height="6" rx="1" fill="#F5C33B" opacity="1"/><rect x="221" y="46" width="6" height="6" rx="1" fill="#F08A2B" opacity="0.45"/><rect x="221" y="37" width="6" height="6" rx="1" fill="#E5322B" opacity="0.45"/><rect x="236" y="12" width="92" height="84" rx="4" fill="#0d0d0d"/><rect x="240" y="16" width="84" height="76" rx="3" fill="url(#iso-gr)"/><rect x="16" y="114" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="16" y="125.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="31.0" y="122.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">SAMPLE</text><text x="31.0" y="131.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">INPUT CONFIG</text><rect x="52" y="114" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="52" y="125.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="122.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">SEQ</text><text x="67.0" y="131.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">STEP EDIT</text><rect x="16" y="140" width="30" height="13" rx="2.2" fill="#E8592A"/><rect x="16" y="151.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="31.0" y="148.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">PAD FX</text><text x="31.0" y="157.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">FLEX BEAT</text><rect x="52" y="140" width="30" height="13" rx="2.2" fill="#E8592A"/><rect x="52" y="151.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="148.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">KNOB FX</text><text x="67.0" y="157.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">FX SELECT</text><rect x="52" y="166" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="52" y="177.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="174.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">PAD BANK</text><rect x="16" y="190" width="40" height="14" rx="2.2" fill="#2d2d2d"/><rect x="16" y="202.4" width="40" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="36.0" y="198.5" font-size="4.6" fill="#f2f2f2" text-anchor="middle" class="dl">SHIFT</text><rect x="37" y="214" width="10" height="74" rx="2" fill="#cfcdc8"/><rect x="40" y="218" width="4" height="66" rx="2" fill="#1a1a1a"/><rect x="31" y="243" width="22" height="13" rx="2" fill="#000" opacity=".2"/><rect x="30" y="240" width="22" height="13" rx="2" fill="#f2f2f0" stroke="#a9a7a2" stroke-width=".6"/><line x1="31" y1="246.5" x2="51" y2="246.5" stroke="#9a9893" stroke-width=".8"/><rect x="60" y="244" width="6" height="3" rx="1" fill="#ffffff"/><rect x="16" y="298" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="16" y="309.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="31.0" y="306.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">ERASE</text><text x="31.0" y="315.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">COPY</text><rect x="52" y="298" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="52" y="309.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="306.0" font-size="3.3" fill="#f2f2f2" text-anchor="middle" class="dl">NOTE REPEAT</text><text x="67.0" y="315.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">TRIPLET</text><circle cx="123.6" cy="124.4" r="11.5" fill="#000" opacity=".22"/><circle cx="122" cy="122" r="11.5" fill="#2b2b2b"/><circle cx="122" cy="122" r="10" fill="#dcdbd7"/><circle cx="119.5" cy="119.0" r="5.5" fill="#f4f4f2" opacity=".8"/><line x1="122" y1="122" x2="127.5" y2="114.5" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="122" y="138" font-size="3.6" fill="#6d6b66" text-anchor="middle" class="dl">K1</text><circle cx="171.6" cy="124.4" r="11.5" fill="#000" opacity=".22"/><circle cx="170" cy="122" r="11.5" fill="#2b2b2b"/><circle cx="170" cy="122" r="10" fill="#dcdbd7"/><circle cx="167.5" cy="119.0" r="5.5" fill="#f4f4f2" opacity=".8"/><line x1="170" y1="122" x2="175.5" y2="114.5" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="170" y="138" font-size="3.6" fill="#6d6b66" text-anchor="middle" class="dl">K2</text><circle cx="219.6" cy="124.4" r="11.5" fill="#000" opacity=".22"/><circle cx="218" cy="122" r="11.5" fill="#2b2b2b"/><circle cx="218" cy="122" r="10" fill="#dcdbd7"/><circle cx="215.5" cy="119.0" r="5.5" fill="#f4f4f2" opacity=".8"/><line x1="218" y1="122" x2="223.5" y2="114.5" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="218" y="138" font-size="3.6" fill="#6d6b66" text-anchor="middle" class="dl">K3</text><rect x="97.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="97.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="138.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="97.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="97.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="138.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="97.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="97.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="138.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="97.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="269" width="36" height="36" rx="3" fill="#4BE38A" opacity=".85"/><rect x="97.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#7bd9a0"/><rect x="138.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="269" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="269" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="269" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><text x="114.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">FULL LEVEL</text><text x="155.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">HALF SEQ</text><text x="196.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">DOUBLE SEQ</text><text x="237.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">COUNT-IN</text><text x="263" y="110" font-size="3.3" fill="#6d6b66" class="dl">PAD PLAY</text><rect x="262" y="113" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="262" y="123.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="120.5" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">CHOP</text><text x="278.0" y="129.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">NOTE ON</text><rect x="298" y="113" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="298" y="123.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="120.5" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">MUTE</text><text x="314.0" y="129.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">UNMUTE ALL</text><rect x="262" y="135" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="262" y="145.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="142.5" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">LOOP</text><text x="278.0" y="151.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">REVERSE</text><rect x="298" y="135" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="298" y="145.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="142.5" font-size="3.6" fill="#f2f2f2" text-anchor="middle" class="dl">16 LEVELS</text><text x="314.0" y="151.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">TYPE</text><rect x="262" y="157" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="262" y="167.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="164.5" font-size="3.4" fill="#f2f2f2" text-anchor="middle" class="dl">SMP SELECT</text><text x="278.0" y="173.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">SAVE SAMPLE</text><rect x="298" y="157" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="298" y="167.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="164.5" font-size="3.4" fill="#f2f2f2" text-anchor="middle" class="dl">TAP TEMPO</text><text x="314.0" y="173.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">METRO</text><circle cx="297.6" cy="198.4" r="16.5" fill="#000" opacity=".22"/><circle cx="296" cy="196" r="16.5" fill="#2b2b2b"/><circle cx="296" cy="196" r="15" fill="#dcdbd7"/><circle cx="292.25" cy="191.5" r="8.25" fill="#f4f4f2" opacity=".8"/><line x1="296" y1="196" x2="304.25" y2="184.75" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><rect x="262" y="220" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="262" y="230.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="227.5" font-size="6" fill="#f2f2f2" text-anchor="middle" class="dl">−</text><text x="278.0" y="236.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">UNDO</text><rect x="298" y="220" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="298" y="230.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="227.5" font-size="6" fill="#f2f2f2" text-anchor="middle" class="dl">+</text><text x="314.0" y="236.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">REDO</text><rect x="262" y="243" width="32" height="13" rx="2.2" fill="#2d2d2d"/><rect x="262" y="254.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="251.0" font-size="3.6" fill="#ff6b5e" text-anchor="middle" class="dl">SEQ REC</text><text x="278.0" y="260.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">RECALL</text><rect x="298" y="243" width="32" height="13" rx="2.2" fill="#2d2d2d"/><rect x="298" y="254.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="251.0" font-size="3.6" fill="#ff6b5e" text-anchor="middle" class="dl">SMP REC</text><text x="314.0" y="260.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">RECALL</text><rect x="262" y="267" width="32" height="14" rx="2.2" fill="#2d2d2d"/><rect x="262" y="279.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="275.5" font-size="6" fill="#f2f2f2" text-anchor="middle" class="dl">■</text><rect x="298" y="267" width="32" height="14" rx="2.2" fill="#2d2d2d"/><rect x="298" y="279.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="275.5" font-size="6" fill="#4BE38A" text-anchor="middle" class="dl">▶</text><text x="314.0" y="285.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">CONTINUE</text><rect x="94" y="320" width="238" height="32" rx="6" fill="#5c5b58"/><text x="318" y="342" font-size="11" font-style="italic" font-weight="800" fill="#807f7a" text-anchor="end" class="dd">MPC SAMPLE</text></g><line x1="10.2" y1="234.0" x2="304.7" y2="404.0" stroke="#fff" stroke-opacity=".5" stroke-width="1"/></svg></div>
+    </div>
+    <div class="hero-index">
+      <div>1.0<br>2.0<br>4.0<br>8.0</div>
+      <div>The first hour<br>Panel anatomy<br>Recipes<br>Out of the box</div>
+      <div>Akai Professional<br>Firmware 1.3</div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <div class="wrap">
+    <div class="toc-links"><a href="#start"><b>1.0</b>Start</a><a href="#anatomy"><b>2.0</b>Anatomy</a><a href="#concepts"><b>3.0</b>Concepts</a><a href="#recipes"><b>4.0</b>Recipes</a><a href="#effects"><b>5.0</b>Effects</a><a href="#musicians"><b>6.0</b>For musicians</a><a href="#plan"><b>7.0</b>Plan</a><a href="#ideas"><b>8.0</b>Out of the box</a><a href="#shortcuts"><b>9.0</b>Shortcuts</a></div>
+    <div class="lang" role="group" aria-label="Language"><button type="button" data-set="en">EN</button><button type="button" data-set="pt">PT</button></div>
+  </div>
+</nav>
+
+<section class="dark" id="specs"><div class="wrap">
+  <div class="shead"><div class="no">0.1</div><h2>Spec sheet<span>By the numbers</span></h2><p class="intro">The essentials on one page. The rest of the manual shows you how to make the most of each number.</p></div>
+  <div class="metrics">
+    <div class="stats">
+      <div class="stat"><span class="lbl">↓ RGB pads, polyphonic aftertouch</span><b>16</b></div>
+      <div class="stat"><span class="lbl">↓ Stereo voices</span><b>32</b></div>
+      <div class="stat"><span class="lbl">↓ Pad banks</span><b>A–H</b></div>
+      <div class="stat"><span class="lbl">↓ Effect types, 4 engines</span><b>60</b></div>
+      <div class="stat"><span class="lbl">↓ Battery life</span><b>~5 h</b></div>
+      <div class="stat"><span class="lbl">↓ Internal storage</span><b>8 GB</b></div>
+    </div>
+    <div class="ports">
+      <span class="lbl">↓ Connections</span>
+      <ul>
+        <li>Line In<span>1/4" TRS</span></li>
+        <li>Line Out<span>1/4" TRS</span></li>
+        <li>Headphones<span>1/8"</span></li>
+        <li>MIDI In/Out<span>1/8" TRS*</span></li>
+        <li>Sync Out<span>Clock</span></li>
+        <li>USB-C<span>Power</span></li>
+        <li>MicroSD<span>Expansion</span></li>
+      </ul>
+      <p class="lbl" style="margin-top:14px">* Needs a TRS-to-MIDI DIN adapter, not included. About 2 GB of the 8 GB hold factory content.</p>
+    </div>
+  </div>
+</div></section>
+
+<main>
+<section id="start"><div class="wrap">
+  <div class="shead"><div class="no">1.0</div><h2>The first hour<span>Eight steps</span></h2><p class="intro">Do these once, in order. After that the machine stops feeling strange. Your checkmarks are saved in this browser.</p></div>
+  <div class="indent"><ul class="check">
+    <li><input type="checkbox" id="en-c1" aria-labelledby="en-c1t"><b id="en-c1t">Charge the battery over USB-C</b><p>About 5 hours away from the wall. You can play while it charges.</p></li>
+    <li><input type="checkbox" id="en-c2" aria-labelledby="en-c2t"><b id="en-c2t">Update the firmware</b><p>On akaipro.com, MPC Sample page. Several features and fixes arrived after launch; this guide assumes version 1.3.</p></li>
+    <li><input type="checkbox" id="en-c3" aria-labelledby="en-c3t"><b id="en-c3t">Headphones on, <span class="key">MAIN VOLUME</span> down</b><p>The built-in speaker is for sketching. You only hear the low end on headphones or monitors.</p></li>
+    <li><input type="checkbox" id="en-c4" aria-labelledby="en-c4t"><b id="en-c4t">Play a factory kit</b><p>There are over 100. Load one, press <span class="key">▶</span> and play along. The pads respond to velocity and pressure.</p></li>
+    <li><input type="checkbox" id="en-c5" aria-labelledby="en-c5t"><b id="en-c5t">Step through banks with <span class="key">PAD BANK</span></b><p>Each bank, A through H, is another 16 pads. The screen shows which bank you’re on.</p></li>
+    <li><input type="checkbox" id="en-c6" aria-labelledby="en-c6t"><b id="en-c6t">Mute with <span class="key pp">MUTE</span></b><p>While the music plays, hold MUTE and tap pads. <span class="key sh">SHIFT</span> + MUTE brings everything back.</p></li>
+    <li><input type="checkbox" id="en-c7" aria-labelledby="en-c7t"><b id="en-c7t">Record your first sound</b><p><span class="key rec">SMP REC</span>, talk into the built-in mic, SMP REC again. You now have a sample on a pad. See recipe 4.2.</p></li>
+    <li><input type="checkbox" id="en-c8" aria-labelledby="en-c8t"><b id="en-c8t">Undo without fear</b><p><span class="key sh">SHIFT</span> + <span class="key">−</span> is Undo, <span class="key sh">SHIFT</span> + <span class="key">+</span> is Redo.</p></li>
+  </ul></div>
+</div></section>
+
+<section id="anatomy" class="anat"><div class="wrap">
+  <div class="shead"><div class="no">2.0</div><h2>Anatomy<span>of the panel</span></h2><p class="intro">Tap a number to see what it does. Almost every button has a second function, printed in gray underneath: hold <span class="key">SHIFT</span> to use it.</p></div>
+  <div class="anatomy">
+    <div class="panel-fig">
+      <svg viewBox="-6 -6 352 372" class="flat-device" role="img" aria-label="Painel superior do MPC Sample"><g><defs><pattern id="flat-gr" width="3.6" height="3.6" patternUnits="userSpaceOnUse"><circle cx="1.8" cy="1.8" r="0.95" fill="#3a3a3a"/></pattern></defs><rect x="0" y="0" width="340" height="360" rx="5" fill="#E3E1DC"/><path d="M5 0 H335 A5 5 0 0 1 340 5 V105 H0 V5 A5 5 0 0 1 5 0Z" fill="#151515"/><text x="16" y="26" font-size="15" font-weight="900" font-style="italic" fill="#D3221C" class="dd">AKAI</text><text x="17" y="33" font-size="4.6" font-style="italic" fill="#D3221C" class="dl">professional</text><circle cx="47.6" cy="68.4" r="16.5" fill="#000" opacity=".22"/><circle cx="46" cy="66" r="16.5" fill="#2b2b2b"/><circle cx="46" cy="66" r="15" fill="#dcdbd7"/><circle cx="42.25" cy="61.5" r="8.25" fill="#f4f4f2" opacity=".8"/><line x1="46" y1="66" x2="54.25" y2="54.75" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="46" y="96" font-size="3.6" fill="#8c8a85" text-anchor="middle" class="dl">MAIN VOLUME</text><rect x="108" y="9" width="26" height="9" rx="2" fill="#2f2f2f"/><rect x="140" y="9" width="26" height="9" rx="2" fill="#2f2f2f"/><rect x="172" y="9" width="26" height="9" rx="2" fill="#2f2f2f"/><rect x="103" y="23" width="98" height="72" rx="3" fill="#2a2a2a"/><rect x="106" y="26" width="92" height="66" rx="2" fill="#0B0C16"/><rect x="109" y="29" width="22" height="6" rx="1" fill="#2C3A7A"/><text x="120" y="33.6" font-size="3.6" fill="#fff" text-anchor="middle" class="dl">BPM 92</text><text x="110" y="45" font-size="5.6" fill="#F5C33B" class="dl">Seq A01</text><text x="110" y="54" font-size="5" fill="#F5C33B" class="dl">4/4</text><text x="140" y="54" font-size="5" fill="#fff" class="dl">001.01</text><text x="110" y="70" font-size="4" fill="#9ea3c7" class="dl">4 Bars   Q1/16</text><rect x="110" y="76" width="84" height="3" rx="1.5" fill="#1f2340"/><rect x="110" y="76" width="31" height="3" rx="1.5" fill="#4BE38A"/><circle cx="190" cy="44" r="3" fill="#E5322B"/><rect x="211" y="82" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="211" y="73" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="211" y="64" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="211" y="55" width="6" height="6" rx="1" fill="#F5C33B" opacity="1"/><rect x="211" y="46" width="6" height="6" rx="1" fill="#F08A2B" opacity="0.45"/><rect x="211" y="37" width="6" height="6" rx="1" fill="#E5322B" opacity="0.45"/><rect x="221" y="82" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="221" y="73" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="221" y="64" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="221" y="55" width="6" height="6" rx="1" fill="#F5C33B" opacity="1"/><rect x="221" y="46" width="6" height="6" rx="1" fill="#F08A2B" opacity="0.45"/><rect x="221" y="37" width="6" height="6" rx="1" fill="#E5322B" opacity="0.45"/><rect x="236" y="12" width="92" height="84" rx="4" fill="#0d0d0d"/><rect x="240" y="16" width="84" height="76" rx="3" fill="url(#flat-gr)"/><rect x="16" y="114" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="16" y="125.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="31.0" y="122.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">SAMPLE</text><text x="31.0" y="131.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">INPUT CONFIG</text><rect x="52" y="114" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="52" y="125.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="122.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">SEQ</text><text x="67.0" y="131.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">STEP EDIT</text><rect x="16" y="140" width="30" height="13" rx="2.2" fill="#E8592A"/><rect x="16" y="151.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="31.0" y="148.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">PAD FX</text><text x="31.0" y="157.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">FLEX BEAT</text><rect x="52" y="140" width="30" height="13" rx="2.2" fill="#E8592A"/><rect x="52" y="151.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="148.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">KNOB FX</text><text x="67.0" y="157.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">FX SELECT</text><rect x="52" y="166" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="52" y="177.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="174.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">PAD BANK</text><rect x="16" y="190" width="40" height="14" rx="2.2" fill="#2d2d2d"/><rect x="16" y="202.4" width="40" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="36.0" y="198.5" font-size="4.6" fill="#f2f2f2" text-anchor="middle" class="dl">SHIFT</text><rect x="37" y="214" width="10" height="74" rx="2" fill="#cfcdc8"/><rect x="40" y="218" width="4" height="66" rx="2" fill="#1a1a1a"/><rect x="31" y="243" width="22" height="13" rx="2" fill="#000" opacity=".2"/><rect x="30" y="240" width="22" height="13" rx="2" fill="#f2f2f0" stroke="#a9a7a2" stroke-width=".6"/><line x1="31" y1="246.5" x2="51" y2="246.5" stroke="#9a9893" stroke-width=".8"/><rect x="60" y="244" width="6" height="3" rx="1" fill="#ffffff"/><rect x="16" y="298" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="16" y="309.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="31.0" y="306.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">ERASE</text><text x="31.0" y="315.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">COPY</text><rect x="52" y="298" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="52" y="309.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="306.0" font-size="3.3" fill="#f2f2f2" text-anchor="middle" class="dl">NOTE REPEAT</text><text x="67.0" y="315.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">TRIPLET</text><circle cx="123.6" cy="124.4" r="11.5" fill="#000" opacity=".22"/><circle cx="122" cy="122" r="11.5" fill="#2b2b2b"/><circle cx="122" cy="122" r="10" fill="#dcdbd7"/><circle cx="119.5" cy="119.0" r="5.5" fill="#f4f4f2" opacity=".8"/><line x1="122" y1="122" x2="127.5" y2="114.5" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="122" y="138" font-size="3.6" fill="#6d6b66" text-anchor="middle" class="dl">K1</text><circle cx="171.6" cy="124.4" r="11.5" fill="#000" opacity=".22"/><circle cx="170" cy="122" r="11.5" fill="#2b2b2b"/><circle cx="170" cy="122" r="10" fill="#dcdbd7"/><circle cx="167.5" cy="119.0" r="5.5" fill="#f4f4f2" opacity=".8"/><line x1="170" y1="122" x2="175.5" y2="114.5" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="170" y="138" font-size="3.6" fill="#6d6b66" text-anchor="middle" class="dl">K2</text><circle cx="219.6" cy="124.4" r="11.5" fill="#000" opacity=".22"/><circle cx="218" cy="122" r="11.5" fill="#2b2b2b"/><circle cx="218" cy="122" r="10" fill="#dcdbd7"/><circle cx="215.5" cy="119.0" r="5.5" fill="#f4f4f2" opacity=".8"/><line x1="218" y1="122" x2="223.5" y2="114.5" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="218" y="138" font-size="3.6" fill="#6d6b66" text-anchor="middle" class="dl">K3</text><rect x="97.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="97.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="138.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="97.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="97.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="138.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="97.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="97.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="138.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="97.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="269" width="36" height="36" rx="3" fill="#4BE38A" opacity=".85"/><rect x="97.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#7bd9a0"/><rect x="138.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="269" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="269" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="269" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><text x="114.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">FULL LEVEL</text><text x="155.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">HALF SEQ</text><text x="196.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">DOUBLE SEQ</text><text x="237.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">COUNT-IN</text><text x="263" y="110" font-size="3.3" fill="#6d6b66" class="dl">PAD PLAY</text><rect x="262" y="113" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="262" y="123.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="120.5" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">CHOP</text><text x="278.0" y="129.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">NOTE ON</text><rect x="298" y="113" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="298" y="123.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="120.5" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">MUTE</text><text x="314.0" y="129.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">UNMUTE ALL</text><rect x="262" y="135" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="262" y="145.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="142.5" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">LOOP</text><text x="278.0" y="151.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">REVERSE</text><rect x="298" y="135" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="298" y="145.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="142.5" font-size="3.6" fill="#f2f2f2" text-anchor="middle" class="dl">16 LEVELS</text><text x="314.0" y="151.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">TYPE</text><rect x="262" y="157" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="262" y="167.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="164.5" font-size="3.4" fill="#f2f2f2" text-anchor="middle" class="dl">SMP SELECT</text><text x="278.0" y="173.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">SAVE SAMPLE</text><rect x="298" y="157" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="298" y="167.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="164.5" font-size="3.4" fill="#f2f2f2" text-anchor="middle" class="dl">TAP TEMPO</text><text x="314.0" y="173.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">METRO</text><circle cx="297.6" cy="198.4" r="16.5" fill="#000" opacity=".22"/><circle cx="296" cy="196" r="16.5" fill="#2b2b2b"/><circle cx="296" cy="196" r="15" fill="#dcdbd7"/><circle cx="292.25" cy="191.5" r="8.25" fill="#f4f4f2" opacity=".8"/><line x1="296" y1="196" x2="304.25" y2="184.75" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><rect x="262" y="220" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="262" y="230.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="227.5" font-size="6" fill="#f2f2f2" text-anchor="middle" class="dl">−</text><text x="278.0" y="236.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">UNDO</text><rect x="298" y="220" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="298" y="230.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="227.5" font-size="6" fill="#f2f2f2" text-anchor="middle" class="dl">+</text><text x="314.0" y="236.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">REDO</text><rect x="262" y="243" width="32" height="13" rx="2.2" fill="#2d2d2d"/><rect x="262" y="254.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="251.0" font-size="3.6" fill="#ff6b5e" text-anchor="middle" class="dl">SEQ REC</text><text x="278.0" y="260.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">RECALL</text><rect x="298" y="243" width="32" height="13" rx="2.2" fill="#2d2d2d"/><rect x="298" y="254.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="251.0" font-size="3.6" fill="#ff6b5e" text-anchor="middle" class="dl">SMP REC</text><text x="314.0" y="260.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">RECALL</text><rect x="262" y="267" width="32" height="14" rx="2.2" fill="#2d2d2d"/><rect x="262" y="279.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="275.5" font-size="6" fill="#f2f2f2" text-anchor="middle" class="dl">■</text><rect x="298" y="267" width="32" height="14" rx="2.2" fill="#2d2d2d"/><rect x="298" y="279.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="275.5" font-size="6" fill="#4BE38A" text-anchor="middle" class="dl">▶</text><text x="314.0" y="285.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">CONTINUE</text><rect x="94" y="320" width="238" height="32" rx="6" fill="#5c5b58"/><text x="318" y="342" font-size="11" font-style="italic" font-weight="800" fill="#807f7a" text-anchor="end" class="dd">MPC SAMPLE</text></g><g class="hotspots"></g></svg>
+      <div class="figcap"><span class="lbl">↓ Top view, 24 controls</span><div class="toggle"><span class="lbl shiftHint">Secondary functions</span><button type="button" class="shiftBtn" aria-pressed="false">Shift</button></div></div>
+    </div>
+    <div class="partsWrap"><ul class="parts"></ul></div>
+  </div>
+</div></section>
+
+<section id="concepts"><div class="wrap">
+  <div class="shead"><div class="no">3.0</div><h2>How the MPC thinks<span>Four layers</span></h2><p class="intro">One inside the other. Once this clicks, the menus make sense.</p></div>
+  <div class="concept">
+    <div class="fig"><svg viewBox="-114 -180 426 250" class="iso-layers" role="img" aria-label="Project > Sequences > Pads · banks A–H > Samples"><polygon points="103.9,-8.0 0.0,52.0 0.0,60.0 103.9,0.0" class="r" /><polygon points="-103.9,-8.0 0.0,52.0 0.0,60.0 -103.9,0.0" class="l" /><polygon points="0.0,-68.0 103.9,-8.0 0.0,52.0 -103.9,-8.0" class="a3f" /><line x1="107.9" y1="-4.0" x2="143.9" y2="-4.0" class="ln blkS" stroke-dasharray="2 2"/><circle cx="107.9" cy="-4.0" r="1.6" class="lay-d"/><text x="149.9" y="-0.5" class="lay-l">Samples</text><polygon points="103.9,-42.0 0.0,18.0 0.0,26.0 103.9,-34.0" class="r" /><polygon points="-103.9,-42.0 0.0,18.0 0.0,26.0 -103.9,-34.0" class="l" /><polygon points="0.0,-102.0 103.9,-42.0 0.0,18.0 -103.9,-42.0" class="a1f" /><line x1="107.9" y1="-38.0" x2="143.9" y2="-38.0" class="ln blkS" stroke-dasharray="2 2"/><circle cx="107.9" cy="-38.0" r="1.6" class="lay-d"/><text x="149.9" y="-34.5" class="lay-l">Pads · banks A–H</text><polygon points="103.9,-76.0 0.0,-16.0 0.0,-8.0 103.9,-68.0" class="r" /><polygon points="-103.9,-76.0 0.0,-16.0 0.0,-8.0 -103.9,-68.0" class="l" /><polygon points="0.0,-136.0 103.9,-76.0 0.0,-16.0 -103.9,-76.0" class="a2f" /><line x1="107.9" y1="-72.0" x2="143.9" y2="-72.0" class="ln blkS" stroke-dasharray="2 2"/><circle cx="107.9" cy="-72.0" r="1.6" class="lay-d"/><text x="149.9" y="-68.5" class="lay-l">Sequences</text><polygon points="103.9,-110.0 0.0,-50.0 0.0,-42.0 103.9,-102.0" class="r" /><polygon points="-103.9,-110.0 0.0,-50.0 0.0,-42.0 -103.9,-102.0" class="l" /><polygon points="0.0,-170.0 103.9,-110.0 0.0,-50.0 -103.9,-110.0" class="t" /><line x1="107.9" y1="-106.0" x2="143.9" y2="-106.0" class="ln blkS" stroke-dasharray="2 2"/><circle cx="107.9" cy="-106.0" r="1.6" class="lay-d"/><text x="149.9" y="-102.5" class="lay-l">Project</text></svg></div>
+    <div class="defs">
+      <div><span class="lbl">↓ 3.1</span><b>Sample</b><p>An audio file. A kick, a piano phrase, your voice, a Lisbon streetcar.</p></div>
+      <div><span class="lbl">↓ 3.2</span><b>Pad</b><p>Where the sample lives, with its own rules: start and end, Loop, Reverse, level, tuning.</p></div>
+      <div><span class="lbl">↓ 3.3</span><b>Sequence</b><p>A recorded pattern of pad hits, with a length in bars. Think of it as a section: intro, verse, chorus.</p></div>
+      <div><span class="lbl">↓ 3.4</span><b>Project</b><p>Everything together: samples, pads, sequences, tempo. It’s what you save and open again.</p></div>
+    </div>
+  </div>
+  <div class="indent"><p class="note">The buttons on the left choose the <b>mode</b>: <span class="key">SAMPLE</span> to record and edit sounds, <span class="key">SEQ</span> to compose, <span class="key fx">PAD FX</span> and <span class="key fx">KNOB FX</span> for effects. Knobs K1–K3 and the B1–B3 buttons above the screen change job with each mode, so always read the screen to see what they control right now.</p></div>
+</div></section>
+
+<section id="recipes"><div class="wrap">
+  <div class="shead"><div class="no">4.0</div><h2>Recipes<span>Seven tasks</span></h2><p class="intro">In the order you’ll need them. Each takes 10 to 30 minutes.</p></div>
+
+  <article class="recipe"><div class="big">4.1</div>
+    <div class="head"><h3>Record a beat with a factory kit</h3><p class="why">The classic MPC move: play live over a metronome and let quantize tidy up.</p></div>
+    <div class="body"><span class="lbl">↓ Steps</span><ol class="steps">
+      <li><span>Press <span class="key">SEQ</span>. Set the length with <b>K1</b> (start with 2 bars).</span></li>
+      <li><span>Tap the tempo on <span class="key">TAP TEMPO</span>. <span class="key sh">SHIFT</span> + TAP TEMPO turns on the metronome.</span></li>
+      <li><span>Turn on Record Quantize with <b>B3</b> and pick the grid with <b>K2</b>. 1/16 is a good start.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 4</span> turns on the Count-in.</span></li>
+      <li><span>Hit <span class="key rec">SEQ REC</span> and play just the kick. When the sequence loops, recording continues as overdub: add the snare, then the hats.</span></li>
+      <li><span>Made a mistake? Hold <span class="key">ERASE</span> and the pad during playback and that pad’s notes disappear.</span></li>
+      <li><span>Press <span class="key rec">SEQ REC</span> again to stop recording without stopping the music.</span></li>
+    </ol></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.2</div>
+    <div class="head"><h3>Sample anything</h3><p class="why">The built-in mic turns the world into a sound library. For records or synths, use the line input.</p></div>
+    <div class="body"><span class="lbl">↓ Steps</span><ol class="steps">
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">SAMPLE</span> (Input Config) picks the source: built-in mic or Line In.</span></li>
+      <li><span>Press <span class="key rec">SMP REC</span> and set the <b>threshold</b> with <b>K3</b>. Recording only starts once the sound crosses this level; the waveform icon lights up when it does.</span></li>
+      <li><span>Pick the target pad, make the sound, press SMP REC again.</span></li>
+      <li><span>In <span class="key">SAMPLE</span>, trim start and end with the knobs.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">SMP SELECT</span> (Save Sample) stores it as a file.</span></li>
+    </ol>
+    <div class="tip"><span class="lbl">↓ Recall</span>Played something great without recording? <span class="key sh">SHIFT</span> + <span class="key rec">SMP REC</span> or <span class="key rec">SEQ REC</span> brings back what just happened.</div></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.3</div>
+    <div class="head"><h3>Chop a loop across 16 pads</h3><p class="why">The “chop”: a record phrase cut into pieces and rearranged with your fingers.</p></div>
+    <div class="body"><span class="lbl">↓ Steps</span><ol class="steps">
+      <li><span>Select the pad with the sample and press <span class="key pp">CHOP</span>.</span></li>
+      <li><span>Choose the mode with <b>K3</b>: <b>Threshold</b> cuts at transients (drums), <b>Regions 4/8/16</b> splits into equal parts (loops in time), <b>Manual</b> lets you mark cuts by ear.</span></li>
+      <li><span>The pads now play each slice. Play them in a different order.</span></li>
+      <li><span>Record a sequence with the slices (recipe 4.1).</span></li>
+    </ol>
+    <div class="tip"><span class="lbl">↓ Trick</span>On a one-bar loop in 4/4, Regions 16 gives you exactly one slice per sixteenth note.</div></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.4</div>
+    <div class="head"><h3>Note Repeat, swing and dynamics</h3><p class="why">Rolling hi-hats and snare rolls without a drummer’s hands.</p></div>
+    <div class="body"><span class="lbl">↓ Steps</span><ol class="steps">
+      <li><span>Hold <span class="key">NOTE REPEAT</span> and a pad: the sound repeats at the division set with B1–B3.</span></li>
+      <li><span>Press harder or softer on the pad: aftertouch changes the intensity.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + NOTE REPEAT switches to triplets.</span></li>
+      <li><span>Set swing on the sequencer screen. 54% to 58% is the classic groove.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 1</span> (Full Level) plays every pad at max velocity.</span></li>
+    </ol></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.5</div>
+    <div class="head"><h3>Arrange: double, halve, copy</h3><p class="why">From a loop to a structure.</p></div>
+    <div class="body"><span class="lbl">↓ Steps</span><ol class="steps">
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 3</span> (Double Seq) doubles the sequence. Record variations in the second half.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 2</span> (Half Seq) cuts it in half.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">ERASE</span> (Copy) copies a sequence so you can build new sections.</span></li>
+      <li><span>Switch sequences during playback to arrange the track live.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">SEQ</span> (Step Edit) shows notes one by one; here the fader nudges each event’s timing.</span></li>
+    </ol></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.6</div>
+    <div class="head"><h3>Play melodies with 16 Levels</h3><p class="why">One sample spread across 16 pads, each at a different pitch.</p></div>
+    <div class="body"><span class="lbl">↓ Steps</span><ol class="steps">
+      <li><span>Pick a short, pitched sample: a piano note, bass or voice.</span></li>
+      <li><span>Press <span class="key pp">16 LEVELS</span>. <span class="key sh">SHIFT</span> + 16 LEVELS (Type) chooses which parameter changes.</span></li>
+      <li><span>Set to tune, the pads become a 16-semitone keyboard.</span></li>
+      <li><span>Press 16 LEVELS again to return to normal pads.</span></li>
+    </ol></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.7</div>
+    <div class="head"><h3>Resample and save</h3><p class="why">Print the result, effects included, into a new sample.</p></div>
+    <div class="body"><span class="lbl">↓ Steps</span><ol class="steps">
+      <li><span>With the sequence ready, go to <span class="key rec">SMP REC</span> and choose <b>Resample</b> (Pad 11 on the record screen).</span></li>
+      <li><span>The MPC records its own output to a new pad, effects and all.</span></li>
+      <li><span>Chop, reverse or run that result through more effects.</span></li>
+      <li><span>Save the project at the end of every session. Use microSD for backups.</span></li>
+    </ol>
+    <div class="tip"><span class="lbl">↓ Fader</span>By default it controls pad level. <span class="key sh">SHIFT</span> + <span class="key pad">PAD 9</span> assigns another parameter, such as pitch or filter.</div></div>
+  </article>
+</div></section>
+
+<section id="effects"><div class="wrap">
+  <div class="shead"><div class="no">5.0</div><h2>Effects<span>Four engines</span></h2><p class="intro">Two to play with your fingers, one to turn and one to glue it all. Record the music clean first and the effects after, in an overdub or a resample.</p></div>
+  <div class="fxgrid">
+    <div class="fx"><div class="big">1</div><h3>Pad FX</h3><p class="sub">Effects on the pads</p><span class="key fx">PAD FX</span><span class="lbl">↓ Includes</span><ul><li>16 effects, one per pad</li><li>Velocity-sensitive</li><li>Filters and beat repeat</li><li>Stutter, reverse, delay</li><li>Ring mod, lo-fi, granular</li></ul></div>
+    <div class="fx"><div class="big">2</div><h3>Flex Beat</h3><p class="sub">Bend time</p><span class="key fx">SHIFT · PAD FX</span><span class="lbl">↓ Includes</span><ul><li>16 time-based effects</li><li>DJ scratches</li><li>Beat chops</li><li>Trance gate</li><li>Pitch and volume warps</li></ul></div>
+    <div class="fx"><div class="big">3</div><h3>Knob FX</h3><p class="sub">One effect on the knobs</p><span class="key fx">KNOB FX</span><span class="lbl">↓ Includes</span><ul><li>Delays and reverbs</li><li>Amp simulation</li><li>Modulation</li><li>Vintage emulations</li><li>Shift + Knob FX: choose</li></ul></div>
+    <div class="fx"><div class="big">4</div><h3>Color Compressor</h3><p class="sub">Glue on the output</p><span class="key sh">MASTER</span><span class="lbl">↓ Includes</span><ul><li>Retro-colored compression</li><li>Classic MPC density</li><li>Vinyl emulation</li><li>Tape emulation</li><li>Applies to everything</li></ul></div>
+  </div>
+</div></section>
+
+<section id="musicians"><div class="wrap">
+  <div class="shead"><div class="no">6.0</div><h2>For musicians<span>Translation</span></h2><p class="intro">You have the ear and the theory. What changes on the MPC is the vocabulary and thinking in a grid.</p></div>
+  <div class="indent"><div class="tbl"><table>
+    <thead><tr><th>You know…</th><th>On the MPC it’s</th><th>Tip</th></tr></thead>
+    <tbody>
+      <tr><td>Meter and subdivision</td><td>Bars + Q (quantize)</td><td>1/16 for hip-hop and house, 1/8 with Triplet for shuffle and 6/8.</td></tr>
+      <tr><td>Groove</td><td>Swing</td><td>Set it before recording hats; 54–58% sounds human.</td></tr>
+      <tr><td>Dynamics</td><td>Velocity + aftertouch</td><td>Turn off Full Level for snare ghost notes.</td></tr>
+      <tr><td>Key</td><td>16 Levels (Tune)</td><td>Tune the sample to the root before spreading it across the pads.</td></tr>
+      <tr><td>Form</td><td>Sequences</td><td>One sequence per section. Copy + changes = variation.</td></tr>
+      <tr><td>Harmony</td><td>Chord samples</td><td>Record chords from your instrument, one per pad, at project tempo.</td></tr>
+      <tr><td>Improvising</td><td>Recall</td><td>Play freely; Recall keeps what you just did.</td></tr>
+    </tbody>
+  </table></div></div>
+</div></section>
+
+<section id="plan"><div class="wrap">
+  <div class="shead"><div class="no">7.0</div><h2>Plan<span>Four weeks</span></h2><p class="intro">Three short sessions a week, 20 to 40 minutes. End every session by saving something, even if it’s rough.</p></div>
+  <div class="weeks">
+    <div><div class="big">1</div><h3>Play</h3><span class="lbl">↓ Week 1</span><ul><li>Explore the factory kits</li><li>Mute, Note Repeat, Full Level</li><li>Record 3 two-bar beats</li><li>Learn Undo and Erase</li></ul></div>
+    <div><div class="big">2</div><h3>Sample</h3><span class="lbl">↓ Week 2</span><ul><li>10 sounds from home and street</li><li>A record or instrument via Line In</li><li>Chop in all three modes</li><li>Build and save your own kit</li></ul></div>
+    <div><div class="big">3</div><h3>Transform</h3><span class="lbl">↓ Week 3</span><ul><li>Pad FX and Flex Beat live</li><li>Knob FX on a bassline</li><li>16 Levels for a melody</li><li>Resample an idea</li></ul></div>
+    <div><div class="big">4</div><h3>Finish</h3><span class="lbl">↓ Week 4</span><ul><li>3 sequences: intro, A, B</li><li>Perform the arrangement live</li><li>A 60–90 second piece</li><li>Share it with someone</li></ul></div>
+  </div>
+</div></section>
+
+<section id="ideas"><div class="wrap">
+  <div class="shead"><div class="no">8.0</div><h2>Out of the box<span>Design + code</span></h2><p class="intro">For a designer, the MPC is also a tool for identity, prototyping and experiences. Six starting points.</p></div>
+  <div class="ideas">
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.1</span><span>Code</span></div><div class="tile"><svg viewBox="-55 -80 113 116" class="iso-icon" aria-hidden="true"><polygon points="45.0,1.0 6.9,23.0 6.9,26.0 45.0,4.0" class="r" /><polygon points="-45.0,-7.0 6.9,23.0 6.9,26.0 -45.0,-4.0" class="l" /><polygon points="-6.9,-29.0 45.0,1.0 6.9,23.0 -45.0,-7.0" class="t" /><polygon points="47.6,-40.5 45.0,-39.0 45.0,1.0 47.6,-0.5" class="r" /><polygon points="-6.9,-69.0 45.0,-39.0 45.0,1.0 -6.9,-29.0" class="scr" /><polygon points="-4.3,-70.5 47.6,-40.5 45.0,-39.0 -6.9,-69.0" class="t" /><polyline points="-1.7,-57.0 17.3,-46.0" class="ln a1"/><polyline points="1.7,-48.0 27.7,-33.0" class="ln a2"/><polyline points="1.7,-41.0 15.6,-33.0" class="ln a3"/><polyline points="-1.7,-36.0 6.9,-31.0" class="ln a1"/></svg></div><h3>Pads that draw</h3><p>MIDI Out triggers shapes, colors or type in a p5.js, TouchDesigner or Three.js sketch. A visual instrument for presentations.</p><p class="how">MIDI Out → adapter → USB interface → Web MIDI</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.2</span><span>Identity</span></div><div class="tile"><svg viewBox="-57 -61 114 98" class="iso-icon" aria-hidden="true"><polygon points="-5.2,-39.0 -26.0,-27.0 -26.0,-3.0 -5.2,-15.0" class="r" /><polygon points="-46.8,-39.0 -26.0,-27.0 -26.0,-3.0 -46.8,-15.0" class="l" /><polygon points="-26.0,-51.0 -5.2,-39.0 -26.0,-27.0 -46.8,-39.0" class="t" /><text transform="matrix(0.866,0.5,-0.866,0.5,-26.0,-39.0)" font-size="18" text-anchor="middle" dominant-baseline="central" class="dd a1f">M</text><polygon points="20.8,-24.0 0.0,-12.0 0.0,12.0 20.8,0.0" class="r" /><polygon points="-20.8,-24.0 0.0,-12.0 0.0,12.0 -20.8,0.0" class="l" /><polygon points="0.0,-36.0 20.8,-24.0 0.0,-12.0 -20.8,-24.0" class="t" /><text transform="matrix(0.866,0.5,-0.866,0.5,0.0,-24.0)" font-size="18" text-anchor="middle" dominant-baseline="central" class="dd a2f">P</text><polygon points="46.8,-9.0 26.0,3.0 26.0,27.0 46.8,15.0" class="r" /><polygon points="5.2,-9.0 26.0,3.0 26.0,27.0 5.2,15.0" class="l" /><polygon points="26.0,-21.0 46.8,-9.0 26.0,3.0 5.2,-9.0" class="t" /><text transform="matrix(0.866,0.5,-0.866,0.5,26.0,-9.0)" font-size="18" text-anchor="middle" dominant-baseline="central" class="dd a3f">C</text></svg></div><h3>Rhythmic type</h3><p>A brand name of up to 16 letters fits a 16-step sequence. One sound per letter: the name heard as rhythm, a starting point for a sonic logo.</p><p class="how">1 letter = 1 step · vowels = notes</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.3</span><span>Studio</span></div><div class="tile"><svg viewBox="-55 -35 104 70" class="iso-icon" aria-hidden="true"><polygon points="39.8,10.0 24.2,19.0 24.2,22.0 39.8,13.0" class="r" /><polygon points="-36.4,-16.0 24.2,19.0 24.2,22.0 -36.4,-13.0" class="l" /><polygon points="-20.8,-25.0 39.8,10.0 24.2,19.0 -36.4,-16.0" class="a2f" /><line x1="-17.3" y1="-23.1" x2="-25.1" y2="-18.6" class="ln blkS"/><line x1="-10.4" y1="-19.1" x2="-15.6" y2="-16.1" class="ln blkS"/><line x1="-3.5" y1="-15.1" x2="-11.3" y2="-10.6" class="ln blkS"/><line x1="3.5" y1="-11.1" x2="-1.7" y2="-8.1" class="ln blkS"/><line x1="10.4" y1="-7.1" x2="2.6" y2="-2.6" class="ln blkS"/><line x1="17.3" y1="-3.1" x2="12.1" y2="-0.1" class="ln blkS"/><line x1="24.2" y1="0.9" x2="16.5" y2="5.4" class="ln blkS"/><line x1="31.2" y1="4.9" x2="26.0" y2="7.9" class="ln blkS"/><line x1="38.1" y1="8.9" x2="30.3" y2="13.4" class="ln blkS"/><polygon points="13.9,15.0 7.8,18.5 7.8,25.5 13.9,22.0" class="a1d" /><polygon points="-39.0,-8.5 7.8,18.5 7.8,25.5 -39.0,-1.5" class="a1d" /><polygon points="-32.9,-12.0 13.9,15.0 7.8,18.5 -39.0,-8.5" class="a1f" /><polygon points="-39.0,-1.5 -39.0,-8.5 -44.6,-11.8" class="l" /><polygon points="-32.9,-12.0 -39.0,-8.5 -44.6,-11.8" class="t" /></svg></div><h3>The studio as a kit</h3><p>Sample the tools of the trade: pen, X-Acto, keyboard, Riso, tearing paper. A drum kit made of design.</p><p class="how">Built-in mic · Chop by Threshold</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.4</span><span>Lisbon</span></div><div class="tile"><svg viewBox="-45 -34 89 64" class="iso-icon" aria-hidden="true"><polygon points="34.6,-10.0 -10.4,16.0 -10.4,20.0 34.6,-6.0" class="r" /><polygon points="-34.6,2.0 -10.4,16.0 -10.4,20.0 -34.6,6.0" class="l" /><polygon points="10.4,-24.0 34.6,-10.0 -10.4,16.0 -34.6,2.0" class="scrtop" /><polygon points="7.8,0.3 6.0,1.1 4.0,1.7 1.7,2.1 -0.6,2.2 -2.9,1.9 -5.0,1.5 -6.9,0.7 -8.6,-0.2 -9.8,-1.3 -10.6,-2.6 -11.0,-3.9 -10.9,-5.2 -10.3,-6.5 -9.2,-7.7 -7.8,-8.7 -6.0,-9.5 -4.0,-10.1 -1.7,-10.5 0.6,-10.6 2.9,-10.3 5.0,-9.9 6.9,-9.1 8.6,-8.2 9.8,-7.1 10.6,-5.8 11.0,-4.5 10.9,-3.2 10.3,-1.9 9.2,-0.7" class="a2f" /><polygon points="3.5,-2.4 2.2,-1.9 0.8,-1.6 -0.8,-1.6 -2.2,-1.9 -3.5,-2.4 -4.4,-3.1 -4.8,-4.0 -4.8,-4.8 -4.4,-5.7 -3.5,-6.4 -2.2,-6.9 -0.8,-7.2 0.8,-7.2 2.2,-6.9 3.5,-6.4 4.4,-5.7 4.8,-4.8 4.8,-4.0 4.4,-3.1" class="t" /></svg></div><h3>Sound diary</h3><p>Streetcars, gulls, cobblestones, the market, the river. One beat per neighborhood, sent to the New York team as a sonic postcard.</p><p class="how">~5 h battery · name by place</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.5</span><span>Product</span></div><div class="tile"><svg viewBox="-52 -82 103 116" class="iso-icon" aria-hidden="true"><polygon points="41.6,-48.0 0.0,-24.0 0.0,24.0 41.6,0.0" class="r" /><polygon points="-41.6,-48.0 0.0,-24.0 0.0,24.0 -41.6,0.0" class="l" /><polygon points="0.0,-72.0 41.6,-48.0 0.0,-24.0 -41.6,-48.0" class="t" /><polygon points="-7.8,-2.5 -8.0,-5.2 -8.6,-8.1 -9.5,-11.0 -10.8,-13.9 -12.4,-16.7 -14.3,-19.2 -16.3,-21.5 -18.5,-23.5 -20.8,-25.0 -23.0,-26.1 -25.2,-26.7 -27.3,-26.7 -29.1,-26.3 -30.7,-25.4 -32.0,-24.0 -33.0,-22.2 -33.6,-20.0 -33.8,-17.5 -33.6,-14.8 -33.0,-11.9 -32.0,-9.0 -30.7,-6.1 -29.1,-3.3 -27.3,-0.8 -25.2,1.5 -23.0,3.5 -20.8,5.0 -18.5,6.1 -16.3,6.7 -14.3,6.7 -12.4,6.3 -10.8,5.4 -9.5,4.0 -8.6,2.2 -8.0,-0.0" class="blk" /><polygon points="-14.7,-6.5 -14.8,-7.8 -15.1,-9.1 -15.5,-10.5 -16.1,-11.8 -16.9,-13.1 -17.8,-14.3 -18.7,-15.4 -19.7,-16.3 -20.8,-17.0 -21.8,-17.5 -22.9,-17.8 -23.8,-17.8 -24.7,-17.6 -25.4,-17.2 -26.0,-16.5 -26.5,-15.7 -26.8,-14.7 -26.8,-13.5 -26.8,-12.2 -26.5,-10.9 -26.0,-9.5 -25.4,-8.2 -24.7,-6.9 -23.8,-5.7 -22.9,-4.6 -21.8,-3.7 -20.8,-3.0 -19.7,-2.5 -18.7,-2.2 -17.8,-2.2 -16.9,-2.4 -16.1,-2.8 -15.5,-3.5 -15.1,-4.3 -14.8,-5.3" class="a3f" /><polygon points="-17.3,-26.0 -17.4,-26.7 -17.5,-27.5 -17.8,-28.3 -18.1,-29.0 -18.6,-29.8 -19.1,-30.5 -19.6,-31.1 -20.2,-31.6 -20.8,-32.0 -21.4,-32.3 -22.0,-32.4 -22.5,-32.5 -23.0,-32.3 -23.4,-32.1 -23.8,-31.7 -24.0,-31.2 -24.2,-30.7 -24.2,-30.0 -24.2,-29.3 -24.0,-28.5 -23.8,-27.7 -23.4,-27.0 -23.0,-26.2 -22.5,-25.5 -22.0,-24.9 -21.4,-24.4 -20.8,-24.0 -20.2,-23.7 -19.6,-23.6 -19.1,-23.5 -18.6,-23.7 -18.1,-23.9 -17.8,-24.3 -17.5,-24.8 -17.4,-25.3" class="blk" /></svg></div><h3>Interface sounds</h3><p>Tap, success, error, notification. A coherent sound family, like a design system for the ear.</p><p class="how">Save Sample → WAV → code prototype</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.6</span><span>Space</span></div><div class="tile"><svg viewBox="-65 -51 131 93" class="iso-icon" aria-hidden="true"><polygon points="55.4,-9.0 0.0,23.0 0.0,32.0 55.4,0.0" class="r" /><polygon points="-55.4,-9.0 0.0,23.0 0.0,32.0 -55.4,0.0" class="l" /><polygon points="0.0,-41.0 55.4,-9.0 0.0,23.0 -55.4,-9.0" class="t" /><polygon points="19.1,-0.2 15.5,1.5 11.6,2.9 7.4,3.9 2.9,4.6 -1.7,4.8 -6.3,4.6 -10.8,3.9 -15.1,2.9 -19.0,1.5 -22.5,-0.2 -25.5,-2.2 -27.9,-4.5 -29.7,-7.0 -30.8,-9.5 -31.1,-12.2 -30.8,-14.9 -29.7,-17.4 -27.9,-19.9 -25.5,-22.2 -22.5,-24.2 -19.0,-25.9 -15.1,-27.3 -10.8,-28.3 -6.3,-29.0 -1.7,-29.2 2.9,-29.0 7.4,-28.3 11.6,-27.3 15.5,-25.9 19.1,-24.2 22.0,-22.2 24.5,-19.9 26.2,-17.4 27.3,-14.9 27.7,-12.2 27.3,-9.5 26.2,-7.0 24.5,-4.5 22.0,-2.2" class="blk" /><polygon points="13.0,-3.9 10.5,-2.7 7.7,-1.7 4.7,-1.0 1.5,-0.5 -1.7,-0.4 -5.0,-0.5 -8.2,-1.0 -11.2,-1.7 -14.0,-2.7 -16.5,-3.9 -18.6,-5.3 -20.3,-6.9 -21.5,-8.7 -22.3,-10.5 -22.6,-12.4 -22.3,-14.3 -21.5,-16.1 -20.3,-17.9 -18.6,-19.5 -16.5,-20.9 -14.0,-22.1 -11.2,-23.1 -8.2,-23.8 -5.0,-24.3 -1.7,-24.4 1.5,-24.3 4.7,-23.8 7.7,-23.1 10.5,-22.1 13.0,-20.9 15.1,-19.5 16.8,-17.9 18.1,-16.1 18.8,-14.3 19.1,-12.4 18.8,-10.5 18.1,-8.7 16.8,-6.9 15.1,-5.3" class="groove" /><polygon points="4.3,-9.1 3.3,-8.6 2.2,-8.2 0.9,-7.9 -0.4,-7.7 -1.7,-7.7 -3.1,-7.7 -4.4,-7.9 -5.6,-8.2 -6.8,-8.6 -7.8,-9.1 -8.7,-9.7 -9.4,-10.4 -9.9,-11.1 -10.2,-11.8 -10.3,-12.6 -10.2,-13.4 -9.9,-14.1 -9.4,-14.8 -8.7,-15.5 -7.8,-16.1 -6.8,-16.6 -5.6,-17.0 -4.4,-17.3 -3.1,-17.5 -1.7,-17.5 -0.4,-17.5 0.9,-17.3 2.2,-17.0 3.3,-16.6 4.3,-16.1 5.2,-15.5 5.9,-14.8 6.4,-14.1 6.7,-13.4 6.8,-12.6 6.7,-11.8 6.4,-11.1 5.9,-10.4 5.2,-9.7" class="a1f" /><polygon points="43.3,-13.0 17.3,2.0 17.3,5.0 43.3,-10.0" class="r" /><polygon points="13.9,0.0 17.3,2.0 17.3,5.0 13.9,3.0" class="l" /><polygon points="39.8,-15.0 43.3,-13.0 17.3,2.0 13.9,0.0" class="t" /></svg></div><h3>Synced installation</h3><p>Sync Out sends the tempo pulse to an Arduino: lights, servos or slides on the beat.</p><p class="how">Sync Out → Arduino → 1 pulse = 1 beat</p></article>
+  </div>
+
+  <div class="code">
+    <div class="head"><span class="lbl">↓ 8.1 in code</span><h3>Pads that draw</h3><p>In Chrome, this listens to any MIDI controller and calls a draw function on every pad hit. Note numbers depend on your setup; <code>console.log</code> shows them.</p></div>
+<pre><span class="k">const</span> shapes = {};          <span class="c">// note → shape</span>
+navigator.<span class="k">requestMIDIAccess</span>().then(midi =&gt; {
+  <span class="k">for</span> (<span class="k">const</span> input <span class="k">of</span> midi.inputs.values()) {
+    input.onmidimessage = ({ data: [status, note, vel] }) =&gt; {
+      <span class="k">if</span> ((status &amp; 0xf0) === 0x90 &amp;&amp; vel &gt; 0) {
+        console.log(<span class="s">'pad'</span>, note, vel);
+        draw(note, vel / 127);   <span class="c">// velocity = scale, opacity…</span>
+      }
+    };
+  }
+});</pre>
+  </div>
+</div></section>
+
+<section id="shortcuts"><div class="wrap">
+  <div class="shead"><div class="no">9.0</div><h2>Shortcuts<span>and glossary</span></h2><p class="intro">The <span class="key">SHIFT</span> combos, as printed on the panel.</p></div>
+  <div class="cheat">
+    <div><span><span class="key sh">SHIFT</span> <span class="key">SAMPLE</span></span><span>Input Config</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">SEQ</span></span><span>Step Edit</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key fx">PAD FX</span></span><span>Flex Beat</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key fx">KNOB FX</span></span><span>FX Select</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">ERASE</span></span><span>Copy</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">NOTE REPEAT</span></span><span>Triplet</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">CHOP</span></span><span>Note On: sounds only while held</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">MUTE</span></span><span>Unmute All</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">LOOP</span></span><span>Reverse</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">16 LEVELS</span></span><span>Type</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">TAP TEMPO</span></span><span>Metronome</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">SMP SELECT</span></span><span>Save Sample</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">−</span> / <span class="key">+</span></span><span>Undo / Redo</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key rec">SEQ REC</span> <span class="key rec">SMP REC</span></span><span>Recall</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">▶</span></span><span>Continue</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 1</span></span><span>Full Level</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 2</span> <span class="key pad">3</span></span><span>Half Seq · Double Seq</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 4</span></span><span>Count-in</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 9</span></span><span>Fader parameter</span></div>
+    <div><span><span class="key">ERASE</span> + pad</span><span>Delete that pad’s notes</span></div>
+  </div>
+  <div class="shead" style="margin-bottom:24px"><div class="no">9.1</div><h2>Glossary</h2></div>
+  <dl class="gloss">
+    <div><dt>Chop</dt><dd>Cutting a sample into slices, each on its own pad.</dd></div>
+    <div><dt>Overdub</dt><dd>Recording on top of what’s there without erasing it.</dd></div>
+    <div><dt>Quantize</dt><dd>Snapping notes to the nearest grid line.</dd></div>
+    <div><dt>Threshold</dt><dd>The level at which something happens.</dd></div>
+    <div><dt>Resample</dt><dd>Recording the MPC’s own output as a new sample.</dd></div>
+    <div><dt>Aftertouch</dt><dd>Pressure after the hit; the pad keeps listening to your finger.</dd></div>
+    <div><dt>Note On</dt><dd>The sound plays only while you hold the pad.</dd></div>
+    <div><dt>Timestretch</dt><dd>Changing length without changing pitch. Use sparingly.</dd></div>
+  </dl>
+</div></section>
+</main>
+
+<footer class="dark"><div class="wrap">
+  <div class="runhead" style="padding-top:18px"><div>MPC Sample®<br>Pocket Manual<br>© 2026</div><div><span class="dot"></span>Sources<br>and notes</div><span aria-hidden="true">⊕</span></div>
+  <div class="foot">
+    <p>Unofficial guide, written for firmware 1.3. Button names are taken from the panel; menu details may change with updates. When in doubt, Akai’s official manual has the final word.</p>
+    <ul>
+      <li><a href="https://www.akaipro.com/mpc-sample/" target="_blank" rel="noopener">Akai Professional · MPC Sample ↗</a></li>
+      <li><a href="https://www.akaipro.com/guides/mpc-sample/features.htm" target="_blank" rel="noopener">Official online guide ↗</a></li>
+      <li><a href="https://cdn.inmusicbrands.com/akai/sample/MPC%20Sample%20-%20User%20Guide%20-%20v1.3.0%20(RevA).pdf" target="_blank" rel="noopener">Official PDF manual, v1.3.0 ↗</a></li>
+      <li><a href="https://www.gearnews.com/akai-mpc-sample-review/" target="_blank" rel="noopener">Gearnews · review ↗</a></li>
+      <li><a href="https://musictech.com/reviews/hardware-instruments/akai-mpc-sample-review/" target="_blank" rel="noopener">MusicTech · review ↗</a></li>
+      <li><a href="https://loopopmusic.com/akai-mpc-sample-does-it-beat-the-competition-5-power-tips-review-tutorial" target="_blank" rel="noopener">Loopop · 5 power tips ↗</a></li>
+    </ul>
+  </div>
+  <div class="giant">MPC<br>Sample<span>.</span></div>
+</div></footer>
+</div>
+<div class="lroot" data-lang="pt" lang="pt-PT" hidden>
+<header class="hero">
+  <div class="wrap">
+    <div class="runhead">
+      <div>MPC Sample®<br>Manual de bolso<br>© 2026</div>
+      <div><span class="dot"></span>Para<br>Tempo livre, Lisboa</div>
+      <span aria-hidden="true">⊕</span>
+    </div>
+    <div class="hero-grid">
+      <div class="hero-text">
+        <h1><small>Manual de principiante</small>MPC<br>Sample</h1>
+        <p class="lede">Um sampler que cabe na mochila: grava qualquer som, corta-o em 16 pedaços, toca-o nos pads e transforma-o num beat. Este guia leva-te do “liguei-o” ao “fiz uma faixa”, e depois para fora da caixa.</p>
+      </div>
+      <div class="hero-art"><svg viewBox="0 0 650 460" role="img" aria-label="Ilustração isométrica do Akai MPC Sample" class="iso-device"><defs><filter id="softpt" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8"/></filter></defs><polygon points="332.0,78.0 654.2,264.0 311.2,462.0 -10.9,276.0" fill="#000" opacity=".10" filter="url(#softpt)"/><polygon points="616.4,186.0 304.7,404.0 304.7,428.0 616.4,248.0" fill="#A9A7A1" /><polygon points="10.2,234.0 304.7,404.0 304.7,428.0 10.2,258.0" fill="#CBC9C3" /><polygon points="561.7,249.6 562.1,247.8 563.1,246.0 564.5,244.8 565.9,244.4 566.9,245.0 567.3,246.4 566.9,248.2 565.9,250.0 564.5,251.2 563.1,251.6 562.1,251.0" fill="#2a2a2a" /><polygon points="535.7,264.6 536.1,262.8 537.1,261.0 538.5,259.8 539.9,259.4 540.9,260.0 541.3,261.4 540.9,263.2 539.9,265.0 538.5,266.2 537.1,266.6 536.1,266.0" fill="#2a2a2a" /><g transform="matrix(0.866,0.5,-0.866,0.6056,322,16)"><defs><pattern id="iso-grpt" width="3.6" height="3.6" patternUnits="userSpaceOnUse"><circle cx="1.8" cy="1.8" r="0.95" fill="#3a3a3a"/></pattern></defs><rect x="0" y="0" width="340" height="360" rx="5" fill="#E3E1DC"/><path d="M5 0 H335 A5 5 0 0 1 340 5 V105 H0 V5 A5 5 0 0 1 5 0Z" fill="#151515"/><text x="16" y="26" font-size="15" font-weight="900" font-style="italic" fill="#D3221C" class="dd">AKAI</text><text x="17" y="33" font-size="4.6" font-style="italic" fill="#D3221C" class="dl">professional</text><circle cx="47.6" cy="68.4" r="16.5" fill="#000" opacity=".22"/><circle cx="46" cy="66" r="16.5" fill="#2b2b2b"/><circle cx="46" cy="66" r="15" fill="#dcdbd7"/><circle cx="42.25" cy="61.5" r="8.25" fill="#f4f4f2" opacity=".8"/><line x1="46" y1="66" x2="54.25" y2="54.75" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="46" y="96" font-size="3.6" fill="#8c8a85" text-anchor="middle" class="dl">MAIN VOLUME</text><rect x="108" y="9" width="26" height="9" rx="2" fill="#2f2f2f"/><rect x="140" y="9" width="26" height="9" rx="2" fill="#2f2f2f"/><rect x="172" y="9" width="26" height="9" rx="2" fill="#2f2f2f"/><rect x="103" y="23" width="98" height="72" rx="3" fill="#2a2a2a"/><rect x="106" y="26" width="92" height="66" rx="2" fill="#0B0C16"/><rect x="109" y="29" width="22" height="6" rx="1" fill="#2C3A7A"/><text x="120" y="33.6" font-size="3.6" fill="#fff" text-anchor="middle" class="dl">BPM 92</text><text x="110" y="45" font-size="5.6" fill="#F5C33B" class="dl">Seq A01</text><text x="110" y="54" font-size="5" fill="#F5C33B" class="dl">4/4</text><text x="140" y="54" font-size="5" fill="#fff" class="dl">001.01</text><text x="110" y="70" font-size="4" fill="#9ea3c7" class="dl">4 Bars   Q1/16</text><rect x="110" y="76" width="84" height="3" rx="1.5" fill="#1f2340"/><rect x="110" y="76" width="31" height="3" rx="1.5" fill="#4BE38A"/><circle cx="190" cy="44" r="3" fill="#E5322B"/><rect x="211" y="82" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="211" y="73" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="211" y="64" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="211" y="55" width="6" height="6" rx="1" fill="#F5C33B" opacity="1"/><rect x="211" y="46" width="6" height="6" rx="1" fill="#F08A2B" opacity="0.45"/><rect x="211" y="37" width="6" height="6" rx="1" fill="#E5322B" opacity="0.45"/><rect x="221" y="82" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="221" y="73" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="221" y="64" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="221" y="55" width="6" height="6" rx="1" fill="#F5C33B" opacity="1"/><rect x="221" y="46" width="6" height="6" rx="1" fill="#F08A2B" opacity="0.45"/><rect x="221" y="37" width="6" height="6" rx="1" fill="#E5322B" opacity="0.45"/><rect x="236" y="12" width="92" height="84" rx="4" fill="#0d0d0d"/><rect x="240" y="16" width="84" height="76" rx="3" fill="url(#iso-grpt)"/><rect x="16" y="114" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="16" y="125.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="31.0" y="122.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">SAMPLE</text><text x="31.0" y="131.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">INPUT CONFIG</text><rect x="52" y="114" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="52" y="125.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="122.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">SEQ</text><text x="67.0" y="131.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">STEP EDIT</text><rect x="16" y="140" width="30" height="13" rx="2.2" fill="#E8592A"/><rect x="16" y="151.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="31.0" y="148.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">PAD FX</text><text x="31.0" y="157.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">FLEX BEAT</text><rect x="52" y="140" width="30" height="13" rx="2.2" fill="#E8592A"/><rect x="52" y="151.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="148.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">KNOB FX</text><text x="67.0" y="157.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">FX SELECT</text><rect x="52" y="166" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="52" y="177.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="174.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">PAD BANK</text><rect x="16" y="190" width="40" height="14" rx="2.2" fill="#2d2d2d"/><rect x="16" y="202.4" width="40" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="36.0" y="198.5" font-size="4.6" fill="#f2f2f2" text-anchor="middle" class="dl">SHIFT</text><rect x="37" y="214" width="10" height="74" rx="2" fill="#cfcdc8"/><rect x="40" y="218" width="4" height="66" rx="2" fill="#1a1a1a"/><rect x="31" y="243" width="22" height="13" rx="2" fill="#000" opacity=".2"/><rect x="30" y="240" width="22" height="13" rx="2" fill="#f2f2f0" stroke="#a9a7a2" stroke-width=".6"/><line x1="31" y1="246.5" x2="51" y2="246.5" stroke="#9a9893" stroke-width=".8"/><rect x="60" y="244" width="6" height="3" rx="1" fill="#ffffff"/><rect x="16" y="298" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="16" y="309.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="31.0" y="306.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">ERASE</text><text x="31.0" y="315.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">COPY</text><rect x="52" y="298" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="52" y="309.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="306.0" font-size="3.3" fill="#f2f2f2" text-anchor="middle" class="dl">NOTE REPEAT</text><text x="67.0" y="315.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">TRIPLET</text><circle cx="123.6" cy="124.4" r="11.5" fill="#000" opacity=".22"/><circle cx="122" cy="122" r="11.5" fill="#2b2b2b"/><circle cx="122" cy="122" r="10" fill="#dcdbd7"/><circle cx="119.5" cy="119.0" r="5.5" fill="#f4f4f2" opacity=".8"/><line x1="122" y1="122" x2="127.5" y2="114.5" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="122" y="138" font-size="3.6" fill="#6d6b66" text-anchor="middle" class="dl">K1</text><circle cx="171.6" cy="124.4" r="11.5" fill="#000" opacity=".22"/><circle cx="170" cy="122" r="11.5" fill="#2b2b2b"/><circle cx="170" cy="122" r="10" fill="#dcdbd7"/><circle cx="167.5" cy="119.0" r="5.5" fill="#f4f4f2" opacity=".8"/><line x1="170" y1="122" x2="175.5" y2="114.5" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="170" y="138" font-size="3.6" fill="#6d6b66" text-anchor="middle" class="dl">K2</text><circle cx="219.6" cy="124.4" r="11.5" fill="#000" opacity=".22"/><circle cx="218" cy="122" r="11.5" fill="#2b2b2b"/><circle cx="218" cy="122" r="10" fill="#dcdbd7"/><circle cx="215.5" cy="119.0" r="5.5" fill="#f4f4f2" opacity=".8"/><line x1="218" y1="122" x2="223.5" y2="114.5" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="218" y="138" font-size="3.6" fill="#6d6b66" text-anchor="middle" class="dl">K3</text><rect x="97.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="97.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="138.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="97.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="97.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="138.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="97.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="97.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="138.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="97.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="269" width="36" height="36" rx="3" fill="#4BE38A" opacity=".85"/><rect x="97.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#7bd9a0"/><rect x="138.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="269" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="269" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="269" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><text x="114.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">FULL LEVEL</text><text x="155.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">HALF SEQ</text><text x="196.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">DOUBLE SEQ</text><text x="237.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">COUNT-IN</text><text x="263" y="110" font-size="3.3" fill="#6d6b66" class="dl">PAD PLAY</text><rect x="262" y="113" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="262" y="123.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="120.5" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">CHOP</text><text x="278.0" y="129.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">NOTE ON</text><rect x="298" y="113" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="298" y="123.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="120.5" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">MUTE</text><text x="314.0" y="129.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">UNMUTE ALL</text><rect x="262" y="135" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="262" y="145.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="142.5" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">LOOP</text><text x="278.0" y="151.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">REVERSE</text><rect x="298" y="135" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="298" y="145.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="142.5" font-size="3.6" fill="#f2f2f2" text-anchor="middle" class="dl">16 LEVELS</text><text x="314.0" y="151.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">TYPE</text><rect x="262" y="157" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="262" y="167.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="164.5" font-size="3.4" fill="#f2f2f2" text-anchor="middle" class="dl">SMP SELECT</text><text x="278.0" y="173.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">SAVE SAMPLE</text><rect x="298" y="157" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="298" y="167.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="164.5" font-size="3.4" fill="#f2f2f2" text-anchor="middle" class="dl">TAP TEMPO</text><text x="314.0" y="173.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">METRO</text><circle cx="297.6" cy="198.4" r="16.5" fill="#000" opacity=".22"/><circle cx="296" cy="196" r="16.5" fill="#2b2b2b"/><circle cx="296" cy="196" r="15" fill="#dcdbd7"/><circle cx="292.25" cy="191.5" r="8.25" fill="#f4f4f2" opacity=".8"/><line x1="296" y1="196" x2="304.25" y2="184.75" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><rect x="262" y="220" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="262" y="230.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="227.5" font-size="6" fill="#f2f2f2" text-anchor="middle" class="dl">−</text><text x="278.0" y="236.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">UNDO</text><rect x="298" y="220" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="298" y="230.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="227.5" font-size="6" fill="#f2f2f2" text-anchor="middle" class="dl">+</text><text x="314.0" y="236.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">REDO</text><rect x="262" y="243" width="32" height="13" rx="2.2" fill="#2d2d2d"/><rect x="262" y="254.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="251.0" font-size="3.6" fill="#ff6b5e" text-anchor="middle" class="dl">SEQ REC</text><text x="278.0" y="260.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">RECALL</text><rect x="298" y="243" width="32" height="13" rx="2.2" fill="#2d2d2d"/><rect x="298" y="254.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="251.0" font-size="3.6" fill="#ff6b5e" text-anchor="middle" class="dl">SMP REC</text><text x="314.0" y="260.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">RECALL</text><rect x="262" y="267" width="32" height="14" rx="2.2" fill="#2d2d2d"/><rect x="262" y="279.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="275.5" font-size="6" fill="#f2f2f2" text-anchor="middle" class="dl">■</text><rect x="298" y="267" width="32" height="14" rx="2.2" fill="#2d2d2d"/><rect x="298" y="279.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="275.5" font-size="6" fill="#4BE38A" text-anchor="middle" class="dl">▶</text><text x="314.0" y="285.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">CONTINUE</text><rect x="94" y="320" width="238" height="32" rx="6" fill="#5c5b58"/><text x="318" y="342" font-size="11" font-style="italic" font-weight="800" fill="#807f7a" text-anchor="end" class="dd">MPC SAMPLE</text></g><line x1="10.2" y1="234.0" x2="304.7" y2="404.0" stroke="#fff" stroke-opacity=".5" stroke-width="1"/></svg></div>
+    </div>
+    <div class="hero-index">
+      <div>1.0<br>2.0<br>4.0<br>8.0</div>
+      <div>A primeira hora<br>Anatomia do painel<br>Receitas<br>Fora da caixa</div>
+      <div>Akai Professional<br>Firmware 1.3</div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Secções">
+  <div class="wrap">
+    <div class="toc-links"><a href="#comecar"><b>1.0</b>Começar</a><a href="#anatomia"><b>2.0</b>Anatomia</a><a href="#conceitos"><b>3.0</b>Conceitos</a><a href="#receitas"><b>4.0</b>Receitas</a><a href="#efeitos"><b>5.0</b>Efeitos</a><a href="#musico"><b>6.0</b>Para músicos</a><a href="#plano"><b>7.0</b>Plano</a><a href="#ideias"><b>8.0</b>Fora da caixa</a><a href="#atalhos"><b>9.0</b>Atalhos</a></div>
+    <div class="lang" role="group" aria-label="Language"><button type="button" data-set="en">EN</button><button type="button" data-set="pt">PT</button></div>
+  </div>
+</nav>
+
+<section class="dark" id="ficha"><div class="wrap">
+  <div class="shead"><div class="no">0.1</div><h2>Ficha técnica<span>Em números</span></h2><p class="intro">O essencial do aparelho numa página. O resto do manual explica como tirar partido de cada número.</p></div>
+  <div class="metrics">
+    <div class="stats">
+      <div class="stat"><span class="lbl">↓ Pads RGB, aftertouch polifónico</span><b>16</b></div>
+      <div class="stat"><span class="lbl">↓ Vozes estéreo</span><b>32</b></div>
+      <div class="stat"><span class="lbl">↓ Bancos de pads</span><b>A–H</b></div>
+      <div class="stat"><span class="lbl">↓ Tipos de efeito, 4 motores</span><b>60</b></div>
+      <div class="stat"><span class="lbl">↓ Bateria fora da tomada</span><b>~5 h</b></div>
+      <div class="stat"><span class="lbl">↓ Memória interna</span><b>8 GB</b></div>
+    </div>
+    <div class="ports">
+      <span class="lbl">↓ Ligações</span>
+      <ul>
+        <li>Line In<span>6,35 TRS</span></li>
+        <li>Line Out<span>6,35 TRS</span></li>
+        <li>Auscultadores<span>3,5</span></li>
+        <li>MIDI In/Out<span>3,5 TRS*</span></li>
+        <li>Sync Out<span>Clock</span></li>
+        <li>USB-C<span>Carga</span></li>
+        <li>MicroSD<span>Expansão</span></li>
+      </ul>
+      <p class="lbl" style="margin-top:14px">* Precisa de adaptador TRS para MIDI DIN, não incluído. ~2 GB dos 8 GB vêm ocupados com sons de fábrica.</p>
+    </div>
+  </div>
+</div></section>
+
+<main>
+<section id="comecar"><div class="wrap">
+  <div class="shead"><div class="no">1.0</div><h2>A primeira hora<span>Oito passos</span></h2><p class="intro">Faz isto por ordem, uma vez. Depois disto o aparelho deixa de ser estranho. As caixas ficam marcadas neste browser.</p></div>
+  <div class="indent"><ul class="check">
+    <li><input type="checkbox" id="pt-c1" aria-labelledby="pt-c1t"><b id="pt-c1t">Carrega a bateria por USB-C</b><p>Dá cerca de 5 horas fora da tomada. Podes tocar enquanto carrega.</p></li>
+    <li><input type="checkbox" id="pt-c2" aria-labelledby="pt-c2t"><b id="pt-c2t">Atualiza o firmware</b><p>Em akaipro.com, página do MPC Sample. Várias funções e correções chegaram depois do lançamento; este guia assume a versão 1.3.</p></li>
+    <li><input type="checkbox" id="pt-c3" aria-labelledby="pt-c3t"><b id="pt-c3t">Auscultadores e <span class="key">MAIN VOLUME</span> baixo</b><p>O altifalante interno serve para esboçar. Os graves só aparecem nos auscultadores ou em colunas.</p></li>
+    <li><input type="checkbox" id="pt-c4" aria-labelledby="pt-c4t"><b id="pt-c4t">Toca um kit de fábrica</b><p>Há mais de 100. Abre um, carrega em <span class="key">▶</span> e toca por cima. Os pads respondem à força e à pressão.</p></li>
+    <li><input type="checkbox" id="pt-c5" aria-labelledby="pt-c5t"><b id="pt-c5t">Percorre os bancos com <span class="key">PAD BANK</span></b><p>Cada banco, de A a H, são mais 16 pads. O ecrã diz-te em que banco estás.</p></li>
+    <li><input type="checkbox" id="pt-c6" aria-labelledby="pt-c6t"><b id="pt-c6t">Silencia com <span class="key pp">MUTE</span></b><p>Com a música a tocar, segura MUTE e toca nos pads. <span class="key sh">SHIFT</span> + MUTE devolve tudo.</p></li>
+    <li><input type="checkbox" id="pt-c7" aria-labelledby="pt-c7t"><b id="pt-c7t">Grava o teu primeiro som</b><p><span class="key rec">SMP REC</span>, fala para o microfone interno, SMP REC outra vez. Já tens um sample num pad. Ver receita 4.2.</p></li>
+    <li><input type="checkbox" id="pt-c8" aria-labelledby="pt-c8t"><b id="pt-c8t">Desfaz sem medo</b><p><span class="key sh">SHIFT</span> + <span class="key">−</span> é Undo, <span class="key sh">SHIFT</span> + <span class="key">+</span> é Redo.</p></li>
+  </ul></div>
+</div></section>
+
+<section id="anatomia" class="anat"><div class="wrap">
+  <div class="shead"><div class="no">2.0</div><h2>Anatomia<span>do painel</span></h2><p class="intro">Toca num número para ver o que faz. Quase todos os botões têm uma segunda função, impressa a cinzento por baixo: segura <span class="key">SHIFT</span> para a usar.</p></div>
+  <div class="anatomy">
+    <div class="panel-fig">
+      <svg viewBox="-6 -6 352 372" class="flat-device" role="img" aria-label="Painel superior do MPC Sample"><g><defs><pattern id="flat-grpt" width="3.6" height="3.6" patternUnits="userSpaceOnUse"><circle cx="1.8" cy="1.8" r="0.95" fill="#3a3a3a"/></pattern></defs><rect x="0" y="0" width="340" height="360" rx="5" fill="#E3E1DC"/><path d="M5 0 H335 A5 5 0 0 1 340 5 V105 H0 V5 A5 5 0 0 1 5 0Z" fill="#151515"/><text x="16" y="26" font-size="15" font-weight="900" font-style="italic" fill="#D3221C" class="dd">AKAI</text><text x="17" y="33" font-size="4.6" font-style="italic" fill="#D3221C" class="dl">professional</text><circle cx="47.6" cy="68.4" r="16.5" fill="#000" opacity=".22"/><circle cx="46" cy="66" r="16.5" fill="#2b2b2b"/><circle cx="46" cy="66" r="15" fill="#dcdbd7"/><circle cx="42.25" cy="61.5" r="8.25" fill="#f4f4f2" opacity=".8"/><line x1="46" y1="66" x2="54.25" y2="54.75" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="46" y="96" font-size="3.6" fill="#8c8a85" text-anchor="middle" class="dl">MAIN VOLUME</text><rect x="108" y="9" width="26" height="9" rx="2" fill="#2f2f2f"/><rect x="140" y="9" width="26" height="9" rx="2" fill="#2f2f2f"/><rect x="172" y="9" width="26" height="9" rx="2" fill="#2f2f2f"/><rect x="103" y="23" width="98" height="72" rx="3" fill="#2a2a2a"/><rect x="106" y="26" width="92" height="66" rx="2" fill="#0B0C16"/><rect x="109" y="29" width="22" height="6" rx="1" fill="#2C3A7A"/><text x="120" y="33.6" font-size="3.6" fill="#fff" text-anchor="middle" class="dl">BPM 92</text><text x="110" y="45" font-size="5.6" fill="#F5C33B" class="dl">Seq A01</text><text x="110" y="54" font-size="5" fill="#F5C33B" class="dl">4/4</text><text x="140" y="54" font-size="5" fill="#fff" class="dl">001.01</text><text x="110" y="70" font-size="4" fill="#9ea3c7" class="dl">4 Bars   Q1/16</text><rect x="110" y="76" width="84" height="3" rx="1.5" fill="#1f2340"/><rect x="110" y="76" width="31" height="3" rx="1.5" fill="#4BE38A"/><circle cx="190" cy="44" r="3" fill="#E5322B"/><rect x="211" y="82" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="211" y="73" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="211" y="64" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="211" y="55" width="6" height="6" rx="1" fill="#F5C33B" opacity="1"/><rect x="211" y="46" width="6" height="6" rx="1" fill="#F08A2B" opacity="0.45"/><rect x="211" y="37" width="6" height="6" rx="1" fill="#E5322B" opacity="0.45"/><rect x="221" y="82" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="221" y="73" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="221" y="64" width="6" height="6" rx="1" fill="#3BD16F" opacity="1"/><rect x="221" y="55" width="6" height="6" rx="1" fill="#F5C33B" opacity="1"/><rect x="221" y="46" width="6" height="6" rx="1" fill="#F08A2B" opacity="0.45"/><rect x="221" y="37" width="6" height="6" rx="1" fill="#E5322B" opacity="0.45"/><rect x="236" y="12" width="92" height="84" rx="4" fill="#0d0d0d"/><rect x="240" y="16" width="84" height="76" rx="3" fill="url(#flat-grpt)"/><rect x="16" y="114" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="16" y="125.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="31.0" y="122.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">SAMPLE</text><text x="31.0" y="131.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">INPUT CONFIG</text><rect x="52" y="114" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="52" y="125.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="122.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">SEQ</text><text x="67.0" y="131.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">STEP EDIT</text><rect x="16" y="140" width="30" height="13" rx="2.2" fill="#E8592A"/><rect x="16" y="151.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="31.0" y="148.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">PAD FX</text><text x="31.0" y="157.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">FLEX BEAT</text><rect x="52" y="140" width="30" height="13" rx="2.2" fill="#E8592A"/><rect x="52" y="151.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="148.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">KNOB FX</text><text x="67.0" y="157.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">FX SELECT</text><rect x="52" y="166" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="52" y="177.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="174.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">PAD BANK</text><rect x="16" y="190" width="40" height="14" rx="2.2" fill="#2d2d2d"/><rect x="16" y="202.4" width="40" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="36.0" y="198.5" font-size="4.6" fill="#f2f2f2" text-anchor="middle" class="dl">SHIFT</text><rect x="37" y="214" width="10" height="74" rx="2" fill="#cfcdc8"/><rect x="40" y="218" width="4" height="66" rx="2" fill="#1a1a1a"/><rect x="31" y="243" width="22" height="13" rx="2" fill="#000" opacity=".2"/><rect x="30" y="240" width="22" height="13" rx="2" fill="#f2f2f0" stroke="#a9a7a2" stroke-width=".6"/><line x1="31" y1="246.5" x2="51" y2="246.5" stroke="#9a9893" stroke-width=".8"/><rect x="60" y="244" width="6" height="3" rx="1" fill="#ffffff"/><rect x="16" y="298" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="16" y="309.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="31.0" y="306.0" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">ERASE</text><text x="31.0" y="315.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">COPY</text><rect x="52" y="298" width="30" height="13" rx="2.2" fill="#2d2d2d"/><rect x="52" y="309.4" width="30" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="67.0" y="306.0" font-size="3.3" fill="#f2f2f2" text-anchor="middle" class="dl">NOTE REPEAT</text><text x="67.0" y="315.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">TRIPLET</text><circle cx="123.6" cy="124.4" r="11.5" fill="#000" opacity=".22"/><circle cx="122" cy="122" r="11.5" fill="#2b2b2b"/><circle cx="122" cy="122" r="10" fill="#dcdbd7"/><circle cx="119.5" cy="119.0" r="5.5" fill="#f4f4f2" opacity=".8"/><line x1="122" y1="122" x2="127.5" y2="114.5" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="122" y="138" font-size="3.6" fill="#6d6b66" text-anchor="middle" class="dl">K1</text><circle cx="171.6" cy="124.4" r="11.5" fill="#000" opacity=".22"/><circle cx="170" cy="122" r="11.5" fill="#2b2b2b"/><circle cx="170" cy="122" r="10" fill="#dcdbd7"/><circle cx="167.5" cy="119.0" r="5.5" fill="#f4f4f2" opacity=".8"/><line x1="170" y1="122" x2="175.5" y2="114.5" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="170" y="138" font-size="3.6" fill="#6d6b66" text-anchor="middle" class="dl">K2</text><circle cx="219.6" cy="124.4" r="11.5" fill="#000" opacity=".22"/><circle cx="218" cy="122" r="11.5" fill="#2b2b2b"/><circle cx="218" cy="122" r="10" fill="#dcdbd7"/><circle cx="215.5" cy="119.0" r="5.5" fill="#f4f4f2" opacity=".8"/><line x1="218" y1="122" x2="223.5" y2="114.5" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><text x="218" y="138" font-size="3.6" fill="#6d6b66" text-anchor="middle" class="dl">K3</text><rect x="97.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="97.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="138.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="148.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="146" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="147.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="97.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="97.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="138.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="189.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="187" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="188.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="97.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="97.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="138.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="230.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="228" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="229.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="97.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="96" y="269" width="36" height="36" rx="3" fill="#4BE38A" opacity=".85"/><rect x="97.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#7bd9a0"/><rect x="138.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="137" y="269" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="138.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="179.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="178" y="269" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="179.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><rect x="220.4" y="271.2" width="36" height="36" rx="3" fill="#000" opacity=".18"/><rect x="219" y="269" width="36" height="36" rx="3" fill="#D6F26A" opacity=".85"/><rect x="220.6" y="270.6" width="32.8" height="32.8" rx="2.4" fill="#ABAAA5"/><text x="114.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">FULL LEVEL</text><text x="155.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">HALF SEQ</text><text x="196.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">DOUBLE SEQ</text><text x="237.0" y="312" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">COUNT-IN</text><text x="263" y="110" font-size="3.3" fill="#6d6b66" class="dl">PAD PLAY</text><rect x="262" y="113" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="262" y="123.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="120.5" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">CHOP</text><text x="278.0" y="129.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">NOTE ON</text><rect x="298" y="113" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="298" y="123.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="120.5" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">MUTE</text><text x="314.0" y="129.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">UNMUTE ALL</text><rect x="262" y="135" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="262" y="145.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="142.5" font-size="4.0" fill="#f2f2f2" text-anchor="middle" class="dl">LOOP</text><text x="278.0" y="151.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">REVERSE</text><rect x="298" y="135" width="32" height="12" rx="2.2" fill="#2F7FD1"/><rect x="298" y="145.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="142.5" font-size="3.6" fill="#f2f2f2" text-anchor="middle" class="dl">16 LEVELS</text><text x="314.0" y="151.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">TYPE</text><rect x="262" y="157" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="262" y="167.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="164.5" font-size="3.4" fill="#f2f2f2" text-anchor="middle" class="dl">SMP SELECT</text><text x="278.0" y="173.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">SAVE SAMPLE</text><rect x="298" y="157" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="298" y="167.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="164.5" font-size="3.4" fill="#f2f2f2" text-anchor="middle" class="dl">TAP TEMPO</text><text x="314.0" y="173.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">METRO</text><circle cx="297.6" cy="198.4" r="16.5" fill="#000" opacity=".22"/><circle cx="296" cy="196" r="16.5" fill="#2b2b2b"/><circle cx="296" cy="196" r="15" fill="#dcdbd7"/><circle cx="292.25" cy="191.5" r="8.25" fill="#f4f4f2" opacity=".8"/><line x1="296" y1="196" x2="304.25" y2="184.75" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><rect x="262" y="220" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="262" y="230.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="227.5" font-size="6" fill="#f2f2f2" text-anchor="middle" class="dl">−</text><text x="278.0" y="236.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">UNDO</text><rect x="298" y="220" width="32" height="12" rx="2.2" fill="#2d2d2d"/><rect x="298" y="230.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="227.5" font-size="6" fill="#f2f2f2" text-anchor="middle" class="dl">+</text><text x="314.0" y="236.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">REDO</text><rect x="262" y="243" width="32" height="13" rx="2.2" fill="#2d2d2d"/><rect x="262" y="254.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="251.0" font-size="3.6" fill="#ff6b5e" text-anchor="middle" class="dl">SEQ REC</text><text x="278.0" y="260.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">RECALL</text><rect x="298" y="243" width="32" height="13" rx="2.2" fill="#2d2d2d"/><rect x="298" y="254.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="251.0" font-size="3.6" fill="#ff6b5e" text-anchor="middle" class="dl">SMP REC</text><text x="314.0" y="260.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">RECALL</text><rect x="262" y="267" width="32" height="14" rx="2.2" fill="#2d2d2d"/><rect x="262" y="279.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="278.0" y="275.5" font-size="6" fill="#f2f2f2" text-anchor="middle" class="dl">■</text><rect x="298" y="267" width="32" height="14" rx="2.2" fill="#2d2d2d"/><rect x="298" y="279.4" width="32" height="1.6" rx="0.8" fill="#000" opacity=".25"/><text x="314.0" y="275.5" font-size="6" fill="#4BE38A" text-anchor="middle" class="dl">▶</text><text x="314.0" y="285.6" font-size="3.3" fill="#6d6b66" text-anchor="middle" class="dl">CONTINUE</text><rect x="94" y="320" width="238" height="32" rx="6" fill="#5c5b58"/><text x="318" y="342" font-size="11" font-style="italic" font-weight="800" fill="#807f7a" text-anchor="end" class="dd">MPC SAMPLE</text></g><g class="hotspots"></g></svg>
+      <div class="figcap"><span class="lbl">↓ Vista superior, 24 controlos</span><div class="toggle"><span class="lbl shiftHint">Funções secundárias</span><button type="button" class="shiftBtn" aria-pressed="false">Shift</button></div></div>
+    </div>
+    <div class="partsWrap"><ul class="parts"></ul></div>
+  </div>
+</div></section>
+
+<section id="conceitos"><div class="wrap">
+  <div class="shead"><div class="no">3.0</div><h2>Como o MPC pensa<span>Quatro camadas</span></h2><p class="intro">Umas dentro das outras. Quando percebes isto, os menus ficam óbvios.</p></div>
+  <div class="concept">
+    <div class="fig"><svg viewBox="-114 -180 435 250" class="iso-layers" role="img" aria-label="Projeto > Sequências > Pads · bancos A–H > Samples"><polygon points="103.9,-8.0 0.0,52.0 0.0,60.0 103.9,0.0" class="r" /><polygon points="-103.9,-8.0 0.0,52.0 0.0,60.0 -103.9,0.0" class="l" /><polygon points="0.0,-68.0 103.9,-8.0 0.0,52.0 -103.9,-8.0" class="a3f" /><line x1="107.9" y1="-4.0" x2="143.9" y2="-4.0" class="ln blkS" stroke-dasharray="2 2"/><circle cx="107.9" cy="-4.0" r="1.6" class="lay-d"/><text x="149.9" y="-0.5" class="lay-l">Samples</text><polygon points="103.9,-42.0 0.0,18.0 0.0,26.0 103.9,-34.0" class="r" /><polygon points="-103.9,-42.0 0.0,18.0 0.0,26.0 -103.9,-34.0" class="l" /><polygon points="0.0,-102.0 103.9,-42.0 0.0,18.0 -103.9,-42.0" class="a1f" /><line x1="107.9" y1="-38.0" x2="143.9" y2="-38.0" class="ln blkS" stroke-dasharray="2 2"/><circle cx="107.9" cy="-38.0" r="1.6" class="lay-d"/><text x="149.9" y="-34.5" class="lay-l">Pads · bancos A–H</text><polygon points="103.9,-76.0 0.0,-16.0 0.0,-8.0 103.9,-68.0" class="r" /><polygon points="-103.9,-76.0 0.0,-16.0 0.0,-8.0 -103.9,-68.0" class="l" /><polygon points="0.0,-136.0 103.9,-76.0 0.0,-16.0 -103.9,-76.0" class="a2f" /><line x1="107.9" y1="-72.0" x2="143.9" y2="-72.0" class="ln blkS" stroke-dasharray="2 2"/><circle cx="107.9" cy="-72.0" r="1.6" class="lay-d"/><text x="149.9" y="-68.5" class="lay-l">Sequências</text><polygon points="103.9,-110.0 0.0,-50.0 0.0,-42.0 103.9,-102.0" class="r" /><polygon points="-103.9,-110.0 0.0,-50.0 0.0,-42.0 -103.9,-102.0" class="l" /><polygon points="0.0,-170.0 103.9,-110.0 0.0,-50.0 -103.9,-110.0" class="t" /><line x1="107.9" y1="-106.0" x2="143.9" y2="-106.0" class="ln blkS" stroke-dasharray="2 2"/><circle cx="107.9" cy="-106.0" r="1.6" class="lay-d"/><text x="149.9" y="-102.5" class="lay-l">Projeto</text></svg></div>
+    <div class="defs">
+      <div><span class="lbl">↓ 3.1</span><b>Sample</b><p>Um ficheiro de áudio. Um bombo, uma frase de piano, a tua voz, o elétrico 28.</p></div>
+      <div><span class="lbl">↓ 3.2</span><b>Pad</b><p>O sítio onde o sample vive, com as suas regras: início e fim, Loop, Reverse, volume, afinação.</p></div>
+      <div><span class="lbl">↓ 3.3</span><b>Sequência</b><p>Um padrão gravado de toques nos pads, com tamanho em compassos. Pensa nela como uma secção: intro, verso, refrão.</p></div>
+      <div><span class="lbl">↓ 3.4</span><b>Projeto</b><p>Tudo junto: samples, pads, sequências, tempo. É o que guardas e voltas a abrir.</p></div>
+    </div>
+  </div>
+  <div class="indent"><p class="note">Os botões da esquerda escolhem o <b>modo</b>: <span class="key">SAMPLE</span> para gravar e editar sons, <span class="key">SEQ</span> para compor, <span class="key fx">PAD FX</span> e <span class="key fx">KNOB FX</span> para efeitos. Os knobs K1–K3 e os botões B1–B3 por cima do ecrã mudam de função consoante o modo; lê sempre o ecrã para saber o que controlam agora.</p></div>
+</div></section>
+
+<section id="receitas"><div class="wrap">
+  <div class="shead"><div class="no">4.0</div><h2>Receitas<span>Sete tarefas</span></h2><p class="intro">Pela ordem em que as vais precisar. Cada uma demora entre 10 e 30 minutos.</p></div>
+
+  <article class="recipe"><div class="big">4.1</div>
+    <div class="head"><h3>Grava um beat num kit de fábrica</h3><p class="why">O gesto clássico do MPC: tocar ao vivo sobre um metrónomo e deixar o quantize arrumar.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Carrega em <span class="key">SEQ</span>. Com <b>K1</b> define o tamanho (começa com 2 compassos).</span></li>
+      <li><span>Bate o tempo em <span class="key">TAP TEMPO</span>. <span class="key sh">SHIFT</span> + TAP TEMPO liga o metrónomo.</span></li>
+      <li><span>Liga o Record Quantize com <b>B3</b> e escolhe a grelha com <b>K2</b>. 1/16 é um bom começo.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 4</span> liga a contagem (Count-in).</span></li>
+      <li><span><span class="key rec">SEQ REC</span> e toca só o bombo. Quando a sequência dá a volta continua a gravar em overdub: acrescenta a tarola, depois os hi-hats.</span></li>
+      <li><span>Errou? Segura <span class="key">ERASE</span> e o pad enquanto toca, e as notas desse pad desaparecem.</span></li>
+      <li><span><span class="key rec">SEQ REC</span> outra vez para parar de gravar sem parar a música.</span></li>
+    </ol></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.2</div>
+    <div class="head"><h3>Sampla qualquer coisa</h3><p class="why">O microfone interno faz do mundo uma biblioteca de sons. Para discos ou sintetizadores, usa a entrada de linha.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">SAMPLE</span> (Input Config) escolhe a fonte: microfone interno ou Line In.</span></li>
+      <li><span>Carrega em <span class="key rec">SMP REC</span> e ajusta o <b>threshold</b> com <b>K3</b>. A gravação só arranca quando o som passa este nível; o ícone da onda acende quando isso acontece.</span></li>
+      <li><span>Escolhe o pad de destino, faz o som, carrega de novo em SMP REC.</span></li>
+      <li><span>Em <span class="key">SAMPLE</span>, apara início e fim com os knobs.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">SMP SELECT</span> (Save Sample) guarda-o como ficheiro.</span></li>
+    </ol>
+    <div class="tip"><span class="lbl">↓ Recall</span>Tocaste algo bom sem estar a gravar? <span class="key sh">SHIFT</span> + <span class="key rec">SMP REC</span> ou <span class="key rec">SEQ REC</span> recupera o que acabou de acontecer.</div></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.3</div>
+    <div class="head"><h3>Corta um loop em 16 pads</h3><p class="why">O “chop”: uma frase de disco partida em pedaços e reorganizada com os dedos.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Escolhe o pad com o sample e carrega em <span class="key pp">CHOP</span>.</span></li>
+      <li><span>Com <b>K3</b> escolhe o modo: <b>Threshold</b> corta nos ataques (baterias), <b>Regions 4/8/16</b> divide em partes iguais (loops no tempo), <b>Manual</b> deixa-te marcar os cortes a ouvir.</span></li>
+      <li><span>Os pads passam a tocar cada fatia. Toca-as por outra ordem.</span></li>
+      <li><span>Grava uma sequência com as fatias (receita 4.1).</span></li>
+    </ol>
+    <div class="tip"><span class="lbl">↓ Truque</span>Num loop de 1 compasso em 4/4, Regions 16 dá exatamente uma fatia por semicolcheia.</div></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.4</div>
+    <div class="head"><h3>Note Repeat, swing e dinâmica</h3><p class="why">Hi-hats contínuos e rolos de tarola sem dedos de baterista.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Segura <span class="key">NOTE REPEAT</span> e um pad: o som repete na divisão escolhida em B1–B3.</span></li>
+      <li><span>Carrega mais ou menos no pad: o aftertouch muda a intensidade.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + NOTE REPEAT ativa tercinas (Triplet).</span></li>
+      <li><span>Ajusta o swing no ecrã do sequenciador. Entre 54% e 58% é o groove clássico.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 1</span> (Full Level) põe todos os pads no máximo.</span></li>
+    </ol></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.5</div>
+    <div class="head"><h3>Arranja: dobra, corta, copia</h3><p class="why">Passar de um loop a uma estrutura.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 3</span> (Double Seq) duplica a sequência. Grava variações na segunda metade.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 2</span> (Half Seq) corta-a a meio.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">ERASE</span> (Copy) copia uma sequência para criares secções novas.</span></li>
+      <li><span>Muda de sequência durante a reprodução para montar a faixa ao vivo.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">SEQ</span> (Step Edit) mostra as notas uma a uma; aqui o fader ajusta o tempo de cada evento.</span></li>
+    </ol></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.6</div>
+    <div class="head"><h3>Toca melodias com 16 Levels</h3><p class="why">Um sample espalhado pelos 16 pads, cada um numa afinação diferente.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Escolhe um sample curto e afinado: uma nota de piano, baixo ou voz.</span></li>
+      <li><span>Carrega em <span class="key pp">16 LEVELS</span>. <span class="key sh">SHIFT</span> + 16 LEVELS (Type) escolhe o parâmetro que varia.</span></li>
+      <li><span>Com a afinação, os pads ficam um teclado de 16 meios-tons.</span></li>
+      <li><span>Carrega de novo em 16 LEVELS para voltar aos pads normais.</span></li>
+    </ol></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.7</div>
+    <div class="head"><h3>Resample e guarda</h3><p class="why">Imprimir o resultado, com efeitos, num sample novo.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Com a sequência pronta, entra em <span class="key rec">SMP REC</span> e escolhe <b>Resample</b> (Pad 11 no ecrã de gravação).</span></li>
+      <li><span>O MPC grava a saída para um pad novo, já com os efeitos.</span></li>
+      <li><span>Corta, inverte ou passa por mais efeitos esse resultado.</span></li>
+      <li><span>Guarda o projeto no fim de cada sessão. Usa microSD para cópias de segurança.</span></li>
+    </ol>
+    <div class="tip"><span class="lbl">↓ Fader</span>Por defeito controla o volume do pad. <span class="key sh">SHIFT</span> + <span class="key pad">PAD 9</span> muda o parâmetro, por exemplo afinação ou filtro.</div></div>
+  </article>
+</div></section>
+
+<section id="efeitos"><div class="wrap">
+  <div class="shead"><div class="no">5.0</div><h2>Efeitos<span>Quatro motores</span></h2><p class="intro">Dois para tocar com os dedos, um para rodar e um para colar tudo. Grava primeiro a música limpa e os efeitos depois, num overdub ou num resample.</p></div>
+  <div class="fxgrid">
+    <div class="fx"><div class="big">1</div><h3>Pad FX</h3><p class="sub">Efeitos nos pads</p><span class="key fx">PAD FX</span><span class="lbl">↓ Inclui</span><ul><li>16 efeitos, um por pad</li><li>Sensíveis à força</li><li>Filtros e beat repeat</li><li>Stutter, reverse, delay</li><li>Ring mod, lo-fi, granular</li></ul></div>
+    <div class="fx"><div class="big">2</div><h3>Flex Beat</h3><p class="sub">Manipular o tempo</p><span class="key fx">SHIFT · PAD FX</span><span class="lbl">↓ Inclui</span><ul><li>16 efeitos de tempo</li><li>Scratch de DJ</li><li>Cortes de beat</li><li>Trance gate</li><li>Afinação e volume</li></ul></div>
+    <div class="fx"><div class="big">3</div><h3>Knob FX</h3><p class="sub">Um efeito nos knobs</p><span class="key fx">KNOB FX</span><span class="lbl">↓ Inclui</span><ul><li>Delays e reverbs</li><li>Simulação de amp</li><li>Modulação</li><li>Emulações vintage</li><li>Shift + Knob FX: escolher</li></ul></div>
+    <div class="fx"><div class="big">4</div><h3>Color Compressor</h3><p class="sub">Cola na saída</p><span class="key sh">MASTER</span><span class="lbl">↓ Inclui</span><ul><li>Compressão “retro”</li><li>Densidade típica de MPC</li><li>Emulação de vinil</li><li>Emulação de fita</li><li>Aplica-se a tudo</li></ul></div>
+  </div>
+</div></section>
+
+<section id="musico"><div class="wrap">
+  <div class="shead"><div class="no">6.0</div><h2>Para músicos<span>Tradução</span></h2><p class="intro">Tens ouvido e teoria. O que muda no MPC é o vocabulário e pensar em grelha.</p></div>
+  <div class="indent"><div class="tbl"><table>
+    <thead><tr><th>Sabes que…</th><th>No MPC chama-se</th><th>Dica</th></tr></thead>
+    <tbody>
+      <tr><td>Compasso e subdivisão</td><td>Bars + Q (quantize)</td><td>1/16 para hip-hop e house, 1/8 com Triplet para shuffle e 6/8.</td></tr>
+      <tr><td>Groove</td><td>Swing</td><td>Aplica antes de gravar os hi-hats; 54–58% soa humano.</td></tr>
+      <tr><td>Dinâmica</td><td>Velocity + aftertouch</td><td>Desliga Full Level para ghost notes na tarola.</td></tr>
+      <tr><td>Tonalidade</td><td>16 Levels (Tune)</td><td>Afina o sample à tónica antes de o espalhar pelos pads.</td></tr>
+      <tr><td>Forma</td><td>Sequências</td><td>Uma sequência por secção. Copy + alterações = variação.</td></tr>
+      <tr><td>Harmonia</td><td>Samples de acordes</td><td>Grava acordes do teu instrumento, um por pad, no tempo do projeto.</td></tr>
+      <tr><td>Improvisar</td><td>Recall</td><td>Toca à vontade; o Recall guarda o que acabaste de fazer.</td></tr>
+    </tbody>
+  </table></div></div>
+</div></section>
+
+<section id="plano"><div class="wrap">
+  <div class="shead"><div class="no">7.0</div><h2>Plano<span>Quatro semanas</span></h2><p class="intro">Três sessões curtas por semana, de 20 a 40 minutos. Acaba cada sessão a guardar alguma coisa, mesmo imperfeita.</p></div>
+  <div class="weeks">
+    <div><div class="big">1</div><h3>Tocar</h3><span class="lbl">↓ Semana 1</span><ul><li>Explorar os kits de fábrica</li><li>Mute, Note Repeat, Full Level</li><li>Gravar 3 beats de 2 compassos</li><li>Aprender Undo e Erase</li></ul></div>
+    <div><div class="big">2</div><h3>Samplar</h3><span class="lbl">↓ Semana 2</span><ul><li>10 sons da casa e da rua</li><li>Um disco ou instrumento por Line In</li><li>Chop nos três modos</li><li>Criar e guardar um kit teu</li></ul></div>
+    <div><div class="big">3</div><h3>Transformar</h3><span class="lbl">↓ Semana 3</span><ul><li>Pad FX e Flex Beat ao vivo</li><li>Knob FX numa linha de baixo</li><li>16 Levels para uma melodia</li><li>Resample de uma ideia</li></ul></div>
+    <div><div class="big">4</div><h3>Acabar</h3><span class="lbl">↓ Semana 4</span><ul><li>3 sequências: intro, A, B</li><li>Tocar o arranjo ao vivo</li><li>Uma peça de 60–90 segundos</li><li>Partilhar com alguém</li></ul></div>
+  </div>
+</div></section>
+
+<section id="ideias"><div class="wrap">
+  <div class="shead"><div class="no">8.0</div><h2>Fora da caixa<span>Design + código</span></h2><p class="intro">Para um designer, o MPC é também uma ferramenta de identidade, de protótipo e de experiência. Seis pontos de partida.</p></div>
+  <div class="ideas">
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.1</span><span>Código</span></div><div class="tile"><svg viewBox="-55 -80 113 116" class="iso-icon" aria-hidden="true"><polygon points="45.0,1.0 6.9,23.0 6.9,26.0 45.0,4.0" class="r" /><polygon points="-45.0,-7.0 6.9,23.0 6.9,26.0 -45.0,-4.0" class="l" /><polygon points="-6.9,-29.0 45.0,1.0 6.9,23.0 -45.0,-7.0" class="t" /><polygon points="47.6,-40.5 45.0,-39.0 45.0,1.0 47.6,-0.5" class="r" /><polygon points="-6.9,-69.0 45.0,-39.0 45.0,1.0 -6.9,-29.0" class="scr" /><polygon points="-4.3,-70.5 47.6,-40.5 45.0,-39.0 -6.9,-69.0" class="t" /><polyline points="-1.7,-57.0 17.3,-46.0" class="ln a1"/><polyline points="1.7,-48.0 27.7,-33.0" class="ln a2"/><polyline points="1.7,-41.0 15.6,-33.0" class="ln a3"/><polyline points="-1.7,-36.0 6.9,-31.0" class="ln a1"/></svg></div><h3>Pads que desenham</h3><p>O MIDI Out dispara formas, cores ou tipos num sketch de p5.js, TouchDesigner ou Three.js. Um instrumento visual para apresentações.</p><p class="how">MIDI Out → adaptador → interface USB → Web MIDI</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.2</span><span>Identidade</span></div><div class="tile"><svg viewBox="-57 -61 114 98" class="iso-icon" aria-hidden="true"><polygon points="-5.2,-39.0 -26.0,-27.0 -26.0,-3.0 -5.2,-15.0" class="r" /><polygon points="-46.8,-39.0 -26.0,-27.0 -26.0,-3.0 -46.8,-15.0" class="l" /><polygon points="-26.0,-51.0 -5.2,-39.0 -26.0,-27.0 -46.8,-39.0" class="t" /><text transform="matrix(0.866,0.5,-0.866,0.5,-26.0,-39.0)" font-size="18" text-anchor="middle" dominant-baseline="central" class="dd a1f">M</text><polygon points="20.8,-24.0 0.0,-12.0 0.0,12.0 20.8,0.0" class="r" /><polygon points="-20.8,-24.0 0.0,-12.0 0.0,12.0 -20.8,0.0" class="l" /><polygon points="0.0,-36.0 20.8,-24.0 0.0,-12.0 -20.8,-24.0" class="t" /><text transform="matrix(0.866,0.5,-0.866,0.5,0.0,-24.0)" font-size="18" text-anchor="middle" dominant-baseline="central" class="dd a2f">P</text><polygon points="46.8,-9.0 26.0,3.0 26.0,27.0 46.8,15.0" class="r" /><polygon points="5.2,-9.0 26.0,3.0 26.0,27.0 5.2,15.0" class="l" /><polygon points="26.0,-21.0 46.8,-9.0 26.0,3.0 5.2,-9.0" class="t" /><text transform="matrix(0.866,0.5,-0.866,0.5,26.0,-9.0)" font-size="18" text-anchor="middle" dominant-baseline="central" class="dd a3f">C</text></svg></div><h3>Tipografia rítmica</h3><p>Um nome de marca com até 16 letras cabe numa sequência de 16 passos. Um som por letra: o nome ouvido como ritmo, ponto de partida para um sound logo.</p><p class="how">1 letra = 1 passo · vogais = notas</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.3</span><span>Estúdio</span></div><div class="tile"><svg viewBox="-55 -35 104 70" class="iso-icon" aria-hidden="true"><polygon points="39.8,10.0 24.2,19.0 24.2,22.0 39.8,13.0" class="r" /><polygon points="-36.4,-16.0 24.2,19.0 24.2,22.0 -36.4,-13.0" class="l" /><polygon points="-20.8,-25.0 39.8,10.0 24.2,19.0 -36.4,-16.0" class="a2f" /><line x1="-17.3" y1="-23.1" x2="-25.1" y2="-18.6" class="ln blkS"/><line x1="-10.4" y1="-19.1" x2="-15.6" y2="-16.1" class="ln blkS"/><line x1="-3.5" y1="-15.1" x2="-11.3" y2="-10.6" class="ln blkS"/><line x1="3.5" y1="-11.1" x2="-1.7" y2="-8.1" class="ln blkS"/><line x1="10.4" y1="-7.1" x2="2.6" y2="-2.6" class="ln blkS"/><line x1="17.3" y1="-3.1" x2="12.1" y2="-0.1" class="ln blkS"/><line x1="24.2" y1="0.9" x2="16.5" y2="5.4" class="ln blkS"/><line x1="31.2" y1="4.9" x2="26.0" y2="7.9" class="ln blkS"/><line x1="38.1" y1="8.9" x2="30.3" y2="13.4" class="ln blkS"/><polygon points="13.9,15.0 7.8,18.5 7.8,25.5 13.9,22.0" class="a1d" /><polygon points="-39.0,-8.5 7.8,18.5 7.8,25.5 -39.0,-1.5" class="a1d" /><polygon points="-32.9,-12.0 13.9,15.0 7.8,18.5 -39.0,-8.5" class="a1f" /><polygon points="-39.0,-1.5 -39.0,-8.5 -44.6,-11.8" class="l" /><polygon points="-32.9,-12.0 -39.0,-8.5 -44.6,-11.8" class="t" /></svg></div><h3>O estúdio como kit</h3><p>Sampla as ferramentas do ofício: caneta, x-ato, teclado, risografia, papel a rasgar. Um kit de bateria feito de design.</p><p class="how">Microfone interno · Chop por Threshold</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.4</span><span>Lisboa</span></div><div class="tile"><svg viewBox="-45 -34 89 64" class="iso-icon" aria-hidden="true"><polygon points="34.6,-10.0 -10.4,16.0 -10.4,20.0 34.6,-6.0" class="r" /><polygon points="-34.6,2.0 -10.4,16.0 -10.4,20.0 -34.6,6.0" class="l" /><polygon points="10.4,-24.0 34.6,-10.0 -10.4,16.0 -34.6,2.0" class="scrtop" /><polygon points="7.8,0.3 6.0,1.1 4.0,1.7 1.7,2.1 -0.6,2.2 -2.9,1.9 -5.0,1.5 -6.9,0.7 -8.6,-0.2 -9.8,-1.3 -10.6,-2.6 -11.0,-3.9 -10.9,-5.2 -10.3,-6.5 -9.2,-7.7 -7.8,-8.7 -6.0,-9.5 -4.0,-10.1 -1.7,-10.5 0.6,-10.6 2.9,-10.3 5.0,-9.9 6.9,-9.1 8.6,-8.2 9.8,-7.1 10.6,-5.8 11.0,-4.5 10.9,-3.2 10.3,-1.9 9.2,-0.7" class="a2f" /><polygon points="3.5,-2.4 2.2,-1.9 0.8,-1.6 -0.8,-1.6 -2.2,-1.9 -3.5,-2.4 -4.4,-3.1 -4.8,-4.0 -4.8,-4.8 -4.4,-5.7 -3.5,-6.4 -2.2,-6.9 -0.8,-7.2 0.8,-7.2 2.2,-6.9 3.5,-6.4 4.4,-5.7 4.8,-4.8 4.8,-4.0 4.4,-3.1" class="t" /></svg></div><h3>Diário sonoro</h3><p>Elétrico, gaivotas, calçada, mercado, o rio. Um beat por bairro, enviado à equipa de Nova Iorque como postal sonoro.</p><p class="how">Bateria ~5 h · nomeia por sítio</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.5</span><span>Produto</span></div><div class="tile"><svg viewBox="-52 -82 103 116" class="iso-icon" aria-hidden="true"><polygon points="41.6,-48.0 0.0,-24.0 0.0,24.0 41.6,0.0" class="r" /><polygon points="-41.6,-48.0 0.0,-24.0 0.0,24.0 -41.6,0.0" class="l" /><polygon points="0.0,-72.0 41.6,-48.0 0.0,-24.0 -41.6,-48.0" class="t" /><polygon points="-7.8,-2.5 -8.0,-5.2 -8.6,-8.1 -9.5,-11.0 -10.8,-13.9 -12.4,-16.7 -14.3,-19.2 -16.3,-21.5 -18.5,-23.5 -20.8,-25.0 -23.0,-26.1 -25.2,-26.7 -27.3,-26.7 -29.1,-26.3 -30.7,-25.4 -32.0,-24.0 -33.0,-22.2 -33.6,-20.0 -33.8,-17.5 -33.6,-14.8 -33.0,-11.9 -32.0,-9.0 -30.7,-6.1 -29.1,-3.3 -27.3,-0.8 -25.2,1.5 -23.0,3.5 -20.8,5.0 -18.5,6.1 -16.3,6.7 -14.3,6.7 -12.4,6.3 -10.8,5.4 -9.5,4.0 -8.6,2.2 -8.0,-0.0" class="blk" /><polygon points="-14.7,-6.5 -14.8,-7.8 -15.1,-9.1 -15.5,-10.5 -16.1,-11.8 -16.9,-13.1 -17.8,-14.3 -18.7,-15.4 -19.7,-16.3 -20.8,-17.0 -21.8,-17.5 -22.9,-17.8 -23.8,-17.8 -24.7,-17.6 -25.4,-17.2 -26.0,-16.5 -26.5,-15.7 -26.8,-14.7 -26.8,-13.5 -26.8,-12.2 -26.5,-10.9 -26.0,-9.5 -25.4,-8.2 -24.7,-6.9 -23.8,-5.7 -22.9,-4.6 -21.8,-3.7 -20.8,-3.0 -19.7,-2.5 -18.7,-2.2 -17.8,-2.2 -16.9,-2.4 -16.1,-2.8 -15.5,-3.5 -15.1,-4.3 -14.8,-5.3" class="a3f" /><polygon points="-17.3,-26.0 -17.4,-26.7 -17.5,-27.5 -17.8,-28.3 -18.1,-29.0 -18.6,-29.8 -19.1,-30.5 -19.6,-31.1 -20.2,-31.6 -20.8,-32.0 -21.4,-32.3 -22.0,-32.4 -22.5,-32.5 -23.0,-32.3 -23.4,-32.1 -23.8,-31.7 -24.0,-31.2 -24.2,-30.7 -24.2,-30.0 -24.2,-29.3 -24.0,-28.5 -23.8,-27.7 -23.4,-27.0 -23.0,-26.2 -22.5,-25.5 -22.0,-24.9 -21.4,-24.4 -20.8,-24.0 -20.2,-23.7 -19.6,-23.6 -19.1,-23.5 -18.6,-23.7 -18.1,-23.9 -17.8,-24.3 -17.5,-24.8 -17.4,-25.3" class="blk" /></svg></div><h3>Sons de interface</h3><p>Tap, sucesso, erro, notificação. Uma família sonora coerente, como um sistema de design para o ouvido.</p><p class="how">Save Sample → WAV → protótipo em código</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.6</span><span>Espaço</span></div><div class="tile"><svg viewBox="-65 -51 131 93" class="iso-icon" aria-hidden="true"><polygon points="55.4,-9.0 0.0,23.0 0.0,32.0 55.4,0.0" class="r" /><polygon points="-55.4,-9.0 0.0,23.0 0.0,32.0 -55.4,0.0" class="l" /><polygon points="0.0,-41.0 55.4,-9.0 0.0,23.0 -55.4,-9.0" class="t" /><polygon points="19.1,-0.2 15.5,1.5 11.6,2.9 7.4,3.9 2.9,4.6 -1.7,4.8 -6.3,4.6 -10.8,3.9 -15.1,2.9 -19.0,1.5 -22.5,-0.2 -25.5,-2.2 -27.9,-4.5 -29.7,-7.0 -30.8,-9.5 -31.1,-12.2 -30.8,-14.9 -29.7,-17.4 -27.9,-19.9 -25.5,-22.2 -22.5,-24.2 -19.0,-25.9 -15.1,-27.3 -10.8,-28.3 -6.3,-29.0 -1.7,-29.2 2.9,-29.0 7.4,-28.3 11.6,-27.3 15.5,-25.9 19.1,-24.2 22.0,-22.2 24.5,-19.9 26.2,-17.4 27.3,-14.9 27.7,-12.2 27.3,-9.5 26.2,-7.0 24.5,-4.5 22.0,-2.2" class="blk" /><polygon points="13.0,-3.9 10.5,-2.7 7.7,-1.7 4.7,-1.0 1.5,-0.5 -1.7,-0.4 -5.0,-0.5 -8.2,-1.0 -11.2,-1.7 -14.0,-2.7 -16.5,-3.9 -18.6,-5.3 -20.3,-6.9 -21.5,-8.7 -22.3,-10.5 -22.6,-12.4 -22.3,-14.3 -21.5,-16.1 -20.3,-17.9 -18.6,-19.5 -16.5,-20.9 -14.0,-22.1 -11.2,-23.1 -8.2,-23.8 -5.0,-24.3 -1.7,-24.4 1.5,-24.3 4.7,-23.8 7.7,-23.1 10.5,-22.1 13.0,-20.9 15.1,-19.5 16.8,-17.9 18.1,-16.1 18.8,-14.3 19.1,-12.4 18.8,-10.5 18.1,-8.7 16.8,-6.9 15.1,-5.3" class="groove" /><polygon points="4.3,-9.1 3.3,-8.6 2.2,-8.2 0.9,-7.9 -0.4,-7.7 -1.7,-7.7 -3.1,-7.7 -4.4,-7.9 -5.6,-8.2 -6.8,-8.6 -7.8,-9.1 -8.7,-9.7 -9.4,-10.4 -9.9,-11.1 -10.2,-11.8 -10.3,-12.6 -10.2,-13.4 -9.9,-14.1 -9.4,-14.8 -8.7,-15.5 -7.8,-16.1 -6.8,-16.6 -5.6,-17.0 -4.4,-17.3 -3.1,-17.5 -1.7,-17.5 -0.4,-17.5 0.9,-17.3 2.2,-17.0 3.3,-16.6 4.3,-16.1 5.2,-15.5 5.9,-14.8 6.4,-14.1 6.7,-13.4 6.8,-12.6 6.7,-11.8 6.4,-11.1 5.9,-10.4 5.2,-9.7" class="a1f" /><polygon points="43.3,-13.0 17.3,2.0 17.3,5.0 43.3,-10.0" class="r" /><polygon points="13.9,0.0 17.3,2.0 17.3,5.0 13.9,3.0" class="l" /><polygon points="39.8,-15.0 43.3,-13.0 17.3,2.0 13.9,0.0" class="t" /></svg></div><h3>Instalação sincronizada</h3><p>O Sync Out envia o pulso do tempo para um Arduino: luzes, servos ou slides ao ritmo do beat.</p><p class="how">Sync Out → Arduino → 1 pulso = 1 tempo</p></article>
+  </div>
+
+  <div class="code">
+    <div class="head"><span class="lbl">↓ 8.1 em código</span><h3>Pads que desenham</h3><p>No Chrome, este código escuta qualquer controlador MIDI e chama uma função de desenho a cada pad. Os números das notas dependem da configuração; o <code>console.log</code> mostra-os.</p></div>
+<pre><span class="k">const</span> shapes = {};          <span class="c">// nota → forma</span>
+navigator.<span class="k">requestMIDIAccess</span>().then(midi =&gt; {
+  <span class="k">for</span> (<span class="k">const</span> input <span class="k">of</span> midi.inputs.values()) {
+    input.onmidimessage = ({ data: [status, note, vel] }) =&gt; {
+      <span class="k">if</span> ((status &amp; 0xf0) === 0x90 &amp;&amp; vel &gt; 0) {
+        console.log(<span class="s">'pad'</span>, note, vel);
+        draw(note, vel / 127);   <span class="c">// força = escala, opacidade…</span>
+      }
+    };
+  }
+});</pre>
+  </div>
+</div></section>
+
+<section id="atalhos"><div class="wrap">
+  <div class="shead"><div class="no">9.0</div><h2>Atalhos<span>e glossário</span></h2><p class="intro">As combinações com <span class="key">SHIFT</span>, como estão impressas no painel.</p></div>
+  <div class="cheat">
+    <div><span><span class="key sh">SHIFT</span> <span class="key">SAMPLE</span></span><span>Input Config</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">SEQ</span></span><span>Step Edit</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key fx">PAD FX</span></span><span>Flex Beat</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key fx">KNOB FX</span></span><span>FX Select</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">ERASE</span></span><span>Copy</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">NOTE REPEAT</span></span><span>Triplet</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">CHOP</span></span><span>Note On: soa só enquanto seguras</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">MUTE</span></span><span>Unmute All</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">LOOP</span></span><span>Reverse</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">16 LEVELS</span></span><span>Type</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">TAP TEMPO</span></span><span>Metrónomo</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">SMP SELECT</span></span><span>Save Sample</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">−</span> / <span class="key">+</span></span><span>Undo / Redo</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key rec">SEQ REC</span> <span class="key rec">SMP REC</span></span><span>Recall</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">▶</span></span><span>Continue</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 1</span></span><span>Full Level</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 2</span> <span class="key pad">3</span></span><span>Half Seq · Double Seq</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 4</span></span><span>Count-in</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 9</span></span><span>Parâmetro do fader</span></div>
+    <div><span><span class="key">ERASE</span> + pad</span><span>Apagar as notas desse pad</span></div>
+  </div>
+  <div class="shead" style="margin-bottom:24px"><div class="no">9.1</div><h2>Glossário</h2></div>
+  <dl class="gloss">
+    <div><dt>Chop</dt><dd>Cortar um sample em fatias, cada uma no seu pad.</dd></div>
+    <div><dt>Overdub</dt><dd>Gravar por cima do que já existe sem apagar.</dd></div>
+    <div><dt>Quantize</dt><dd>Encostar as notas à grelha mais próxima.</dd></div>
+    <div><dt>Threshold</dt><dd>Nível de som a partir do qual algo acontece.</dd></div>
+    <div><dt>Resample</dt><dd>Gravar a saída do próprio MPC como sample novo.</dd></div>
+    <div><dt>Aftertouch</dt><dd>Pressão depois do toque; o pad continua a ouvir o dedo.</dd></div>
+    <div><dt>Note On</dt><dd>O som toca só enquanto seguras o pad.</dd></div>
+    <div><dt>Timestretch</dt><dd>Mudar a duração sem mudar a afinação. Usa com moderação.</dd></div>
+  </dl>
+</div></section>
+</main>
+
+<footer class="dark"><div class="wrap">
+  <div class="runhead" style="padding-top:18px"><div>MPC Sample®<br>Manual de bolso<br>© 2026</div><div><span class="dot"></span>Fontes<br>e notas</div><span aria-hidden="true">⊕</span></div>
+  <div class="foot">
+    <p>Guia não oficial, escrito para o firmware 1.3. Nomes de botões tirados do painel; detalhes de menus podem mudar com atualizações. Na dúvida, o manual oficial da Akai tem a última palavra.</p>
+    <ul>
+      <li><a href="https://www.akaipro.com/mpc-sample/" target="_blank" rel="noopener">Akai Professional · MPC Sample ↗</a></li>
+      <li><a href="https://www.akaipro.com/guides/mpc-sample/features.htm" target="_blank" rel="noopener">Guia online oficial ↗</a></li>
+      <li><a href="https://cdn.inmusicbrands.com/akai/sample/MPC%20Sample%20-%20User%20Guide%20-%20v1.3.0%20(RevA).pdf" target="_blank" rel="noopener">Manual oficial em PDF, v1.3.0 ↗</a></li>
+      <li><a href="https://www.gearnews.com/akai-mpc-sample-review/" target="_blank" rel="noopener">Gearnews · review ↗</a></li>
+      <li><a href="https://musictech.com/reviews/hardware-instruments/akai-mpc-sample-review/" target="_blank" rel="noopener">MusicTech · review ↗</a></li>
+      <li><a href="https://loopopmusic.com/akai-mpc-sample-does-it-beat-the-competition-5-power-tips-review-tutorial" target="_blank" rel="noopener">Loopop · 5 power tips ↗</a></li>
+    </ul>
+  </div>
+  <div class="giant">MPC<br>Sample<span>.</span></div>
+</div></footer>
+
+</div>
+<script>
+(function(){
+  // [n, x, y, zone EN, zone PT, title EN, title PT, base EN, base PT, shift EN, shift PT]
+  var P=[
+    [1,46,66,"Screen & control","Ecrã e controlo","Main Volume","Main Volume","Overall level for headphones and speaker.","Volume geral, para auscultadores e altifalante.","No secondary function.","Sem função secundária."],
+    [2,186,84,"Screen & control","Ecrã e controlo","Color screen + B1–B3","Ecrã a cores + B1–B3","Shows the current mode. The three buttons above change pages or turn on screen functions (e.g. Record Quantize on B3).","Mostra o modo atual. Os três botões por cima mudam de página ou ativam funções do ecrã (ex.: Record Quantize em B3).","B1–B3 change with the mode; read the labels on screen.","As funções de B1–B3 mudam com o modo; lê a legenda no ecrã."],
+    [3,282,54,"Screen & control","Ecrã e controlo","Speaker + mic","Altifalante + microfone","Built-in speaker for sketching and built-in mic for sampling without cables.","Altifalante integrado para esboçar e microfone interno para samplar sem cabos.","Pick the record source in Shift + Sample (Input Config).","A fonte de gravação escolhe-se em Shift + Sample (Input Config)."],
+    [4,170,122,"Screen & control","Ecrã e controlo","K1 · K2 · K3","K1 · K2 · K3","Context knobs: they control whatever the screen shows (sequence length, quantize, sample start and end, chop type, threshold).","Knobs contextuais: controlam o que o ecrã indica (tamanho da sequência, quantize, início e fim do sample, tipo de chop, threshold).","With Knob FX on, they control the effect only.","Com Knob FX ligado, controlam só o efeito."],
+    [5,296,196,"Screen & control","Ecrã e controlo","Data wheel","Roda de dados","Scroll lists and change values on screen.","Navegar em listas e mudar valores no ecrã.","No secondary function.","Sem função secundária."],
+    [6,31,120,"Modes","Modos","Sample","Sample","Sample mode: edit start, end, tuning and play mode for the pad.","Modo de sample: editar início, fim, afinação e modo de reprodução do pad.","Input Config: record source and threshold.","Input Config: fonte de gravação e threshold."],
+    [7,67,120,"Modes","Modos","Seq","Seq","Sequence mode: length, tempo, quantize, swing.","Modo de sequência: tamanho, tempo, quantize, swing.","Step Edit: view and fix notes one by one.","Step Edit: ver e corrigir notas uma a uma."],
+    [8,31,146,"Modes","Modos","Pad FX","Pad FX","The pads trigger 16 velocity-sensitive effects.","Os pads passam a disparar 16 efeitos, sensíveis à força.","Flex Beat: 16 time and pitch effects (scratch, gate, chops).","Flex Beat: 16 efeitos de tempo e afinação (scratch, gate, cortes)."],
+    [9,67,146,"Modes","Modos","Knob FX","Knob FX","The knobs control one effect applied to the pads you choose.","Os knobs controlam um efeito aplicado aos pads escolhidos.","FX Select: choose which effect.","FX Select: escolher qual é o efeito."],
+    [10,67,172,"Modes","Modos","Pad Bank","Pad Bank","Switch between banks A to H (16 pads each).","Muda entre os bancos A a H (16 pads cada).","No secondary function.","Sem função secundária."],
+    [11,36,197,"Modes","Modos","Shift","Shift","Hold it to reach the functions printed in gray under the buttons and pads 1–4.","Segura para aceder às funções impressas a cinzento por baixo dos botões e dos pads 1–4.","It is the Shift key itself.","É a própria tecla Shift."],
+    [12,42,246,"Play","Tocar","Fader","Fader","Controls pad level by default. In Step Edit it nudges each event’s timing.","Por defeito controla o volume do pad. Em Step Edit ajusta o tempo de cada evento.","Shift + Pad 9: assign another parameter.","Shift + Pad 9: escolher outro parâmetro para o fader."],
+    [13,175,225,"Play","Tocar","16 pads","16 pads","Play samples. Velocity and polyphonic aftertouch. Pad 1 is bottom left.","Tocam samples. Sensíveis a velocidade e aftertouch polifónico. O pad 1 é o de baixo à esquerda.","Pad 1 Full Level · Pad 2 Half Seq · Pad 3 Double Seq · Pad 4 Count-in · Pad 9 Fader.","Pad 1 Full Level · Pad 2 Half Seq · Pad 3 Double Seq · Pad 4 Count-in · Pad 9 Fader."],
+    [14,31,304,"Play","Tocar","Erase","Erase","Hold it and hit a pad to delete that pad’s notes from the sequence.","Segura e toca num pad para apagar as notas desse pad na sequência.","Copy: copy sequences and pads.","Copy: copiar sequências e pads."],
+    [15,67,304,"Play","Tocar","Note Repeat","Note Repeat","Hold with a pad to repeat it at the chosen division.","Segura com um pad para repetir o som na divisão escolhida.","Triplet: triplet divisions.","Triplet: divisões em tercina."],
+    [16,278,119,"Pad Play","Pad Play","Chop","Chop","Slices the pad’s sample across the pads (Threshold, Regions, Manual).","Corta o sample do pad em fatias espalhadas pelos pads (Threshold, Regions, Manual).","Note On: the pad sounds only while held.","Note On: o pad só soa enquanto o seguras."],
+    [17,314,119,"Pad Play","Pad Play","Mute","Mute","Hold and tap pads to silence them while the music plays.","Segura e toca nos pads para os silenciar durante a música.","Unmute All: bring everything back.","Unmute All: volta a ligar tudo."],
+    [18,278,141,"Pad Play","Pad Play","Loop","Loop","The sample repeats from its start point while it plays.","O sample repete a partir do ponto de início enquanto toca.","Reverse: play the sample backwards.","Reverse: toca o sample ao contrário."],
+    [19,314,141,"Pad Play","Pad Play","16 Levels","16 Levels","Spreads one sample across 16 pads with one parameter changing, such as pitch.","Espalha um sample pelos 16 pads com um parâmetro a variar, por exemplo a afinação.","Type: choose which parameter changes.","Type: escolher o parâmetro que varia."],
+    [20,278,163,"Transport","Transporte","Sample Select","Sample Select","Opens the browser to load a sample onto the pad (internal or microSD).","Abre o browser para pôr um sample no pad atual (memória interna ou microSD).","Save Sample: store the sample as a file.","Save Sample: guardar o sample como ficheiro."],
+    [21,314,163,"Transport","Transporte","Tap Tempo","Tap Tempo","Tap in time to set the project BPM.","Bate ao ritmo para definir o BPM do projeto.","Metro: metronome on or off.","Metro: ligar ou desligar o metrónomo."],
+    [22,296,226,"Transport","Transporte","− / +","− / +","Step values and navigate one at a time.","Mudar valores e navegar passo a passo.","Undo / Redo.","Undo / Redo."],
+    [23,296,249,"Transport","Transporte","Seq Rec · Smp Rec","Seq Rec · Smp Rec","Record notes into the sequence, or record audio onto a pad.","Gravar notas na sequência, ou gravar áudio para um pad.","Recall: bring back what you just played or heard.","Recall: recuperar o que acabaste de tocar ou ouvir."],
+    [24,296,274,"Transport","Transporte","Stop · Play","Stop · Play","Stop, and play from the start.","Parar e tocar a partir do início.","Continue: resume where it stopped.","Continue: retomar de onde parou."]
+  ];
+  var ns="http://www.w3.org/2000/svg", KEY="mpc-sample-firsthour", LKEY="mpc-sample-lang", saved={};
+  try{saved=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
+
+  function init(root){
+    var pt=root.getAttribute("data-lang")==="pt", o=pt?1:0;
+    var hs=root.querySelector(".hotspots"), list=root.querySelector(".parts"), zone="";
+    P.forEach(function(p){
+      var g=document.createElementNS(ns,"g");g.setAttribute("class","hs");g.setAttribute("data-n",p[0]);g.setAttribute("tabindex","0");g.setAttribute("role","button");g.setAttribute("aria-label",p[0]+". "+p[5+o]);
+      var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p[1]);c.setAttribute("cy",p[2]);c.setAttribute("r",7);
+      var t=document.createElementNS(ns,"text");t.setAttribute("x",p[1]);t.setAttribute("y",p[2]+2.2);t.setAttribute("text-anchor","middle");t.textContent=p[0];
+      g.appendChild(c);g.appendChild(t);hs.appendChild(g);
+      if(p[3+o]!==zone){zone=p[3+o];var zl=document.createElement("li");zl.className="zone";zl.setAttribute("aria-hidden","true");zl.style.display="block";zl.style.cursor="default";zl.textContent=zone;list.appendChild(zl);}
+      var li=document.createElement("li");li.setAttribute("data-n",p[0]);
+      li.innerHTML='<span class="n">'+String(p[0]).padStart(2,"0")+'</span><div><h4>'+p[5+o]+'</h4><p><span class="base">'+p[7+o]+'</span><span class="shift"><b>Shift:</b> '+p[9+o]+'</span></p></div>';
+      list.appendChild(li);
+    });
+    function sel(n,scroll){
+      root.querySelectorAll(".hs,.parts li[data-n]").forEach(function(e){e.classList.toggle("on",e.getAttribute("data-n")==String(n));});
+      if(scroll){var li=list.querySelector('li[data-n="'+n+'"]');if(li&&window.innerWidth>960)li.scrollIntoView({block:"nearest",behavior:"smooth"});}
+    }
+    hs.addEventListener("click",function(e){var g=e.target.closest(".hs");if(g)sel(g.getAttribute("data-n"),true);});
+    hs.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){var g=e.target.closest(".hs");if(g){e.preventDefault();sel(g.getAttribute("data-n"),true);}}});
+    list.addEventListener("click",function(e){var li=e.target.closest("li[data-n]");if(li)sel(li.getAttribute("data-n"),false);});
+    sel(13);
+    var b=root.querySelector(".shiftBtn"),sec=root.querySelector(".anat"),hint=root.querySelector(".shiftHint");
+    var hOff=hint.textContent, hOn=pt?"A mostrar Shift":"Showing Shift";
+    b.addEventListener("click",function(){var on=b.getAttribute("aria-pressed")!=="true";b.setAttribute("aria-pressed",on);sec.classList.toggle("show-shift",on);hint.textContent=on?hOn:hOff;});
+    // first-hour checklist: shared between languages, remembered per browser
+    root.querySelectorAll(".check input").forEach(function(i,k){
+      i.setAttribute("data-k",k);
+      if(saved[k])i.checked=true;
+      i.addEventListener("change",function(){
+        saved[k]=i.checked;
+        document.querySelectorAll('.check input[data-k="'+k+'"]').forEach(function(x){x.checked=i.checked;});
+        try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}
+      });
+    });
+  }
+  var roots=document.querySelectorAll(".lroot");
+  roots.forEach(init);
+
+  function setLang(l,store){
+    roots.forEach(function(r){r.hidden=r.getAttribute("data-lang")!==l;});
+    document.documentElement.lang=l==="pt"?"pt-PT":"en-US";
+    document.querySelectorAll(".lang button").forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute("data-set")===l);});
+    if(store){try{localStorage.setItem(LKEY,l)}catch(e){}}
+  }
+  document.addEventListener("click",function(e){
+    var b=e.target.closest(".lang button");if(!b)return;
+    var l=b.getAttribute("data-set");setLang(l,true);
+    var nav=document.querySelector('.lroot[data-lang="'+l+'"] nav.toc');
+    if(nav&&window.scrollY>nav.offsetTop)nav.scrollIntoView();
+  });
+  var start="en";
+  try{if(localStorage.getItem(LKEY)==="pt")start="pt"}catch(e){}
+  if(/^#?(pt|comecar|anatomia|conceitos|receitas|efeitos|musico|plano|ideias|atalhos|ficha)$/.test(location.hash))start="pt";
+  setLang(start,false);
+})();
+</script>
+
+</body>
+</html>
