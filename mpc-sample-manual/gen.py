@@ -24,8 +24,8 @@ def knob(cx, cy, r, label=""):
 def device_top(pid):
     g = []
     g.append(f'<defs><pattern id="{pid}-gr" width="3.6" height="3.6" patternUnits="userSpaceOnUse"><circle cx="1.8" cy="1.8" r="0.95" fill="#3a3a3a"/></pattern></defs>')
-    g.append(f'<rect x="0" y="0" width="{W}" height="{D}" rx="1.5" fill="#E3E1DC"/>')
-    g.append('<path d="M0 0 H340 V105 H0Z" fill="#151515"/>')
+    g.append(f'<rect x="0" y="0" width="{W}" height="{D}" rx="5" fill="#E3E1DC"/>')
+    g.append('<path d="M5 0 H335 A5 5 0 0 1 340 5 V105 H0 V5 A5 5 0 0 1 5 0Z" fill="#151515"/>')
     # logo
     g.append('<text x="16" y="26" font-size="15" font-weight="900" font-style="italic" fill="#D3221C" class="dd">AKAI</text>')
     g.append('<text x="17" y="33" font-size="4.6" font-style="italic" fill="#D3221C" class="dl">professional</text>')
@@ -148,12 +148,6 @@ def device_iso():
     defs = '<defs><filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8"/></filter></defs>'
     return f'<svg viewBox="0 0 650 460" role="img" aria-label="Ilustração isométrica do Akai MPC Sample" class="iso-device">{defs}{"".join(out)}</svg>'
 
-def device_3d(pid):
-    top = f'<svg viewBox="0 0 {W} {D}" class="top-svg" aria-hidden="true">{device_top(pid)}</svg>'
-    faces = "".join(f'<div class="face {c}"></div>' for c in ("f-back", "f-left", "f-front", "f-right"))
-    return ('<div class="stage" role="img" aria-label="Akai MPC Sample, 3D illustration">'
-            f'<div class="dev3d"><div class="shadow3d"></div>{faces}<div class="face f-top">{top}</div></div></div>')
-
 def device_flat():
     return f'<svg viewBox="-6 -6 352 372" class="flat-device" role="img" aria-label="Painel superior do MPC Sample"><g>{device_top("flat")}</g><g class="hotspots"></g></svg>'
 
@@ -239,7 +233,7 @@ def layers(names=("Project", "Sequences", "Pads · banks A–H", "Samples")):
 if __name__ == "__main__":
     css, en, pt, js, out = sys.argv[1:6]
     def fill(body, names, suffix):
-        h = body.replace("{{DEVICE_ISO}}", device_3d("hero" + suffix)).replace("{{DEVICE_FLAT}}", device_flat()).replace("{{LAYERS}}", layers(names))
+        h = body.replace("{{DEVICE_ISO}}", device_iso()).replace("{{DEVICE_FLAT}}", device_flat()).replace("{{LAYERS}}", layers(names))
         for k, v in icons().items():
             h = h.replace("{{ICON_" + k.upper() + "}}", v)
         if suffix:
