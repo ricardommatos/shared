@@ -1,0 +1,297 @@
+
+<header class="hero">
+  <div class="wrap">
+    <div class="runhead">
+      <div>MPC Sample®<br>Manual de bolso<br>© 2026</div>
+      <div><span class="dot"></span>Para<br>Tempo livre, Lisboa</div>
+      <span aria-hidden="true">⊕</span>
+    </div>
+    <div class="hero-grid">
+      <div class="hero-text">
+        <h1><small>Manual de principiante</small>MPC<br>Sample</h1>
+        <p class="lede">Um sampler que cabe na mochila: grava qualquer som, corta-o em 16 pedaços, toca-o nos pads e transforma-o num beat. Este guia leva-te do “liguei-o” ao “fiz uma faixa”, e depois para fora da caixa.</p>
+      </div>
+      <div class="hero-art">{{DEVICE_ISO}}</div>
+    </div>
+    <div class="hero-index">
+      <div>1.0<br>2.0<br>4.0<br>8.0</div>
+      <div>A primeira hora<br>Anatomia do painel<br>Receitas<br>Fora da caixa</div>
+      <div>Akai Professional<br>Firmware 1.3</div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Secções">
+  <div class="wrap">
+    <div class="toc-links"><a href="#comecar"><b>1.0</b>Começar</a><a href="#anatomia"><b>2.0</b>Anatomia</a><a href="#conceitos"><b>3.0</b>Conceitos</a><a href="#receitas"><b>4.0</b>Receitas</a><a href="#efeitos"><b>5.0</b>Efeitos</a><a href="#musico"><b>6.0</b>Para músicos</a><a href="#plano"><b>7.0</b>Plano</a><a href="#ideias"><b>8.0</b>Fora da caixa</a><a href="#atalhos"><b>9.0</b>Atalhos</a></div>
+    {{LANG_SWITCH}}
+  </div>
+</nav>
+
+<section class="dark" id="ficha"><div class="wrap">
+  <div class="shead"><div class="no">0.1</div><h2>Ficha técnica<span>Em números</span></h2><p class="intro">O essencial do aparelho numa página. O resto do manual explica como tirar partido de cada número.</p></div>
+  <div class="metrics">
+    <div class="stats">
+      <div class="stat"><span class="lbl">↓ Pads RGB, aftertouch polifónico</span><b>16</b></div>
+      <div class="stat"><span class="lbl">↓ Vozes estéreo</span><b>32</b></div>
+      <div class="stat"><span class="lbl">↓ Bancos de pads</span><b>A–H</b></div>
+      <div class="stat"><span class="lbl">↓ Tipos de efeito, 4 motores</span><b>60</b></div>
+      <div class="stat"><span class="lbl">↓ Bateria fora da tomada</span><b>~5 h</b></div>
+      <div class="stat"><span class="lbl">↓ Memória interna</span><b>8 GB</b></div>
+    </div>
+    <div class="ports">
+      <span class="lbl">↓ Ligações</span>
+      <ul>
+        <li>Line In<span>6,35 TRS</span></li>
+        <li>Line Out<span>6,35 TRS</span></li>
+        <li>Auscultadores<span>3,5</span></li>
+        <li>MIDI In/Out<span>3,5 TRS*</span></li>
+        <li>Sync Out<span>Clock</span></li>
+        <li>USB-C<span>Carga</span></li>
+        <li>MicroSD<span>Expansão</span></li>
+      </ul>
+      <p class="lbl" style="margin-top:14px">* Precisa de adaptador TRS para MIDI DIN, não incluído. ~2 GB dos 8 GB vêm ocupados com sons de fábrica.</p>
+    </div>
+  </div>
+</div></section>
+
+<main>
+<section id="comecar"><div class="wrap">
+  <div class="shead"><div class="no">1.0</div><h2>A primeira hora<span>Oito passos</span></h2><p class="intro">Faz isto por ordem, uma vez. Depois disto o aparelho deixa de ser estranho. As caixas ficam marcadas neste browser.</p></div>
+  <div class="indent"><ul class="check">
+    <li><input type="checkbox" id="pt-c1" aria-labelledby="pt-c1t"><b id="pt-c1t">Carrega a bateria por USB-C</b><p>Dá cerca de 5 horas fora da tomada. Podes tocar enquanto carrega.</p></li>
+    <li><input type="checkbox" id="pt-c2" aria-labelledby="pt-c2t"><b id="pt-c2t">Atualiza o firmware</b><p>Em akaipro.com, página do MPC Sample. Várias funções e correções chegaram depois do lançamento; este guia assume a versão 1.3.</p></li>
+    <li><input type="checkbox" id="pt-c3" aria-labelledby="pt-c3t"><b id="pt-c3t">Auscultadores e <span class="key">MAIN VOLUME</span> baixo</b><p>O altifalante interno serve para esboçar. Os graves só aparecem nos auscultadores ou em colunas.</p></li>
+    <li><input type="checkbox" id="pt-c4" aria-labelledby="pt-c4t"><b id="pt-c4t">Toca um kit de fábrica</b><p>Há mais de 100. Abre um, carrega em <span class="key">▶</span> e toca por cima. Os pads respondem à força e à pressão.</p></li>
+    <li><input type="checkbox" id="pt-c5" aria-labelledby="pt-c5t"><b id="pt-c5t">Percorre os bancos com <span class="key">PAD BANK</span></b><p>Cada banco, de A a H, são mais 16 pads. O ecrã diz-te em que banco estás.</p></li>
+    <li><input type="checkbox" id="pt-c6" aria-labelledby="pt-c6t"><b id="pt-c6t">Silencia com <span class="key pp">MUTE</span></b><p>Com a música a tocar, segura MUTE e toca nos pads. <span class="key sh">SHIFT</span> + MUTE devolve tudo.</p></li>
+    <li><input type="checkbox" id="pt-c7" aria-labelledby="pt-c7t"><b id="pt-c7t">Grava o teu primeiro som</b><p><span class="key rec">SMP REC</span>, fala para o microfone interno, SMP REC outra vez. Já tens um sample num pad. Ver receita 4.2.</p></li>
+    <li><input type="checkbox" id="pt-c8" aria-labelledby="pt-c8t"><b id="pt-c8t">Desfaz sem medo</b><p><span class="key sh">SHIFT</span> + <span class="key">−</span> é Undo, <span class="key sh">SHIFT</span> + <span class="key">+</span> é Redo.</p></li>
+  </ul></div>
+</div></section>
+
+<section id="anatomia" class="anat"><div class="wrap">
+  <div class="shead"><div class="no">2.0</div><h2>Anatomia<span>do painel</span></h2><p class="intro">Toca num número para ver o que faz. Quase todos os botões têm uma segunda função, impressa a cinzento por baixo: segura <span class="key">SHIFT</span> para a usar.</p></div>
+  <div class="anatomy">
+    <div class="panel-fig">
+      {{DEVICE_FLAT}}
+      <div class="figcap"><span class="lbl">↓ Vista superior, 24 controlos</span><div class="toggle"><span class="lbl shiftHint">Funções secundárias</span><button type="button" class="shiftBtn" aria-pressed="false">Shift</button></div></div>
+    </div>
+    <div class="partsWrap"><ul class="parts"></ul></div>
+  </div>
+</div></section>
+
+<section id="conceitos"><div class="wrap">
+  <div class="shead"><div class="no">3.0</div><h2>Como o MPC pensa<span>Quatro camadas</span></h2><p class="intro">Umas dentro das outras. Quando percebes isto, os menus ficam óbvios.</p></div>
+  <div class="concept">
+    <div class="fig">{{LAYERS}}</div>
+    <div class="defs">
+      <div><span class="lbl">↓ 3.1</span><b>Sample</b><p>Um ficheiro de áudio. Um bombo, uma frase de piano, a tua voz, o elétrico 28.</p></div>
+      <div><span class="lbl">↓ 3.2</span><b>Pad</b><p>O sítio onde o sample vive, com as suas regras: início e fim, Loop, Reverse, volume, afinação.</p></div>
+      <div><span class="lbl">↓ 3.3</span><b>Sequência</b><p>Um padrão gravado de toques nos pads, com tamanho em compassos. Pensa nela como uma secção: intro, verso, refrão.</p></div>
+      <div><span class="lbl">↓ 3.4</span><b>Projeto</b><p>Tudo junto: samples, pads, sequências, tempo. É o que guardas e voltas a abrir.</p></div>
+    </div>
+  </div>
+  <div class="indent"><p class="note">Os botões da esquerda escolhem o <b>modo</b>: <span class="key">SAMPLE</span> para gravar e editar sons, <span class="key">SEQ</span> para compor, <span class="key fx">PAD FX</span> e <span class="key fx">KNOB FX</span> para efeitos. Os knobs K1–K3 e os botões B1–B3 por cima do ecrã mudam de função consoante o modo; lê sempre o ecrã para saber o que controlam agora.</p></div>
+</div></section>
+
+<section id="receitas"><div class="wrap">
+  <div class="shead"><div class="no">4.0</div><h2>Receitas<span>Sete tarefas</span></h2><p class="intro">Pela ordem em que as vais precisar. Cada uma demora entre 10 e 30 minutos.</p></div>
+
+  <article class="recipe"><div class="big">4.1</div>
+    <div class="head"><h3>Grava um beat num kit de fábrica</h3><p class="why">O gesto clássico do MPC: tocar ao vivo sobre um metrónomo e deixar o quantize arrumar.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Carrega em <span class="key">SEQ</span>. Com <b>K1</b> define o tamanho (começa com 2 compassos).</span></li>
+      <li><span>Bate o tempo em <span class="key">TAP TEMPO</span>. <span class="key sh">SHIFT</span> + TAP TEMPO liga o metrónomo.</span></li>
+      <li><span>Liga o Record Quantize com <b>B3</b> e escolhe a grelha com <b>K2</b>. 1/16 é um bom começo.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 4</span> liga a contagem (Count-in).</span></li>
+      <li><span><span class="key rec">SEQ REC</span> e toca só o bombo. Quando a sequência dá a volta continua a gravar em overdub: acrescenta a tarola, depois os hi-hats.</span></li>
+      <li><span>Errou? Segura <span class="key">ERASE</span> e o pad enquanto toca, e as notas desse pad desaparecem.</span></li>
+      <li><span><span class="key rec">SEQ REC</span> outra vez para parar de gravar sem parar a música.</span></li>
+    </ol></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.2</div>
+    <div class="head"><h3>Sampla qualquer coisa</h3><p class="why">O microfone interno faz do mundo uma biblioteca de sons. Para discos ou sintetizadores, usa a entrada de linha.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">SAMPLE</span> (Input Config) escolhe a fonte: microfone interno ou Line In.</span></li>
+      <li><span>Carrega em <span class="key rec">SMP REC</span> e ajusta o <b>threshold</b> com <b>K3</b>. A gravação só arranca quando o som passa este nível; o ícone da onda acende quando isso acontece.</span></li>
+      <li><span>Escolhe o pad de destino, faz o som, carrega de novo em SMP REC.</span></li>
+      <li><span>Em <span class="key">SAMPLE</span>, apara início e fim com os knobs.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">SMP SELECT</span> (Save Sample) guarda-o como ficheiro.</span></li>
+    </ol>
+    <div class="tip"><span class="lbl">↓ Recall</span>Tocaste algo bom sem estar a gravar? <span class="key sh">SHIFT</span> + <span class="key rec">SMP REC</span> ou <span class="key rec">SEQ REC</span> recupera o que acabou de acontecer.</div></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.3</div>
+    <div class="head"><h3>Corta um loop em 16 pads</h3><p class="why">O “chop”: uma frase de disco partida em pedaços e reorganizada com os dedos.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Escolhe o pad com o sample e carrega em <span class="key pp">CHOP</span>.</span></li>
+      <li><span>Com <b>K3</b> escolhe o modo: <b>Threshold</b> corta nos ataques (baterias), <b>Regions 4/8/16</b> divide em partes iguais (loops no tempo), <b>Manual</b> deixa-te marcar os cortes a ouvir.</span></li>
+      <li><span>Os pads passam a tocar cada fatia. Toca-as por outra ordem.</span></li>
+      <li><span>Grava uma sequência com as fatias (receita 4.1).</span></li>
+    </ol>
+    <div class="tip"><span class="lbl">↓ Truque</span>Num loop de 1 compasso em 4/4, Regions 16 dá exatamente uma fatia por semicolcheia.</div></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.4</div>
+    <div class="head"><h3>Note Repeat, swing e dinâmica</h3><p class="why">Hi-hats contínuos e rolos de tarola sem dedos de baterista.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Segura <span class="key">NOTE REPEAT</span> e um pad: o som repete na divisão escolhida em B1–B3.</span></li>
+      <li><span>Carrega mais ou menos no pad: o aftertouch muda a intensidade.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + NOTE REPEAT ativa tercinas (Triplet).</span></li>
+      <li><span>Ajusta o swing no ecrã do sequenciador. Entre 54% e 58% é o groove clássico.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 1</span> (Full Level) põe todos os pads no máximo.</span></li>
+    </ol></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.5</div>
+    <div class="head"><h3>Arranja: dobra, corta, copia</h3><p class="why">Passar de um loop a uma estrutura.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 3</span> (Double Seq) duplica a sequência. Grava variações na segunda metade.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key pad">PAD 2</span> (Half Seq) corta-a a meio.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">ERASE</span> (Copy) copia uma sequência para criares secções novas.</span></li>
+      <li><span>Muda de sequência durante a reprodução para montar a faixa ao vivo.</span></li>
+      <li><span><span class="key sh">SHIFT</span> + <span class="key">SEQ</span> (Step Edit) mostra as notas uma a uma; aqui o fader ajusta o tempo de cada evento.</span></li>
+    </ol></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.6</div>
+    <div class="head"><h3>Toca melodias com 16 Levels</h3><p class="why">Um sample espalhado pelos 16 pads, cada um numa afinação diferente.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Escolhe um sample curto e afinado: uma nota de piano, baixo ou voz.</span></li>
+      <li><span>Carrega em <span class="key pp">16 LEVELS</span>. <span class="key sh">SHIFT</span> + 16 LEVELS (Type) escolhe o parâmetro que varia.</span></li>
+      <li><span>Com a afinação, os pads ficam um teclado de 16 meios-tons.</span></li>
+      <li><span>Carrega de novo em 16 LEVELS para voltar aos pads normais.</span></li>
+    </ol></div>
+  </article>
+
+  <article class="recipe"><div class="big">4.7</div>
+    <div class="head"><h3>Resample e guarda</h3><p class="why">Imprimir o resultado, com efeitos, num sample novo.</p></div>
+    <div class="body"><span class="lbl">↓ Passos</span><ol class="steps">
+      <li><span>Com a sequência pronta, entra em <span class="key rec">SMP REC</span> e escolhe <b>Resample</b> (Pad 11 no ecrã de gravação).</span></li>
+      <li><span>O MPC grava a saída para um pad novo, já com os efeitos.</span></li>
+      <li><span>Corta, inverte ou passa por mais efeitos esse resultado.</span></li>
+      <li><span>Guarda o projeto no fim de cada sessão. Usa microSD para cópias de segurança.</span></li>
+    </ol>
+    <div class="tip"><span class="lbl">↓ Fader</span>Por defeito controla o volume do pad. <span class="key sh">SHIFT</span> + <span class="key pad">PAD 9</span> muda o parâmetro, por exemplo afinação ou filtro.</div></div>
+  </article>
+</div></section>
+
+<section id="efeitos"><div class="wrap">
+  <div class="shead"><div class="no">5.0</div><h2>Efeitos<span>Quatro motores</span></h2><p class="intro">Dois para tocar com os dedos, um para rodar e um para colar tudo. Grava primeiro a música limpa e os efeitos depois, num overdub ou num resample.</p></div>
+  <div class="fxgrid">
+    <div class="fx"><div class="big">1</div><h3>Pad FX</h3><p class="sub">Efeitos nos pads</p><span class="key fx">PAD FX</span><span class="lbl">↓ Inclui</span><ul><li>16 efeitos, um por pad</li><li>Sensíveis à força</li><li>Filtros e beat repeat</li><li>Stutter, reverse, delay</li><li>Ring mod, lo-fi, granular</li></ul></div>
+    <div class="fx"><div class="big">2</div><h3>Flex Beat</h3><p class="sub">Manipular o tempo</p><span class="key fx">SHIFT · PAD FX</span><span class="lbl">↓ Inclui</span><ul><li>16 efeitos de tempo</li><li>Scratch de DJ</li><li>Cortes de beat</li><li>Trance gate</li><li>Afinação e volume</li></ul></div>
+    <div class="fx"><div class="big">3</div><h3>Knob FX</h3><p class="sub">Um efeito nos knobs</p><span class="key fx">KNOB FX</span><span class="lbl">↓ Inclui</span><ul><li>Delays e reverbs</li><li>Simulação de amp</li><li>Modulação</li><li>Emulações vintage</li><li>Shift + Knob FX: escolher</li></ul></div>
+    <div class="fx"><div class="big">4</div><h3>Color Compressor</h3><p class="sub">Cola na saída</p><span class="key sh">MASTER</span><span class="lbl">↓ Inclui</span><ul><li>Compressão “retro”</li><li>Densidade típica de MPC</li><li>Emulação de vinil</li><li>Emulação de fita</li><li>Aplica-se a tudo</li></ul></div>
+  </div>
+</div></section>
+
+<section id="musico"><div class="wrap">
+  <div class="shead"><div class="no">6.0</div><h2>Para músicos<span>Tradução</span></h2><p class="intro">Tens ouvido e teoria. O que muda no MPC é o vocabulário e pensar em grelha.</p></div>
+  <div class="indent"><div class="tbl"><table>
+    <thead><tr><th>Sabes que…</th><th>No MPC chama-se</th><th>Dica</th></tr></thead>
+    <tbody>
+      <tr><td>Compasso e subdivisão</td><td>Bars + Q (quantize)</td><td>1/16 para hip-hop e house, 1/8 com Triplet para shuffle e 6/8.</td></tr>
+      <tr><td>Groove</td><td>Swing</td><td>Aplica antes de gravar os hi-hats; 54–58% soa humano.</td></tr>
+      <tr><td>Dinâmica</td><td>Velocity + aftertouch</td><td>Desliga Full Level para ghost notes na tarola.</td></tr>
+      <tr><td>Tonalidade</td><td>16 Levels (Tune)</td><td>Afina o sample à tónica antes de o espalhar pelos pads.</td></tr>
+      <tr><td>Forma</td><td>Sequências</td><td>Uma sequência por secção. Copy + alterações = variação.</td></tr>
+      <tr><td>Harmonia</td><td>Samples de acordes</td><td>Grava acordes do teu instrumento, um por pad, no tempo do projeto.</td></tr>
+      <tr><td>Improvisar</td><td>Recall</td><td>Toca à vontade; o Recall guarda o que acabaste de fazer.</td></tr>
+    </tbody>
+  </table></div></div>
+</div></section>
+
+<section id="plano"><div class="wrap">
+  <div class="shead"><div class="no">7.0</div><h2>Plano<span>Quatro semanas</span></h2><p class="intro">Três sessões curtas por semana, de 20 a 40 minutos. Acaba cada sessão a guardar alguma coisa, mesmo imperfeita.</p></div>
+  <div class="weeks">
+    <div><div class="big">1</div><h3>Tocar</h3><span class="lbl">↓ Semana 1</span><ul><li>Explorar os kits de fábrica</li><li>Mute, Note Repeat, Full Level</li><li>Gravar 3 beats de 2 compassos</li><li>Aprender Undo e Erase</li></ul></div>
+    <div><div class="big">2</div><h3>Samplar</h3><span class="lbl">↓ Semana 2</span><ul><li>10 sons da casa e da rua</li><li>Um disco ou instrumento por Line In</li><li>Chop nos três modos</li><li>Criar e guardar um kit teu</li></ul></div>
+    <div><div class="big">3</div><h3>Transformar</h3><span class="lbl">↓ Semana 3</span><ul><li>Pad FX e Flex Beat ao vivo</li><li>Knob FX numa linha de baixo</li><li>16 Levels para uma melodia</li><li>Resample de uma ideia</li></ul></div>
+    <div><div class="big">4</div><h3>Acabar</h3><span class="lbl">↓ Semana 4</span><ul><li>3 sequências: intro, A, B</li><li>Tocar o arranjo ao vivo</li><li>Uma peça de 60–90 segundos</li><li>Partilhar com alguém</li></ul></div>
+  </div>
+</div></section>
+
+<section id="ideias"><div class="wrap">
+  <div class="shead"><div class="no">8.0</div><h2>Fora da caixa<span>Design + código</span></h2><p class="intro">Para um designer, o MPC é também uma ferramenta de identidade, de protótipo e de experiência. Seis pontos de partida.</p></div>
+  <div class="ideas">
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.1</span><span>Código</span></div><div class="tile">{{ICON_LAPTOP}}</div><h3>Pads que desenham</h3><p>O MIDI Out dispara formas, cores ou tipos num sketch de p5.js, TouchDesigner ou Three.js. Um instrumento visual para apresentações.</p><p class="how">MIDI Out → adaptador → interface USB → Web MIDI</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.2</span><span>Identidade</span></div><div class="tile">{{ICON_TYPE}}</div><h3>Tipografia rítmica</h3><p>Um nome de marca com até 16 letras cabe numa sequência de 16 passos. Um som por letra: o nome ouvido como ritmo, ponto de partida para um sound logo.</p><p class="how">1 letra = 1 passo · vogais = notas</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.3</span><span>Estúdio</span></div><div class="tile">{{ICON_TOOLS}}</div><h3>O estúdio como kit</h3><p>Sampla as ferramentas do ofício: caneta, x-ato, teclado, risografia, papel a rasgar. Um kit de bateria feito de design.</p><p class="how">Microfone interno · Chop por Threshold</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.4</span><span>Lisboa</span></div><div class="tile">{{ICON_PHONE}}</div><h3>Diário sonoro</h3><p>Elétrico, gaivotas, calçada, mercado, o rio. Um beat por bairro, enviado à equipa de Nova Iorque como postal sonoro.</p><p class="how">Bateria ~5 h · nomeia por sítio</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.5</span><span>Produto</span></div><div class="tile">{{ICON_SPEAKER}}</div><h3>Sons de interface</h3><p>Tap, sucesso, erro, notificação. Uma família sonora coerente, como um sistema de design para o ouvido.</p><p class="how">Save Sample → WAV → protótipo em código</p></article>
+    <article class="idea"><div class="tagrow lbl"><span><span class="dot"></span>8.6</span><span>Espaço</span></div><div class="tile">{{ICON_VINYL}}</div><h3>Instalação sincronizada</h3><p>O Sync Out envia o pulso do tempo para um Arduino: luzes, servos ou slides ao ritmo do beat.</p><p class="how">Sync Out → Arduino → 1 pulso = 1 tempo</p></article>
+  </div>
+
+  <div class="code">
+    <div class="head"><span class="lbl">↓ 8.1 em código</span><h3>Pads que desenham</h3><p>No Chrome, este código escuta qualquer controlador MIDI e chama uma função de desenho a cada pad. Os números das notas dependem da configuração; o <code>console.log</code> mostra-os.</p></div>
+<pre><span class="k">const</span> shapes = {};          <span class="c">// nota → forma</span>
+navigator.<span class="k">requestMIDIAccess</span>().then(midi =&gt; {
+  <span class="k">for</span> (<span class="k">const</span> input <span class="k">of</span> midi.inputs.values()) {
+    input.onmidimessage = ({ data: [status, note, vel] }) =&gt; {
+      <span class="k">if</span> ((status &amp; 0xf0) === 0x90 &amp;&amp; vel &gt; 0) {
+        console.log(<span class="s">'pad'</span>, note, vel);
+        draw(note, vel / 127);   <span class="c">// força = escala, opacidade…</span>
+      }
+    };
+  }
+});</pre>
+  </div>
+</div></section>
+
+<section id="atalhos"><div class="wrap">
+  <div class="shead"><div class="no">9.0</div><h2>Atalhos<span>e glossário</span></h2><p class="intro">As combinações com <span class="key">SHIFT</span>, como estão impressas no painel.</p></div>
+  <div class="cheat">
+    <div><span><span class="key sh">SHIFT</span> <span class="key">SAMPLE</span></span><span>Input Config</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">SEQ</span></span><span>Step Edit</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key fx">PAD FX</span></span><span>Flex Beat</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key fx">KNOB FX</span></span><span>FX Select</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">ERASE</span></span><span>Copy</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">NOTE REPEAT</span></span><span>Triplet</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">CHOP</span></span><span>Note On: soa só enquanto seguras</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">MUTE</span></span><span>Unmute All</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">LOOP</span></span><span>Reverse</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pp">16 LEVELS</span></span><span>Type</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">TAP TEMPO</span></span><span>Metrónomo</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">SMP SELECT</span></span><span>Save Sample</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">−</span> / <span class="key">+</span></span><span>Undo / Redo</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key rec">SEQ REC</span> <span class="key rec">SMP REC</span></span><span>Recall</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key">▶</span></span><span>Continue</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 1</span></span><span>Full Level</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 2</span> <span class="key pad">3</span></span><span>Half Seq · Double Seq</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 4</span></span><span>Count-in</span></div>
+    <div><span><span class="key sh">SHIFT</span> <span class="key pad">PAD 9</span></span><span>Parâmetro do fader</span></div>
+    <div><span><span class="key">ERASE</span> + pad</span><span>Apagar as notas desse pad</span></div>
+  </div>
+  <div class="shead" style="margin-bottom:24px"><div class="no">9.1</div><h2>Glossário</h2></div>
+  <dl class="gloss">
+    <div><dt>Chop</dt><dd>Cortar um sample em fatias, cada uma no seu pad.</dd></div>
+    <div><dt>Overdub</dt><dd>Gravar por cima do que já existe sem apagar.</dd></div>
+    <div><dt>Quantize</dt><dd>Encostar as notas à grelha mais próxima.</dd></div>
+    <div><dt>Threshold</dt><dd>Nível de som a partir do qual algo acontece.</dd></div>
+    <div><dt>Resample</dt><dd>Gravar a saída do próprio MPC como sample novo.</dd></div>
+    <div><dt>Aftertouch</dt><dd>Pressão depois do toque; o pad continua a ouvir o dedo.</dd></div>
+    <div><dt>Note On</dt><dd>O som toca só enquanto seguras o pad.</dd></div>
+    <div><dt>Timestretch</dt><dd>Mudar a duração sem mudar a afinação. Usa com moderação.</dd></div>
+  </dl>
+</div></section>
+</main>
+
+<footer class="dark"><div class="wrap">
+  <div class="runhead" style="padding-top:18px"><div>MPC Sample®<br>Manual de bolso<br>© 2026</div><div><span class="dot"></span>Fontes<br>e notas</div><span aria-hidden="true">⊕</span></div>
+  <div class="foot">
+    <p>Guia não oficial, escrito para o firmware 1.3. Nomes de botões tirados do painel; detalhes de menus podem mudar com atualizações. Na dúvida, o manual oficial da Akai tem a última palavra.</p>
+    <ul>
+      <li><a href="https://www.akaipro.com/mpc-sample/" target="_blank" rel="noopener">Akai Professional · MPC Sample ↗</a></li>
+      <li><a href="https://www.akaipro.com/guides/mpc-sample/features.htm" target="_blank" rel="noopener">Guia online oficial ↗</a></li>
+      <li><a href="https://cdn.inmusicbrands.com/akai/sample/MPC%20Sample%20-%20User%20Guide%20-%20v1.3.0%20(RevA).pdf" target="_blank" rel="noopener">Manual oficial em PDF, v1.3.0 ↗</a></li>
+      <li><a href="https://www.gearnews.com/akai-mpc-sample-review/" target="_blank" rel="noopener">Gearnews · review ↗</a></li>
+      <li><a href="https://musictech.com/reviews/hardware-instruments/akai-mpc-sample-review/" target="_blank" rel="noopener">MusicTech · review ↗</a></li>
+      <li><a href="https://loopopmusic.com/akai-mpc-sample-does-it-beat-the-competition-5-power-tips-review-tutorial" target="_blank" rel="noopener">Loopop · 5 power tips ↗</a></li>
+    </ul>
+  </div>
+  <div class="giant">MPC<br>Sample<span>.</span></div>
+</div></footer>
+

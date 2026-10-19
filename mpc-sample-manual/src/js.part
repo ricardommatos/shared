@@ -1,0 +1,88 @@
+<script>
+(function(){
+  // [n, x, y, zone EN, zone PT, title EN, title PT, base EN, base PT, shift EN, shift PT]
+  var P=[
+    [1,46,66,"Screen & control","Ecrã e controlo","Main Volume","Main Volume","Overall level for headphones and speaker.","Volume geral, para auscultadores e altifalante.","No secondary function.","Sem função secundária."],
+    [2,186,84,"Screen & control","Ecrã e controlo","Color screen + B1–B3","Ecrã a cores + B1–B3","Shows the current mode. The three buttons above change pages or turn on screen functions (e.g. Record Quantize on B3).","Mostra o modo atual. Os três botões por cima mudam de página ou ativam funções do ecrã (ex.: Record Quantize em B3).","B1–B3 change with the mode; read the labels on screen.","As funções de B1–B3 mudam com o modo; lê a legenda no ecrã."],
+    [3,282,54,"Screen & control","Ecrã e controlo","Speaker + mic","Altifalante + microfone","Built-in speaker for sketching and built-in mic for sampling without cables.","Altifalante integrado para esboçar e microfone interno para samplar sem cabos.","Pick the record source in Shift + Sample (Input Config).","A fonte de gravação escolhe-se em Shift + Sample (Input Config)."],
+    [4,170,122,"Screen & control","Ecrã e controlo","K1 · K2 · K3","K1 · K2 · K3","Context knobs: they control whatever the screen shows (sequence length, quantize, sample start and end, chop type, threshold).","Knobs contextuais: controlam o que o ecrã indica (tamanho da sequência, quantize, início e fim do sample, tipo de chop, threshold).","With Knob FX on, they control the effect only.","Com Knob FX ligado, controlam só o efeito."],
+    [5,296,196,"Screen & control","Ecrã e controlo","Data wheel","Roda de dados","Scroll lists and change values on screen.","Navegar em listas e mudar valores no ecrã.","No secondary function.","Sem função secundária."],
+    [6,31,120,"Modes","Modos","Sample","Sample","Sample mode: edit start, end, tuning and play mode for the pad.","Modo de sample: editar início, fim, afinação e modo de reprodução do pad.","Input Config: record source and threshold.","Input Config: fonte de gravação e threshold."],
+    [7,67,120,"Modes","Modos","Seq","Seq","Sequence mode: length, tempo, quantize, swing.","Modo de sequência: tamanho, tempo, quantize, swing.","Step Edit: view and fix notes one by one.","Step Edit: ver e corrigir notas uma a uma."],
+    [8,31,146,"Modes","Modos","Pad FX","Pad FX","The pads trigger 16 velocity-sensitive effects.","Os pads passam a disparar 16 efeitos, sensíveis à força.","Flex Beat: 16 time and pitch effects (scratch, gate, chops).","Flex Beat: 16 efeitos de tempo e afinação (scratch, gate, cortes)."],
+    [9,67,146,"Modes","Modos","Knob FX","Knob FX","The knobs control one effect applied to the pads you choose.","Os knobs controlam um efeito aplicado aos pads escolhidos.","FX Select: choose which effect.","FX Select: escolher qual é o efeito."],
+    [10,67,172,"Modes","Modos","Pad Bank","Pad Bank","Switch between banks A to H (16 pads each).","Muda entre os bancos A a H (16 pads cada).","No secondary function.","Sem função secundária."],
+    [11,36,197,"Modes","Modos","Shift","Shift","Hold it to reach the functions printed in gray under the buttons and pads 1–4.","Segura para aceder às funções impressas a cinzento por baixo dos botões e dos pads 1–4.","It is the Shift key itself.","É a própria tecla Shift."],
+    [12,42,246,"Play","Tocar","Fader","Fader","Controls pad level by default. In Step Edit it nudges each event’s timing.","Por defeito controla o volume do pad. Em Step Edit ajusta o tempo de cada evento.","Shift + Pad 9: assign another parameter.","Shift + Pad 9: escolher outro parâmetro para o fader."],
+    [13,175,225,"Play","Tocar","16 pads","16 pads","Play samples. Velocity and polyphonic aftertouch. Pad 1 is bottom left.","Tocam samples. Sensíveis a velocidade e aftertouch polifónico. O pad 1 é o de baixo à esquerda.","Pad 1 Full Level · Pad 2 Half Seq · Pad 3 Double Seq · Pad 4 Count-in · Pad 9 Fader.","Pad 1 Full Level · Pad 2 Half Seq · Pad 3 Double Seq · Pad 4 Count-in · Pad 9 Fader."],
+    [14,31,304,"Play","Tocar","Erase","Erase","Hold it and hit a pad to delete that pad’s notes from the sequence.","Segura e toca num pad para apagar as notas desse pad na sequência.","Copy: copy sequences and pads.","Copy: copiar sequências e pads."],
+    [15,67,304,"Play","Tocar","Note Repeat","Note Repeat","Hold with a pad to repeat it at the chosen division.","Segura com um pad para repetir o som na divisão escolhida.","Triplet: triplet divisions.","Triplet: divisões em tercina."],
+    [16,278,119,"Pad Play","Pad Play","Chop","Chop","Slices the pad’s sample across the pads (Threshold, Regions, Manual).","Corta o sample do pad em fatias espalhadas pelos pads (Threshold, Regions, Manual).","Note On: the pad sounds only while held.","Note On: o pad só soa enquanto o seguras."],
+    [17,314,119,"Pad Play","Pad Play","Mute","Mute","Hold and tap pads to silence them while the music plays.","Segura e toca nos pads para os silenciar durante a música.","Unmute All: bring everything back.","Unmute All: volta a ligar tudo."],
+    [18,278,141,"Pad Play","Pad Play","Loop","Loop","The sample repeats from its start point while it plays.","O sample repete a partir do ponto de início enquanto toca.","Reverse: play the sample backwards.","Reverse: toca o sample ao contrário."],
+    [19,314,141,"Pad Play","Pad Play","16 Levels","16 Levels","Spreads one sample across 16 pads with one parameter changing, such as pitch.","Espalha um sample pelos 16 pads com um parâmetro a variar, por exemplo a afinação.","Type: choose which parameter changes.","Type: escolher o parâmetro que varia."],
+    [20,278,163,"Transport","Transporte","Sample Select","Sample Select","Opens the browser to load a sample onto the pad (internal or microSD).","Abre o browser para pôr um sample no pad atual (memória interna ou microSD).","Save Sample: store the sample as a file.","Save Sample: guardar o sample como ficheiro."],
+    [21,314,163,"Transport","Transporte","Tap Tempo","Tap Tempo","Tap in time to set the project BPM.","Bate ao ritmo para definir o BPM do projeto.","Metro: metronome on or off.","Metro: ligar ou desligar o metrónomo."],
+    [22,296,226,"Transport","Transporte","− / +","− / +","Step values and navigate one at a time.","Mudar valores e navegar passo a passo.","Undo / Redo.","Undo / Redo."],
+    [23,296,249,"Transport","Transporte","Seq Rec · Smp Rec","Seq Rec · Smp Rec","Record notes into the sequence, or record audio onto a pad.","Gravar notas na sequência, ou gravar áudio para um pad.","Recall: bring back what you just played or heard.","Recall: recuperar o que acabaste de tocar ou ouvir."],
+    [24,296,274,"Transport","Transporte","Stop · Play","Stop · Play","Stop, and play from the start.","Parar e tocar a partir do início.","Continue: resume where it stopped.","Continue: retomar de onde parou."]
+  ];
+  var ns="http://www.w3.org/2000/svg", KEY="mpc-sample-firsthour", LKEY="mpc-sample-lang", saved={};
+  try{saved=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
+
+  function init(root){
+    var pt=root.getAttribute("data-lang")==="pt", o=pt?1:0;
+    var hs=root.querySelector(".hotspots"), list=root.querySelector(".parts"), zone="";
+    P.forEach(function(p){
+      var g=document.createElementNS(ns,"g");g.setAttribute("class","hs");g.setAttribute("data-n",p[0]);g.setAttribute("tabindex","0");g.setAttribute("role","button");g.setAttribute("aria-label",p[0]+". "+p[5+o]);
+      var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p[1]);c.setAttribute("cy",p[2]);c.setAttribute("r",7);
+      var t=document.createElementNS(ns,"text");t.setAttribute("x",p[1]);t.setAttribute("y",p[2]+2.2);t.setAttribute("text-anchor","middle");t.textContent=p[0];
+      g.appendChild(c);g.appendChild(t);hs.appendChild(g);
+      if(p[3+o]!==zone){zone=p[3+o];var zl=document.createElement("li");zl.className="zone";zl.setAttribute("aria-hidden","true");zl.style.display="block";zl.style.cursor="default";zl.textContent=zone;list.appendChild(zl);}
+      var li=document.createElement("li");li.setAttribute("data-n",p[0]);
+      li.innerHTML='<span class="n">'+String(p[0]).padStart(2,"0")+'</span><div><h4>'+p[5+o]+'</h4><p><span class="base">'+p[7+o]+'</span><span class="shift"><b>Shift:</b> '+p[9+o]+'</span></p></div>';
+      list.appendChild(li);
+    });
+    function sel(n,scroll){
+      root.querySelectorAll(".hs,.parts li[data-n]").forEach(function(e){e.classList.toggle("on",e.getAttribute("data-n")==String(n));});
+      if(scroll){var li=list.querySelector('li[data-n="'+n+'"]');if(li&&window.innerWidth>960)li.scrollIntoView({block:"nearest",behavior:"smooth"});}
+    }
+    hs.addEventListener("click",function(e){var g=e.target.closest(".hs");if(g)sel(g.getAttribute("data-n"),true);});
+    hs.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){var g=e.target.closest(".hs");if(g){e.preventDefault();sel(g.getAttribute("data-n"),true);}}});
+    list.addEventListener("click",function(e){var li=e.target.closest("li[data-n]");if(li)sel(li.getAttribute("data-n"),false);});
+    sel(13);
+    var b=root.querySelector(".shiftBtn"),sec=root.querySelector(".anat"),hint=root.querySelector(".shiftHint");
+    var hOff=hint.textContent, hOn=pt?"A mostrar Shift":"Showing Shift";
+    b.addEventListener("click",function(){var on=b.getAttribute("aria-pressed")!=="true";b.setAttribute("aria-pressed",on);sec.classList.toggle("show-shift",on);hint.textContent=on?hOn:hOff;});
+    // first-hour checklist: shared between languages, remembered per browser
+    root.querySelectorAll(".check input").forEach(function(i,k){
+      i.setAttribute("data-k",k);
+      if(saved[k])i.checked=true;
+      i.addEventListener("change",function(){
+        saved[k]=i.checked;
+        document.querySelectorAll('.check input[data-k="'+k+'"]').forEach(function(x){x.checked=i.checked;});
+        try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}
+      });
+    });
+  }
+  var roots=document.querySelectorAll(".lroot");
+  roots.forEach(init);
+
+  function setLang(l,store){
+    roots.forEach(function(r){r.hidden=r.getAttribute("data-lang")!==l;});
+    document.documentElement.lang=l==="pt"?"pt-PT":"en-US";
+    document.querySelectorAll(".lang button").forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute("data-set")===l);});
+    if(store){try{localStorage.setItem(LKEY,l)}catch(e){}}
+  }
+  document.addEventListener("click",function(e){
+    var b=e.target.closest(".lang button");if(!b)return;
+    var l=b.getAttribute("data-set");setLang(l,true);
+    var nav=document.querySelector('.lroot[data-lang="'+l+'"] nav.toc');
+    if(nav&&window.scrollY>nav.offsetTop)nav.scrollIntoView();
+  });
+  var start="en";
+  try{if(localStorage.getItem(LKEY)==="pt")start="pt"}catch(e){}
+  if(/^#?(pt|comecar|anatomia|conceitos|receitas|efeitos|musico|plano|ideias|atalhos|ficha)$/.test(location.hash))start="pt";
+  setLang(start,false);
+})();
+</script>

@@ -24,8 +24,8 @@ def knob(cx, cy, r, label=""):
 def device_top(pid):
     g = []
     g.append(f'<defs><pattern id="{pid}-gr" width="3.6" height="3.6" patternUnits="userSpaceOnUse"><circle cx="1.8" cy="1.8" r="0.95" fill="#3a3a3a"/></pattern></defs>')
-    g.append(f'<rect x="0" y="0" width="{W}" height="{D}" rx="5" fill="#E3E1DC"/>')
-    g.append('<path d="M5 0 H335 A5 5 0 0 1 340 5 V105 H0 V5 A5 5 0 0 1 5 0Z" fill="#151515"/>')
+    g.append(f'<rect x="0" y="0" width="{W}" height="{D}" rx="1.5" fill="#E3E1DC"/>')
+    g.append('<path d="M0 0 H340 V105 H0Z" fill="#151515"/>')
     # logo
     g.append('<text x="16" y="26" font-size="15" font-weight="900" font-style="italic" fill="#D3221C" class="dd">AKAI</text>')
     g.append('<text x="17" y="33" font-size="4.6" font-style="italic" fill="#D3221C" class="dl">professional</text>')
@@ -107,7 +107,16 @@ def device_top(pid):
 def P(x, y, z):
     return (0.8660 * (x - y), 0.5 * (x + y) - z)
 
+BOUNDS = []
+
+def fit(pad=8):
+    xs = [p[0] for p in BOUNDS]; ys = [p[1] for p in BOUNDS]
+    x0, y0, x1, y1 = min(xs) - pad, min(ys) - pad, max(xs) + pad, max(ys) + pad
+    BOUNDS.clear()
+    return f"{x0:.0f} {y0:.0f} {x1 - x0:.0f} {y1 - y0:.0f}"
+
 def poly(pts, cls=None, fill=None, extra=""):
+    BOUNDS.extend(pts)
     d = " ".join(f"{a:.1f},{b:.1f}" for a, b in pts)
     attr = f'class="{cls}"' if cls else f'fill="{fill}"'
     return f'<polygon points="{d}" {attr} {extra}/>'
@@ -139,8 +148,14 @@ def device_iso():
     defs = '<defs><filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8"/></filter></defs>'
     return f'<svg viewBox="0 0 650 460" role="img" aria-label="Ilustração isométrica do Akai MPC Sample" class="iso-device">{defs}{"".join(out)}</svg>'
 
+def device_3d(pid):
+    top = f'<svg viewBox="0 0 {W} {D}" class="top-svg" aria-hidden="true">{device_top(pid)}</svg>'
+    faces = "".join(f'<div class="face {c}"></div>' for c in ("f-back", "f-left", "f-front", "f-right"))
+    return ('<div class="stage" role="img" aria-label="Akai MPC Sample, 3D illustration">'
+            f'<div class="dev3d"><div class="shadow3d"></div>{faces}<div class="face f-top">{top}</div></div></div>')
+
 def device_flat():
-    return f'<svg viewBox="-6 -6 352 372" class="flat-device" role="img" aria-label="Painel superior do MPC Sample"><g>{device_top("flat")}</g><g id="hotspots"></g></svg>'
+    return f'<svg viewBox="-6 -6 352 372" class="flat-device" role="img" aria-label="Painel superior do MPC Sample"><g>{device_top("flat")}</g><g class="hotspots"></g></svg>'
 
 # ---- small theme-aware isometric icons
 def box(x, y, z, w, d, h, top="t", left="l", right="r"):
@@ -155,10 +170,11 @@ def disc(cx, cy, z, r, cls, n=40):
 def front_disc(cx, yface, cz, r, cls, n=36):
     return poly([P(cx + r * math.cos(t), yface, cz + r * math.sin(t)) for t in [i / n * 2 * math.pi for i in range(n)]], cls=cls)
 
-def icon(body, vb="-70 -60 140 110"):
-    return f'<svg viewBox="{vb}" class="iso-icon" aria-hidden="true">{body}</svg>'
+def icon(body, vb=None):
+    return f'<svg viewBox="{fit(10)}" class="iso-icon" aria-hidden="true">{body}</svg>'
 
 def icons():
+    BOUNDS.clear()
     ic = {}
     # laptop with code
     s = box(-30, -22, 0, 60, 44, 3)
@@ -204,26 +220,36 @@ def icons():
     # concept: stacked layers project > sequence > pads
     return ic
 
-def layers():
+def layers(names=("Project", "Sequences", "Pads · banks A–H", "Samples")):
+    BOUNDS.clear()
     s = ""
-    labs = [("Projeto", 0), ("Sequências", 26), ("Pads · bancos A–H", 52), ("Samples", 78)]
-    cls = ["t", "a2f", "a1f", "a3f"]
-    for i, (lab, z) in enumerate(reversed(labs)):
-        pass
-    for i, (lab, z) in enumerate(labs[::-1]):
-        zz = i * 26
-        s += box(-60, -60, zz, 120, 120, 8, top=cls[3 - i])
-        a = P(60, 60, zz + 4)
-        s += f'<line x1="{a[0]:.1f}" y1="{a[1]:.1f}" x2="{a[0] + 40:.1f}" y2="{a[1]:.1f}" class="ln blkS" stroke-dasharray="2 2"/>'
-        s += f'<text x="{a[0] + 44:.1f}" y="{a[1] + 4:.1f}" class="lay-l">{labs[3 - i][0]}</text>'
-    return f'<svg viewBox="-120 -130 330 220" class="iso-layers" role="img" aria-label="Camadas: Projeto contém Sequências, que tocam Pads, que guardam Samples">{s}</svg>'
+    cls = ["a3f", "a1f", "a2f", "t"]          # bottom → top
+    for i in range(4):
+        zz = i * 34
+        s += box(-60, -60, zz, 120, 120, 8, top=cls[i])
+        a = P(60, -60, zz + 4)
+        lab = names[3 - i]
+        s += f'<line x1="{a[0] + 4:.1f}" y1="{a[1]:.1f}" x2="{a[0] + 40:.1f}" y2="{a[1]:.1f}" class="ln blkS" stroke-dasharray="2 2"/>'
+        s += f'<circle cx="{a[0] + 4:.1f}" cy="{a[1]:.1f}" r="1.6" class="lay-d"/>'
+        s += f'<text x="{a[0] + 46:.1f}" y="{a[1] + 3.5:.1f}" class="lay-l">{lab}</text>'
+        BOUNDS.append((a[0] + 46 + 9.5 * len(lab), a[1]))
+    return f'<svg viewBox="{fit(10)}" class="iso-layers" role="img" aria-label="{" > ".join(names)}">{s}</svg>'
 
+# Build: python3 gen.py src/css.part src/body_en.part src/body_pt.part src/js.part index.html
 if __name__ == "__main__":
-    tpl, out = sys.argv[1], sys.argv[2]  # python3 gen.py template.src.html index.html
-    html = open(tpl, encoding="utf-8").read()
-    html = html.replace("{{DEVICE_ISO}}", device_iso()).replace("{{DEVICE_FLAT}}", device_flat()).replace("{{LAYERS}}", layers())
-    for k, v in icons().items():
-        html = html.replace("{{ICON_" + k.upper() + "}}", v)
+    css, en, pt, js, out = sys.argv[1:6]
+    def fill(body, names, suffix):
+        h = body.replace("{{DEVICE_ISO}}", device_3d("hero" + suffix)).replace("{{DEVICE_FLAT}}", device_flat()).replace("{{LAYERS}}", layers(names))
+        for k, v in icons().items():
+            h = h.replace("{{ICON_" + k.upper() + "}}", v)
+        if suffix:
+            for a, b in (("iso-gr", "iso-gr" + suffix), ("flat-gr", "flat-gr" + suffix), ('id="soft"', 'id="soft' + suffix + '"'), ("url(#soft)", "url(#soft" + suffix + ")")):
+                h = h.replace(a, b)
+        return h
+    sw = '<div class="lang" role="group" aria-label="Language"><button type="button" data-set="en">EN</button><button type="button" data-set="pt">PT</button></div>'
+    E = fill(open(en, encoding="utf-8").read(), ("Project", "Sequences", "Pads · banks A–H", "Samples"), "")
+    T = fill(open(pt, encoding="utf-8").read(), ("Projeto", "Sequências", "Pads · bancos A–H", "Samples"), "pt")
+    html = (open(css, encoding="utf-8").read() + '\n<div class="lroot" data-lang="en" lang="en">' + E + '</div>\n<div class="lroot" data-lang="pt" lang="pt-PT" hidden>' + T + '</div>\n' + open(js, encoding="utf-8").read()).replace("{{LANG_SWITCH}}", sw)
     assert "{{" not in html, html[html.index("{{"):html.index("{{") + 40]
     open(out, "w", encoding="utf-8").write(html)
     print("ok", len(html))
