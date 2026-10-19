@@ -113,9 +113,7 @@ function render(){
   /* side details */
   o.push('<g>'+[18,26].map(function(yy){var b=P(W,yy,2.5);return '<circle class="deep" r="1.2" transform="'+mRight(W,yy,2.5,1)+'" style="stroke:var(--line);vector-effect:non-scaling-stroke"/>'}).join("")+'</g>');
   o.push(poly([[W,34,3.2],[W,38,3.2],[W,38,1.8],[W,34,1.8]],"deep"));
-  o.push(tRight(W,22,.9,"OUT  IN   USB",1.4,"middle"));
   o.push('<use href="#ctlogo" class="logo-print" transform="'+mFront(6,D,4.1,3.2/874)+'"/>');
-  o.push(tFront(10.5,D,1.7,"CT-16  sampling instrument",1.6,"start"));
   /* speaker: dot field in a circle */
   var sx=14, sy=15, sr=9.5, sz=Z+off.spk;
   o.push(ell(sx,sy,sz,sr+.8,"ln","fill:none;stroke:var(--line);vector-effect:non-scaling-stroke"));
