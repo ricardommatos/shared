@@ -62,11 +62,26 @@ polygon,polyline,line,path.ln,rect.ln{stroke:var(--line);stroke-width:1;vector-e
 <script>
 (function(){
 var scene=document.getElementById("scene"), svg=document.getElementById("dev");
-svg.setAttribute("viewBox","-96 -78 192 146");
+
 /* orthographic camera: yaw around the vertical axis, elevation phi. yaw 0 + phi 35.26° = true isometric */
 var ISO_PHI=Math.asin(1/Math.sqrt(3)), cam={yaw:0,phi:ISO_PHI}, K=1.2247449, CX=64, CY=36, cy_=1, sy_=0, sp_=0, cp_=0;
 function camUpdate(){cy_=Math.cos(cam.yaw);sy_=Math.sin(cam.yaw);sp_=Math.sin(cam.phi);cp_=Math.cos(cam.phi)}
+function defaultCam(){return (innerWidth/innerHeight)<.8?{yaw:Math.PI/4+.32,phi:.88}:{yaw:0,phi:ISO_PHI}}
+(function(){var d=defaultCam();cam.yaw=d.yaw;cam.phi=d.phi})();
 camUpdate();
+/* frame the slab (plus room for the hologram) for the default view of this screen shape */
+function fitView(){
+  var keep={yaw:cam.yaw,phi:cam.phi},d=defaultCam();cam.yaw=d.yaw;cam.phi=d.phi;camUpdate();
+  var xs=[],ys=[];[[0,0],[128,0],[0,72],[128,72]].forEach(function(c){[0,12].forEach(function(z){var p=P(c[0],c[1],z);xs.push(p[0]);ys.push(p[1])})});
+  var h=P(46,15,58);ys.push(h[1]);
+  var x0=Math.min.apply(0,xs)-6,x1=Math.max.apply(0,xs)+6,y0=Math.min.apply(0,ys)-4,y1=Math.max.apply(0,ys)+6;
+  svg.setAttribute("viewBox",[x0,y0,x1-x0,y1-y0].map(function(v){return v.toFixed(1)}).join(" "));
+  cam.yaw=keep.yaw;cam.phi=keep.phi;camUpdate();
+}
+fitView();
+try{if(matchMedia("(pointer:coarse)").matches)document.getElementById("hint").innerHTML="<b>Tap</b> pads · <b>▶</b> play · <b>drag</b> knobs · <b>drag</b> background to rotate · <b>double-tap</b> resets"}catch(e){}
+var lastPortrait=(innerWidth/innerHeight)<.8;
+addEventListener("resize",function(){var pr=(innerWidth/innerHeight)<.8;if(pr!==lastPortrait){lastPortrait=pr;var d=defaultCam();cam.yaw=d.yaw;cam.phi=d.phi;camUpdate()}fitView();st.dirty=true});
 function rot(x,y){var dx=x-CX,dy=y-CY,a=dx*cy_-dy*sy_,b=dx*sy_+dy*cy_;return [(a-b)/Math.SQRT2,(a+b)/Math.SQRT2]}
 function P(x,y,z){var r=rot(x,y);return [r[0]*K,(r[1]*sp_-z*cp_)*K]}
 function depth(x,y){return rot(x,y)[1]}
@@ -350,7 +365,7 @@ svg.addEventListener("pointerup",function(){
   drag=null;svg.style.cursor="";
 });
 var camTween=null;
-svg.addEventListener("dblclick",function(e){if(e.target.closest("[data-act]"))return;camTween={y0:cam.yaw,p0:cam.phi,y1:Math.round(cam.yaw/(Math.PI*2))*Math.PI*2,p1:ISO_PHI,t0:performance.now()}});
+svg.addEventListener("dblclick",function(e){if(e.target.closest("[data-act]"))return;var d=defaultCam();camTween={y0:cam.yaw,p0:cam.phi,y1:d.yaw+Math.round((cam.yaw-d.yaw)/(Math.PI*2))*Math.PI*2,p1:d.phi,t0:performance.now()}});
 window.addEventListener("keydown",function(e){if(e.repeat)return;var i=KEYS.indexOf(e.key.toLowerCase());if(i>=0){hit(i);return}if(e.code==="Space"){e.preventDefault();play()}});
 
 /* ---------- loop ---------- */
