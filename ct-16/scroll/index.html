@@ -1,0 +1,120 @@
+<title>CT-16</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: product film. A sticky full-screen canvas scrubs 150 rendered frames as you scroll; short statements fade in over it, one per camera stop. Single dark look. */
+:root{
+  --bg:#141415; --ink:#F2F0EC; --muted:#8E8C88; --accent:#FF5A2A; --line:rgba(255,255,255,.12);
+  --sans:"Inter Tight","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+html{scroll-behavior:auto}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.45 var(--sans);-webkit-font-smoothing:antialiased}
+.film{position:relative;height:900vh}
+.stage{position:sticky;top:0;height:100vh;height:100dvh;overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 50%,transparent 55%,rgba(10,10,11,.75) 100%)}
+.copy{position:absolute;inset:0;pointer-events:none}
+.beat{position:absolute;max-width:min(520px,calc(100% - 32px));opacity:0;transform:translateY(16px);transition:opacity .45s ease,transform .45s ease}
+.beat.on{opacity:1;transform:none}
+.beat .eyebrow{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.beat h2{margin:0;font-weight:600;font-size:clamp(34px,5.2vw,68px);line-height:.98;letter-spacing:-.035em;text-wrap:balance}
+.beat p{margin:16px 0 0;color:var(--muted);font-size:clamp(15px,1.4vw,18px);max-width:38ch}
+.tl{left:max(24px,env(safe-area-inset-left,0px));top:calc(84px + env(safe-area-inset-top,0px))}
+.bl{left:max(24px,env(safe-area-inset-left,0px));bottom:calc(56px + env(safe-area-inset-bottom,0px))}
+.tr{right:max(24px,env(safe-area-inset-right,0px));top:calc(84px + env(safe-area-inset-top,0px));text-align:right}
+.tr p{margin-left:auto}
+.br{right:max(24px,env(safe-area-inset-right,0px));bottom:calc(56px + env(safe-area-inset-bottom,0px));text-align:right}
+.br p{margin-left:auto}
+.hero h1{margin:0;font-weight:700;font-size:clamp(76px,15vw,220px);line-height:.82;letter-spacing:-.06em}
+.hero h1 span{color:var(--accent)}
+.cta{display:inline-flex;align-items:center;gap:10px;margin-top:22px;pointer-events:auto;background:var(--accent);color:#140904;font:600 15px var(--sans);padding:12px 20px;border-radius:999px;text-decoration:none}
+.cta:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.top{position:fixed;z-index:3;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:calc(16px + env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-right,0px)) 16px max(24px,env(safe-area-inset-left,0px));font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);pointer-events:none}
+.top b{color:var(--ink);font-weight:500}
+.rail{position:fixed;z-index:3;right:max(14px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:grid;gap:8px}
+.rail i{display:block;width:6px;height:6px;border-radius:50%;background:var(--line);transition:background .3s,transform .3s}
+.rail i.on{background:var(--accent);transform:scale(1.4)}
+.load{position:fixed;z-index:4;left:0;bottom:0;height:2px;background:var(--accent);width:0;transition:width .2s,opacity .6s}
+.end{position:relative;padding:22vh max(24px,env(safe-area-inset-left,0px)) 18vh;text-align:center;border-top:1px solid var(--line)}
+.end h2{margin:0;font-weight:600;font-size:clamp(34px,5vw,64px);letter-spacing:-.035em;line-height:1}
+.end p{color:var(--muted);margin:14px auto 0;max-width:46ch}
+.specs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:900px;margin:56px auto 0;text-align:left}
+.specs div{border-top:1px solid var(--line);padding-top:10px}
+.specs b{display:block;font-size:30px;font-weight:600;letter-spacing:-.03em}
+.specs span{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+@media (max-width:640px){
+  .tl,.tr{top:calc(72px + env(safe-area-inset-top,0px))}
+  .tr,.br{text-align:left;left:max(20px,env(safe-area-inset-left,0px));right:auto}
+  .tr p,.br p{margin-left:0}
+  .specs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rail{display:none}
+}
+@media (prefers-reduced-motion:reduce){.beat{transition:none;transform:none}}
+</style>
+
+<div class="top"><span><b>CT-16</b> · sampling instrument</span><span>Code and Theory</span></div>
+<div class="rail" id="rail" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="load" id="load"></div>
+
+<section class="film" id="film" aria-label="CT-16 product film">
+  <div class="stage">
+    <canvas id="cv" role="img" aria-label="Rendered CT-16 instrument, moving with the scroll"></canvas>
+    <div class="vignette"></div>
+    <div class="copy">
+      <div class="beat bl hero" data-from="0" data-to=".1"><div class="eyebrow">Introducing</div><h1>CT-16<span>.</span></h1><p>A sampling instrument you can hold in one hand and play with both.</p></div>
+      <div class="beat tl" data-from=".16" data-to=".3"><div class="eyebrow">01 · Form</div><h2>Thin as a sketchbook.<br>Dense as a studio.</h2><p>One machined slab. Every control sits flat on the surface, nothing hidden under a menu.</p></div>
+      <div class="beat br" data-from=".34" data-to=".47"><div class="eyebrow">02 · Screen</div><h2>A screen that shows the sound.</h2><p>Two waveform lanes, the step pattern and the tempo, lit behind glass.</p></div>
+      <div class="beat tr" data-from=".51" data-to=".63"><div class="eyebrow">03 · Keys</div><h2>Sixteen keys.<br>Every one a drum.</h2><p>Kick to crash, laid out in a grid your fingers learn in minutes.</p></div>
+      <div class="beat tl" data-from=".67" data-to=".79"><div class="eyebrow">04 · Control</div><h2>Four knobs.<br>One orange button.</h2><p>Tempo, filter, space and pitch under your fingertips. Press play and it runs.</p></div>
+      <div class="beat bl" data-from=".86" data-to="1.01"><div class="eyebrow">05 · Inside</div><h2>Built in layers.</h2><p>Keys, encoders, screen and body, each part its own piece.</p><a class="cta" href="https://claude.ai/artifact/MVTVHCLuG4d6etvUmY9rSW" target="_blank" rel="noopener">Play it in your browser →</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="end">
+  <h2>Made to be played.</h2>
+  <p>Rendered in Blender from the same model as the playable version. Scroll back up to see it again.</p>
+  <div class="specs">
+    <div><span>Pads</span><b>16</b></div>
+    <div><span>Steps</span><b>16</b></div>
+    <div><span>Encoders</span><b>4</b></div>
+    <div><span>Odd keys</span><b>6</b></div>
+  </div>
+</section>
+
+<script>
+(function(){
+  var N=150, frames=new Array(N), loaded=0, cur=-1, want=0;
+  var cv=document.getElementById("cv"), ctx=cv.getContext("2d"), film=document.getElementById("film");
+  var beats=[].slice.call(document.querySelectorAll(".beat")), dots=[].slice.call(document.querySelectorAll("#rail i")), bar=document.getElementById("load");
+  function src(i){return "frames/f"+String(i+1).padStart(4,"0")+".jpg"}
+  function size(){var d=Math.min(window.devicePixelRatio||1,2);cv.width=Math.round(cv.clientWidth*d);cv.height=Math.round(cv.clientHeight*d);cur=-1;draw()}
+  function nearest(i){for(var k=0;k<N;k++){if(frames[i-k]&&frames[i-k].ok)return frames[i-k];if(frames[i+k]&&frames[i+k].ok)return frames[i+k]}return null}
+  function draw(){
+    var f=nearest(want); if(!f||cur===want&&f===nearest(cur))return;
+    var iw=f.img.naturalWidth, ih=f.img.naturalHeight, s=Math.max(cv.width/iw,cv.height/ih), w=iw*s, h=ih*s;
+    ctx.fillStyle="#141415";ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.drawImage(f.img,(cv.width-w)/2,(cv.height-h)/2,w,h); cur=want;
+  }
+  function progress(){var r=film.getBoundingClientRect(),span=film.offsetHeight-window.innerHeight;return Math.min(1,Math.max(0,-r.top/span))}
+  function update(){
+    var p=progress(); want=Math.min(N-1,Math.round(p*(N-1))); draw();
+    beats.forEach(function(b,i){var on=p>=+b.dataset.from&&p<+b.dataset.to;b.classList.toggle("on",on);if(dots[i])dots[i].classList.toggle("on",on)});
+  }
+  // load: every 6th frame first so scrubbing works early, then the rest
+  var order=[];for(var i=0;i<N;i+=6)order.push(i);for(i=0;i<N;i++)if(i%6)order.push(i);
+  var q=0;
+  function next(){if(q>=order.length)return;var i=order[q++],img=new Image();frames[i]={img:img,ok:false};
+    img.onload=function(){frames[i].ok=true;loaded++;bar.style.width=(loaded/N*100)+"%";if(loaded===N)bar.style.opacity=0;cur=-1;draw();next()};
+    img.onerror=function(){loaded++;next()};img.src=src(i)}
+  for(var c=0;c<6;c++)next();
+  var ticking=false;
+  window.addEventListener("scroll",function(){if(!ticking){ticking=true;requestAnimationFrame(function(){ticking=false;update()})}},{passive:true});
+  window.addEventListener("resize",size);
+  size();update();
+})();
+</script>
